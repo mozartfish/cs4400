@@ -110,20 +110,13 @@ instruction_t* decode_instructions(unsigned int* bytes, unsigned int num_instruc
   // instruction_t* retval = NULL;
   instruction_t* retval = (instruction_t*)malloc(num_instructions*sizeof(instruction_t));
 
+
   /*
   int i;
   for(i = ...){
     retval[i] = (fill in fields based on raw bits);
   */
-  int i;
-  for (i = 0; i < num_instructions i++) {
-    retval[i].opcode = bytes[i]
-    retval[i].first_register = bytes[i]
-    retval[i].second_register = bytes[i]
-    retval[i].immediate = bytes[i]
-  }
-    
-  return retval;
+
 }
 
 
