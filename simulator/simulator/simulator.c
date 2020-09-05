@@ -72,7 +72,7 @@ int main(int argc, char** argv)
   // Optionally print the decoded instructions for debugging
   // Will not work until you implement decode_instructions
   // Do not call this function in your submitted final version
-  // print_instructions(instructions, num_instructions);
+  print_instructions(instructions, num_instructions);
 
 
   // Once you have completed Part 1 (decoding instructions), uncomment the below block
@@ -119,6 +119,7 @@ instruction_t* decode_instructions(unsigned int* bytes, unsigned int num_instruc
   int i;
   for (i = 0; i < num_instructions; i++) {
     retval[i].opcode = (bytes[i] & 0xF8000000) >> 27; 
+    retval[i].first_register = (bytes[i] & 0X07C00000) >> 22;
   }
     
   return retval;
