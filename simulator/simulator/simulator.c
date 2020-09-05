@@ -118,10 +118,11 @@ instruction_t* decode_instructions(unsigned int* bytes, unsigned int num_instruc
   */
   int i;
   for (i = 0; i < num_instructions; i++) {
-    retval[i].opcode = (bytes[i] & 0xF8000000) >> 27; 
-    retval[i].first_register = (bytes[i] & 0x07C00000) >> 22;
-    retval[i].second_register = (bytes[i] & 0x003E0000) >> 17;
-    retval[i].immediate = bytes[i] & 0x0001FFFF
+    // retval[i].opcode = (bytes[i] & 0xF8000000) >> 27; 
+    retval[i].opcode = bytes[i] >> 27;     
+    retval[i].first_register = (bytes[i] >> 22) & 0x1F;
+    retval[i].second_register = (bytes[i] >> 17) & 0x1F;
+    retval[i].immediate = bytes[i] & 0xFFFF;
   }
     
   return retval;
