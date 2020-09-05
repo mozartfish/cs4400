@@ -121,6 +121,7 @@ instruction_t* decode_instructions(unsigned int* bytes, unsigned int num_instruc
     retval[i].opcode = (bytes[i] & 0xF8000000) >> 27; 
     retval[i].first_register = (bytes[i] & 0X07C00000) >> 22;
     retval[i].second_register = (bytes[i] & 0x003E0000) >> 17;
+    retval[i].immediate = bytes[i] & 0x0001FFFF;
   }
     
   return retval;
