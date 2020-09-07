@@ -79,13 +79,16 @@ int main(int argc, char **argv)
   int *registers = (int *)malloc(sizeof(int) * NUM_REGS);
   // TODO: initialize register values
   int i;
-  for (i = 0; i < NUM_REGS; i++) {
+  for (i = 0; i < NUM_REGS; i++)
+  {
     // assign 1024 to index 6 which corresponds to %esp
     // which is the stack pointer register
-    if (i == 6) {
+    if (i == 6)
+    {
       registers[i] = 1024;
     }
-    else {
+    else
+    {
       registers[i] = 0;
     }
   }
@@ -151,14 +154,14 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   switch (instr.opcode)
   {
 
-  // opcode 0 
+  // opcode 0
   case subl:
     registers[instr.first_register] = registers[instr.first_register] - instr.immediate;
     break;
-  
+
   // opcode 1
   case addl_reg_reg:
-    registers[instr.second_register] = registers[instr.first_register] + registers[instr.second_register];
+    registers[instr.second_register] = registers[instr.second_register] + registers[instr.first_register];
     break;
 
   // opcode 2
@@ -178,69 +181,73 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 5
   case movl_reg_reg:
+    registers[instr.second_register] = registers[instr.first_register];
     break;
 
   // opcode 6
   case movl_deref_reg:
+    registers[instr.second_register] = memory[registers[instr.first_register] + instr.immediate];
     break;
 
   // opcode 7
   case movl_reg_deref:
+    memory[registers[instr.second_register] + instr.immediate] = registers[instr.first_register];
     break;
 
   // opcode 8
   case movl_imm_reg:
+    registers[instr.first_register] = instr.immediate;
     break;
 
-  // opcode 9
-  case cmpl:
-    break; 
+  // // opcode 9
+  // case cmpl:
+  //   break;
 
-  // opcode 10
-  case je:
-    break;
+  // // opcode 10
+  // case je:
+  //   break;
 
-  // opcode 11
-  case jl:
-    break;
+  // // opcode 11
+  // case jl:
+  //   break;
 
-  // opcode 12
-  case jle:
-    break;
+  // // opcode 12
+  // case jle:
+  //   break;
 
-  // opcode 13
-  case jge:
-    break;
-  
-  // opcode 14
-  case jbe:
-    break;
-  
-  // opcode 15
-  case jmp:
-    break;
+  // // opcode 13
+  // case jge:
+  //   break;
 
-  // opcode 16
-  case call:
-    break;
+  // // opcode 14
+  // case jbe:
+  //   break;
 
-  // opcode 17
-  case ret:
-    break;
+  // // opcode 15
+  // case jmp:
+  //   break;
 
-  // opcode 18
-  case pushl:
-    break;
+  // // opcode 16
+  // case call:
+  //   break;
 
-  // opcode 19
-  case popl:
-    break;
+  // // opcode 17
+  // case ret:
+  //   break;
+
+  // // opcode 18
+  // case pushl:
+  //   break;
+
+  // // opcode 19
+  // case popl:
+  //   break;
 
   // opcode 20
   case printr:
     printf("%d (0x%x)\n", registers[instr.first_register], registers[instr.first_register]);
     break;
-  
+
   // opcode 21
   case readr:
     scanf("%d", &(registers[instr.first_register]));
