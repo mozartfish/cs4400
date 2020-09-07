@@ -163,6 +163,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 2
   case addl_imm_reg:
+    registers[instr.first_register] = registers[instr.first_register] + instr.immediate;
     break;
 
   // opcode 3
@@ -216,7 +217,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // opcode 15
   case jmp:
     break;
-    
+
   // opcode 16
   case call:
     break;
