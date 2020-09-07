@@ -77,7 +77,16 @@ int main(int argc, char **argv)
 
   // Allocate and initialize registers
   int *registers = (int *)malloc(sizeof(int) * NUM_REGS);
-  // TODO: initialize register values+
+  // TODO: initialize register values
+  int i;
+  for (i = 0; i < NUM_REGS; i++) {
+    if (i == 6) {
+      registers[i] = (int32_t) 1024;
+    }
+    else {
+      registers[i] = (int32_t) 0;
+    }
+  }
 
   // Stack memory is byte-addressed, so it must be a 1-byte type
   // TODO allocate the stack memory. Do not assign to NULL.
