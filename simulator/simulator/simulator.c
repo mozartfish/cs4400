@@ -150,15 +150,95 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   switch (instr.opcode)
   {
+
+  // opcode 0 
   case subl:
     registers[instr.first_register] = registers[instr.first_register] - instr.immediate;
     break;
+  
+  // opcode 1
   case addl_reg_reg:
     registers[instr.second_register] = registers[instr.first_register] + registers[instr.second_register];
     break;
+
+  // opcode 2
+  case addl_imm_reg:
+    break;
+
+  // opcode 3
+  case imull:
+    break;
+
+  // opcode 4
+  case shrl:
+    break;
+
+  // opcode 5
+  case movl_reg_reg:
+    break;
+
+  // opcode 6
+  case movl_deref_reg:
+    break;
+
+  // opcode 7
+  case movl_reg_deref:
+    break;
+
+  // opcode 8
+  case movl_imm_reg:
+    break;
+
+  // opcode 9
+  case cmpl:
+    break; 
+
+  // opcode 10
+  case je:
+    break;
+
+  // opcode 11
+  case jl:
+    break;
+
+  // opcode 12
+  case jle:
+    break;
+
+  // opcode 13
+  case jge:
+    break;
+  
+  // opcode 14
+  case jbe:
+    break;
+  
+  // opcode 15
+  case jmp:
+    break;
+    
+  // opcode 16
+  case call:
+    break;
+
+  // opcode 17
+  case ret:
+    break;
+
+  // opcode 18
+  case pushl:
+    break;
+
+  // opcode 19
+  case popl:
+    break;
+
+  // opcode 20
   case printr:
     printf("%d (0x%x)\n", registers[instr.first_register], registers[instr.first_register]);
     break;
+  
+  // opcode 21
   case readr:
     scanf("%d", &(registers[instr.first_register]));
     break;
