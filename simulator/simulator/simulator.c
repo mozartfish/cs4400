@@ -80,6 +80,8 @@ int main(int argc, char **argv)
   // TODO: initialize register values
   int i;
   for (i = 0; i < NUM_REGS; i++) {
+    // assign 1024 to index 6 which corresponds to %esp
+    // which is the stack pointer register
     if (i == 6) {
       registers[i] = (int32_t) 1024;
     }
