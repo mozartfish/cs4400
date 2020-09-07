@@ -72,19 +72,19 @@ int main(int argc, char** argv)
   // Optionally print the decoded instructions for debugging
   // Will not work until you implement decode_instructions
   // Do not call this function in your submitted final version
-  print_instructions(instructions, num_instructions);
+  // print_instructions(instructions, num_instructions);
 
 
   // Once you have completed Part 1 (decoding instructions), uncomment the below block
-  /*
+
 
   // Allocate and initialize registers
-  int* registers = (int*)malloc(sizeof(int) * NUM_REGS);
-  // TODO: initialize register values
+  int* registers = (int*)malloc(sizeof(int)*NUM_REGS);
+  // TODO: initialize register values+
 
   // Stack memory is byte-addressed, so it must be a 1-byte type
   // TODO allocate the stack memory. Do not assign to NULL.
-  unsigned char* memory = NULL;
+  unsigned char* memory = (unsigned char*)malloc(sizeof(char)*STACK_SIZE);
 
   // Run the simulation
   unsigned int program_counter = 0;
@@ -95,7 +95,6 @@ int main(int argc, char** argv)
   {
     program_counter = execute_instruction(program_counter, instructions, registers, memory);
   }
-  */
   
   return 0;
 }
@@ -109,8 +108,7 @@ instruction_t* decode_instructions(unsigned int* bytes, unsigned int num_instruc
   // TODO: Don't return NULL
   // instruction_t* retval = NULL;
   instruction_t* retval = (instruction_t*)malloc(num_instructions*sizeof(instruction_t));
-
-
+  
   /*
   int i;
   for(i = ...){
