@@ -83,10 +83,10 @@ int main(int argc, char **argv)
     // assign 1024 to index 6 which corresponds to %esp
     // which is the stack pointer register
     if (i == 6) {
-      registers[i] = (int32_t) 1024;
+      registers[i] = 1024;
     }
     else {
-      registers[i] = (int32_t) 0;
+      registers[i] = 0;
     }
   }
 
@@ -168,6 +168,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 3
   case imull:
+    registers[instr.second_register] = registers[instr.first_register] * registers[instr.second_register];
     break;
 
   // opcode 4
