@@ -216,8 +216,12 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   //   }
   //   break;
 
-  // // opcode 11
+  // opcode 11
   // case jl:
+  //   if (SF ^ OF)
+  //   {
+  //     return program_counter + 4 + instr.immediate;
+  //   }
   //   break;
 
   // // opcode 12
