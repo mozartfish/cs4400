@@ -227,9 +227,16 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // case call:
   //   break;
 
-  // // opcode 17
-  // case ret:
-  //   break;
+  // opcode 17
+  case ret:
+    if (registers[6] == 1024) {
+      exit(0);
+    }
+    else {
+      program_counter = memory[registers[6]];
+      registers[6] = registers[6] + 4;
+    }
+    break;
 
   // opcode 18
   case pushl:
