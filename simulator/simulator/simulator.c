@@ -76,31 +76,12 @@ int main(int argc, char **argv)
   // Once you have completed Part 1 (decoding instructions), uncomment the below block
 
   // Allocate and initialize registers
-  int *registers = (int *)malloc(sizeof(int) * NUM_REGS);
-  // TODO: initialize register values
-  int i;
-  for (i = 0; i < NUM_REGS; i++)
-  {
-    // assign 1024 to index 6 which corresponds to %esp
-    // which is the stack pointer register
-    if (i == 6)
-    {
-      registers[i] = (uint32_t)1024;
-    }
-    else
-    {
-      registers[i] = (uint32_t)0;
-    }
-  }
+  int *registers = (int *)calloc(NUM_REGS, sizeof(int));
+  registers[6] = 1024;
 
   // Stack memory is byte-addressed, so it must be a 1-byte type
   // TODO allocate the stack memory. Do not assign to NULL.
-  unsigned char *memory = (unsigned char *)malloc(sizeof(char) * STACK_SIZE);
-  int j;
-  for (j = 0; j < STACK_SIZE; j++)
-  {
-    memory[j] = (uint32_t)0;
-  }
+  unsigned char *memory = (unsigned char *)calloc(STACK_SIZE, sizeof(char));
 
   // Run the simulation
   unsigned int program_counter = 0;
@@ -123,7 +104,7 @@ instruction_t *decode_instructions(unsigned int *bytes, unsigned int num_instruc
 {
   // TODO: Don't return NULL
   // instruction_t* retval = NULL;
-  instruction_t *retval = (instruction_t *)malloc(num_instructions * sizeof(instruction_t));
+  instruction_t *retval = (instruction_t *)calloc(num_instructions, sizeof(instruction_t));
 
   /*
   int i;
@@ -234,12 +215,12 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     // OF Check
     // OF = SF^OF if register 2 < register 1
     // CASE 1: register 2 < 0 and register 1 > 0 and result > 0
-    if ((registers[instr.second_register] < 0 && registers[instr.first_register] > 0) && (difference > 0))
+    if ((registers[instr.second_register] < 0 && registers[instr.first_register] > 0) && (difference > INT64_MAX))
     {
       OF = 1;
     }
     // CASE 2: register 2 > 0 and register 1 < 0 and result < 0
-    if ((registers[instr.second_register] > 0 && registers[instr.first_register] < 0) && (difference < 0))
+    if ((registers[instr.second_register] > 0 && registers[instr.first_register] < 0) && (difference < INT64_MIN))
     {
       OF = 1;
     }
@@ -255,6 +236,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 11
   // case jl:
+  //   if ()
   //   break;
 
   // opcode 12
