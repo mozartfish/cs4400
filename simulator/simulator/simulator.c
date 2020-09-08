@@ -85,11 +85,11 @@ int main(int argc, char **argv)
     // which is the stack pointer register
     if (i == 6)
     {
-      registers[i] = (int32_t)1024;
+      registers[i] = (uint32_t)1024;
     }
     else
     {
-      registers[i] = (int32_t)0;
+      registers[i] = (uint32_t)0;
     }
   }
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
   int j;
   for (j = 0; j < STACK_SIZE; j++)
   {
-    memory[j] = 0;
+    memory[j] = (uint32_t)0;
   }
 
   // Run the simulation
@@ -212,8 +212,10 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     SF = 0;
     OF = 0;
 
+    // difference for use with the overflow flag
+    long long int difference = registers[instr.second_register] - registers[instr.first_register];
     // CF Check
-    if (registers[instr.second_register] < registers[instr.first_register])
+    if ((uint32_t)registers[instr.second_register] < (uint32_t)registers[instr.first_register])
     {
       CF = 1;
     }
@@ -222,19 +224,34 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     {
       ZF = 1;
     }
+
     // SF Check
-    // CASE 1: register 2 < 0 and register 1 < 0
-    // CASE 2: register 2 < 0 and register 1 > 0
-    // CASE 3: register 2 > 0 and register 1 < 0
-    // CASE 4: register 2 > 0 and register 1 > 0
+    if ((difference >> 30) & 0x1 == 1)
+    {
+      SF = 1;
+    }
 
     // OF Check
     // OF = SF^OF if register 2 < register 1
+    // CASE 1: register 2 < 0 and register 1 > 0 and result > 0
+    if ((registers[instr.second_register] < 0 && registers[instr.first_register] > 0) && (difference > 0))
+    {
+      OF = 1;
+    }
+    // CASE 2: register 2 > 0 and register 1 < 0 and result < 0
+    if ((registers[instr.second_register] > 0 && registers[instr.first_register] < 0) && (difference < 0))
+    {
+      OF = 1;
+    }
     break;
 
   // opcode 10
-  // case je:
-  //   break;
+  case je:
+    if (ZF == 1)
+    {
+      return program_counter + 4 + instr.immediate;
+    }
+    break;
 
   // opcode 11
   // case jl:
@@ -248,9 +265,13 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // case jge:
   //   break;
 
-  // // opcode 14
-  // case jbe:
-  //   break;
+  // opcode 14
+  case jbe:
+    if ((CF == 1) || (ZF == 1))
+    {
+      return program_counter + 4 + instr.immediate;
+    }
+    break;
 
   // opcode 15
   case jmp:
