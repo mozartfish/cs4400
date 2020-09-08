@@ -173,6 +173,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 4
   case shrl:
+    registers[instr.first_register] = registers[instr.first_register] >> 1;
     break;
 
   // opcode 5
