@@ -79,14 +79,17 @@ int main(int argc, char **argv)
   int *registers = (int *)malloc(sizeof(int) * NUM_REGS);
   // TODO: initialize register values
   int i;
-  for (i = 0; i < NUM_REGS; i++) {
+  for (i = 0; i < NUM_REGS; i++)
+  {
     // assign 1024 to index 6 which corresponds to %esp
     // which is the stack pointer register
-    if (i == 6) {
-      registers[i] = (int32_t) 1024;
+    if (i == 6)
+    {
+      registers[i] = (int32_t)1024;
     }
-    else {
-      registers[i] = (int32_t) 0;
+    else
+    {
+      registers[i] = (int32_t)0;
     }
   }
 
@@ -151,11 +154,11 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   switch (instr.opcode)
   {
 
-  // opcode 0 
+  // opcode 0
   case subl:
     registers[instr.first_register] = registers[instr.first_register] - instr.immediate;
     break;
-  
+
   // opcode 1
   case addl_reg_reg:
     registers[instr.second_register] = registers[instr.first_register] + registers[instr.second_register];
@@ -198,7 +201,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // // opcode 9
   // case cmpl:
-  //   break; 
+  //   break;
 
   // // opcode 10
   // case je:
@@ -215,24 +218,30 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // // opcode 13
   // case jge:
   //   break;
-  
+
   // // opcode 14
   // case jbe:
   //   break;
-  
+
   // // opcode 15
   // case jmp:
   //   break;
-  // // opcode 16
-  // case call:
-  //   break;
+
+  // opcode 16
+  case call:
+    registers[6] = registers[6] - 4;
+    memory[registers[6]] = program_counter + 4;
+    return program_counter + 4 + instr.immediate;
+    break;
 
   // opcode 17
   case ret:
-    if (registers[6] == 1024) {
+    if (registers[6] == 1024)
+    {
       exit(0);
     }
-    else {
+    else
+    {
       program_counter = memory[registers[6]];
       registers[6] = registers[6] + 4;
     }
@@ -254,7 +263,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   case printr:
     printf("%d (0x%x)\n", registers[instr.first_register], registers[instr.first_register]);
     break;
-  
+
   // opcode 21
   case readr:
     scanf("%d", &(registers[instr.first_register]));
