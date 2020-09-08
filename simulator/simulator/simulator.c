@@ -223,9 +223,10 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // case jbe:
   //   break;
 
-  // // opcode 15
-  // case jmp:
-  //   break;
+  // opcode 15
+  case jmp:
+    return program_counter + 4 + instr.immediate;
+    break;
 
   // opcode 16
   case call:
