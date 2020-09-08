@@ -168,6 +168,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 3
   case imull:
+    registers[instr.second_register] = registers[instr.first_register] * registers[instr.second_register];
     break;
 
   // opcode 4
