@@ -151,6 +151,12 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // divide by 4 to get the index into the instructions array
   instruction_t instr = instructions[program_counter / 4];
 
+  // initialize opcode variables
+  int CF;
+  int ZF;
+  int SF;
+  int OF;
+
   switch (instr.opcode)
   {
 
@@ -203,8 +209,11 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // case cmpl:
   //   break;
 
-  // // opcode 10
+  // opcode 10
   // case je:
+  //   if (ZF == 1) {
+  //     return program_counter + 4 + instr.immediate;
+  //   }
   //   break;
 
   // // opcode 11
