@@ -205,26 +205,42 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     registers[instr.first_register] = instr.immediate;
     break;
 
-  // // opcode 9
-  // case cmpl:
-  //   break;
+  // opcode 9
+  case cmpl:
+    CF = 0;
+    ZF = 0;
+    SF = 0;
+    OF = 0;
+
+    // CF Check
+    if (registers[instr.second_register] < registers[instr.first_register])
+    {
+      CF = 1;
+    }
+    // ZF Check
+    if (registers[instr.second_register] == registers[instr.first_register])
+    {
+      ZF = 1;
+    }
+    // SF Check
+    // CASE 1: register 2 < 0 and register 1 < 0
+    // CASE 2: register 2 < 0 and register 1 > 0
+    // CASE 3: register 2 > 0 and register 1 < 0
+    // CASE 4: register 2 > 0 and register 1 > 0
+
+    // OF Check
+    // OF = SF^OF if register 2 < register 1
+    break;
 
   // opcode 10
   // case je:
-  //   if (ZF == 1) {
-  //     return program_counter + 4 + instr.immediate;
-  //   }
   //   break;
 
   // opcode 11
   // case jl:
-  //   if (SF ^ OF)
-  //   {
-  //     return program_counter + 4 + instr.immediate;
-  //   }
   //   break;
 
-  // // opcode 12
+  // opcode 12
   // case jle:
   //   break;
 
