@@ -188,6 +188,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 7
   case movl_reg_deref:
+    memory[registers[instr.second_register] + instr.immediate] = registers[instr.first_register];
     break;
 
   // opcode 8
