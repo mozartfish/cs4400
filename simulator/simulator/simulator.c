@@ -178,6 +178,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 5
   case movl_reg_reg:
+    registers[instr.second_register] = registers[instr.first_register];
     break;
 
   // opcode 6
