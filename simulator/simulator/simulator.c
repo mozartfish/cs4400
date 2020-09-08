@@ -193,6 +193,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 8
   case movl_imm_reg:
+    registers[instr.first_register] = instr.immediate;
     break;
 
   // // opcode 9
