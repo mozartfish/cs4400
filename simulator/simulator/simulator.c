@@ -132,11 +132,8 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // divide by 4 to get the index into the instructions array
   instruction_t instr = instructions[program_counter / 4];
 
-  // initialize opcode variables
-  int CF;
-  int ZF;
-  int SF;
-  int OF;
+  int sum;
+  long long int difference;
 
   switch (instr.opcode)
   {
@@ -188,28 +185,30 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 9
   case cmpl:
-    CF = 0;
-    ZF = 0;
-    SF = 0;
-    OF = 0;
+    // sum for keeping track of all the different values 
+    sum = 0; 
+    difference = 0;
 
     // difference for use with the overflow flag
-    long long int difference = registers[instr.second_register] - registers[instr.first_register];
+    difference = registers[instr.second_register] - registers[instr.first_register];
     // CF Check
     if ((uint32_t)registers[instr.second_register] < (uint32_t)registers[instr.first_register])
     {
-      CF = 1;
+      // set CF flag - bit 0 
+      sum += 1;
     }
     // ZF Check
     if (registers[instr.second_register] == registers[instr.first_register])
     {
-      ZF = 1;
+      // set ZF Flag - bit 6
+      sum += 64;
     }
 
     // SF Check
     if ((difference >> 30) & 0x1 == 1)
     {
-      SF = 1;
+      // set SF Flag - bit 7
+      sum += 128;
     }
 
     // OF Check
@@ -217,30 +216,42 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     // CASE 1: register 2 < 0 and register 1 > 0 and result > 0
     if ((registers[instr.second_register] < 0 && registers[instr.first_register] > 0) && (difference > INT64_MAX))
     {
-      OF = 1;
+      // set OF Flag - bit 11
+      sum += 2048;
     }
     // CASE 2: register 2 > 0 and register 1 < 0 and result < 0
     if ((registers[instr.second_register] > 0 && registers[instr.first_register] < 0) && (difference < INT64_MIN))
     {
-      OF = 1;
+      // set OF Flag - bit 11;
+      sum += 2048;
     }
+
+    registers[16] = sum;
+    
     break;
 
   // opcode 10
   case je:
-    if (ZF == 1)
+    if ((registers[16] & 0x0040) != 0)
     {
       return program_counter + 4 + instr.immediate;
     }
     break;
 
-  // opcode 11
+  // // opcode 11
   // case jl:
-  //   if ()
+  //   if ((registers[16] & 0x0080)^(registers[16] & 0x0800) != 0)
+  //   {
+  //     return program_counter + 4 + instr.immediate;
+  //   }
   //   break;
 
-  // opcode 12
+  // //opcode 12
   // case jle:
+  //   if (((registers[16] & 0x0080) ^ (registers[16] & 0x0800) != 0) || (registers[16] & 0x0040) != 0))
+  //   {
+      
+  //   }
   //   break;
 
   // // opcode 13
@@ -249,7 +260,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 14
   case jbe:
-    if ((CF == 1) || (ZF == 1))
+    if (((registers[16] & 0x0001) != 0) || ((registers[16] & 0x0040) != 0))
     {
       return program_counter + 4 + instr.immediate;
     }
