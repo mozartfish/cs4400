@@ -227,7 +227,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     }
 
     registers[16] = sum;
-    
+
     break;
 
   // opcode 10
@@ -238,13 +238,13 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     }
     break;
 
-  // // opcode 11
-  // case jl:
-  //   if ((registers[16] & 0x0080)^(registers[16] & 0x0800) != 0)
-  //   {
-  //     return program_counter + 4 + instr.immediate;
-  //   }
-  //   break;
+  // opcode 11
+  case jl:
+    if ((registers[16] & 0x0080)^(registers[16] & 0x0800) != 0)
+    {
+      return program_counter + 4 + instr.immediate;
+    }
+    break;
 
   // //opcode 12
   // case jle:
