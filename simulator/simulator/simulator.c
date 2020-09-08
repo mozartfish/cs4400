@@ -235,9 +235,11 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // case pushl:
   //   break;
 
-  // // opcode 19
-  // case popl:
-  //   break;
+  // opcode 19
+  case popl:
+    registers[instr.first_register] = memory[registers[6]];
+    registers[6] = registers[6] + 4;
+    break;
 
   // opcode 20
   case printr:
