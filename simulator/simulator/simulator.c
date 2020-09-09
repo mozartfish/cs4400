@@ -160,7 +160,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 4
   case shrl:
-    registers[instr.first_register] = registers[instr.first_register] >> 1;
+    registers[instr.first_register] = (uint32_t)registers[instr.first_register] >> 1;
     break;
 
   // opcode 5
@@ -180,13 +180,13 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 8
   case movl_imm_reg:
-    registers[instr.first_register] = instr.immediate;
+    registers[instr.first_register] = (uint32_t) instr.immediate;
     break;
 
   // opcode 9
   case cmpl:
-    // sum for keeping track of all the different values 
-    sum = 0; 
+    // sum for keeping track of all the different values
+    sum = 0;
     difference = 0;
 
     // difference for use with the overflow flag
@@ -194,7 +194,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     // CF Check
     if ((uint32_t)registers[instr.second_register] < (uint32_t)registers[instr.first_register])
     {
-      // set CF flag - bit 0 
+      // set CF flag - bit 0
       sum += 1;
     }
     // ZF Check
@@ -240,23 +240,27 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 11
   case jl:
-    if ((registers[16] & 0x0080)^(registers[16] & 0x0800) != 0)
+    if ((registers[16] & 0x0080) ^ (registers[16] & 0x0800) != 0)
     {
       return program_counter + 4 + instr.immediate;
     }
     break;
 
-  // //opcode 12
-  // case jle:
-  //   if (((registers[16] & 0x0080) ^ (registers[16] & 0x0800) != 0) || (registers[16] & 0x0040) != 0))
-  //   {
-      
-  //   }
-  //   break;
+  //opcode 12
+  case jle:
+    if ((registers[16] & 0x0080) ^ (registers[16] & 0x0800) != 0 || (registers[16] & 0x0040) != 0)
+    {
+      return program_counter + 4 + instr.immediate;
+    }
+    break;
 
-  // // opcode 13
-  // case jge:
-  //   break;
+  // opcode 13
+  case jge:
+    if (!((registers[16] & 0x0080)^(registers[16] & 0x0800) !=0))
+    {
+      return program_counter + 4 + instr.immediate;
+    }
+    break;
 
   // opcode 14
   case jbe:
@@ -288,6 +292,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     {
       program_counter = memory[registers[6]];
       registers[6] = registers[6] + 4;
+      return program_counter;
     }
     break;
 
