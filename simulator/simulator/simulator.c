@@ -132,7 +132,9 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // divide by 4 to get the index into the instructions array
   instruction_t instr = instructions[program_counter / 4];
 
+  // sum for keeping track of the flags
   int sum;
+  // 64 bit integer for cmpl check 
   long long int difference;
 
   switch (instr.opcode)
@@ -170,12 +172,12 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 6
   case movl_deref_reg:
-    registers[instr.second_register] = memory[registers[instr.first_register] + instr.immediate];
+    registers[instr.second_register] = * (int*)(&memory[registers[instr.first_register] + instr.immediate]);
     break;
 
   // opcode 7
   case movl_reg_deref:
-    memory[registers[instr.second_register] + instr.immediate] = registers[instr.first_register];
+    * (int*)(&memory[registers[instr.second_register] + instr.immediate]) = registers[instr.first_register];
     break;
 
   // opcode 8
@@ -198,14 +200,14 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
       sum += 1;
     }
     // ZF Check
-    if (registers[instr.second_register] == registers[instr.first_register])
+    if ((uint32_t)registers[instr.second_register] == (uint32_t)registers[instr.first_register])
     {
       // set ZF Flag - bit 6
       sum += 64;
     }
 
     // SF Check
-    if ((difference >> 30) & 0x1 == 1)
+    if ((difference >> 31 & 0x1 == 1))
     {
       // set SF Flag - bit 7
       sum += 128;
@@ -299,12 +301,12 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // opcode 18
   case pushl:
     registers[6] = registers[6] - 4;
-    memory[registers[6]] = registers[instr.first_register];
+    *(int*)(&memory[registers[6]]) = registers[instr.first_register];
     break;
 
   // opcode 19
   case popl:
-    registers[instr.first_register] = memory[registers[6]];
+    registers[instr.first_register] =  *(int*)(&memory[registers[6]]);
     registers[6] = registers[6] + 4;
     break;
 
