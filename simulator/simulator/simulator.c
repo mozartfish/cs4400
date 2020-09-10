@@ -76,11 +76,13 @@ int main(int argc, char **argv)
   // Once you have completed Part 1 (decoding instructions), uncomment the below block
 
   // Allocate and initialize registers
+  // calloc initializes mememory with default value of 0
   int *registers = (int *)calloc(NUM_REGS, sizeof(int));
   registers[6] = 1024;
 
   // Stack memory is byte-addressed, so it must be a 1-byte type
   // TODO allocate the stack memory. Do not assign to NULL.
+  // calloc intializes memory with default value of 0
   unsigned char *memory = (unsigned char *)calloc(STACK_SIZE, sizeof(char));
 
   // Run the simulation
@@ -104,6 +106,7 @@ instruction_t *decode_instructions(unsigned int *bytes, unsigned int num_instruc
 {
   // TODO: Don't return NULL
   // instruction_t* retval = NULL;
+  // calloc initializes memory with default value of 0
   instruction_t *retval = (instruction_t *)calloc(num_instructions, sizeof(instruction_t));
 
   /*
@@ -133,7 +136,8 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   instruction_t instr = instructions[program_counter / 4];
 
   // sum for keeping track of the flags
-  int sum;
+  int Flags;
+
   // 64 bit integer for cmpl check 
   long long int difference;
 
@@ -150,6 +154,8 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     registers[instr.second_register] = registers[instr.first_register] + registers[instr.second_register];
     break;
 
+  // TODO: Implement remaining instructions
+
   // opcode 2
   case addl_imm_reg:
     registers[instr.first_register] = registers[instr.first_register] + instr.immediate;
@@ -161,6 +167,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     break;
 
   // opcode 4
+  // integer overflow if not unsigned when doing the shift
   case shrl:
     registers[instr.first_register] = (uint32_t)registers[instr.first_register] >> 1;
     break;
@@ -172,7 +179,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 6
   case movl_deref_reg:
-    registers[instr.second_register] = * (int*)(&memory[registers[instr.first_register] + instr.immediate]);
+    registers[instr.second_register] = *(int*)(&memory[registers[instr.first_register] + instr.immediate]);
     break;
 
   // opcode 7
@@ -182,53 +189,56 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 8
   case movl_imm_reg:
-    registers[instr.first_register] = (uint32_t) instr.immediate;
+    registers[instr.first_register] = instr.immediate;
     break;
 
   // opcode 9
   case cmpl:
-    // sum for keeping track of all the different values
-    sum = 0;
+    // initialize flags and difference variables for every instruction
+    Flags = 0;
     difference = 0;
 
     // difference for use with the overflow flag
     difference = registers[instr.second_register] - registers[instr.first_register];
+
+    // printf("%lld, %d, %d\n", difference, registers[instr.first_register], registers[instr.second_register]);
+
     // CF Check
     if ((uint32_t)registers[instr.second_register] < (uint32_t)registers[instr.first_register])
     {
-      // set CF flag - bit 0
-      sum += 1;
+      // set CF flag - bit 0 - 1
+      Flags = Flags | 0x1;
     }
     // ZF Check
     if ((uint32_t)registers[instr.second_register] == (uint32_t)registers[instr.first_register])
     {
-      // set ZF Flag - bit 6
-      sum += 64;
+      // set ZF Flag - bit 6 - 64
+      Flags = Flags | 0x40;
     }
 
     // SF Check
-    if ((difference >> 31 & 0x1 == 1))
+    if (((uint64_t)difference >> 32 & 0x1) != 0)
     {
-      // set SF Flag - bit 7
-      sum += 128;
+      // set SF Flag - bit 7 - 128
+      Flags = Flags | 0x80;
     }
 
     // OF Check
-    // OF = SF^OF if register 2 < register 1
     // CASE 1: register 2 < 0 and register 1 > 0 and result > 0
-    if ((registers[instr.second_register] < 0 && registers[instr.first_register] > 0) && (difference > INT64_MAX))
+    if ((registers[instr.second_register] < 0 && registers[instr.first_register] > 0) && (difference > 0))
     {
-      // set OF Flag - bit 11
-      sum += 2048;
-    }
-    // CASE 2: register 2 > 0 and register 1 < 0 and result < 0
-    if ((registers[instr.second_register] > 0 && registers[instr.first_register] < 0) && (difference < INT64_MIN))
-    {
-      // set OF Flag - bit 11;
-      sum += 2048;
+      // set OF Flag - bit 11 - 2048
+      Flags = Flags | 0x800;
     }
 
-    registers[16] = sum;
+    // CASE 2: register 2 > 0 and register 1 < 0 and result < 0
+    if ((registers[instr.second_register] > 0 && registers[instr.first_register] < 0) && (difference < 0))
+    {
+      // set OF Flag - bit 11 - 2048;
+      Flags = Flags | 0x800;
+    }
+
+    registers[16] = Flags;
 
     break;
 
@@ -258,7 +268,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 13
   case jge:
-    if (!((registers[16] & 0x0080)^(registers[16] & 0x0800) !=0))
+    if (!((registers[16] & 0x0080)^(registers[16] & 0x0800) != 0))
     {
       return program_counter + 4 + instr.immediate;
     }
@@ -280,7 +290,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   // opcode 16
   case call:
     registers[6] = registers[6] - 4;
-    memory[registers[6]] = program_counter + 4;
+    *(int*)(&memory[registers[6]]) = program_counter + 4;
     return program_counter + 4 + instr.immediate;
     break;
 
@@ -292,7 +302,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     }
     else
     {
-      program_counter = memory[registers[6]];
+      program_counter = *(int *)(&memory[registers[6]]);
       registers[6] = registers[6] + 4;
       return program_counter;
     }
@@ -319,8 +329,6 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   case readr:
     scanf("%d", &(registers[instr.first_register]));
     break;
-
-    // TODO: Implement remaining instructions
   }
 
   // TODO: Do not always return program_counter + 4
