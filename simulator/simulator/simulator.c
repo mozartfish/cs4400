@@ -12,6 +12,10 @@
  * Some code and pseudo code has been provided as a starting point.
  *
  * Completed by: Pranav Rajan
+ * 
+ * Resources Used
+ *  Flag mask values: https://en.wikipedia.org/wiki/FLAGS_register
+ * 
 */
 
 #include <stdio.h>
@@ -78,6 +82,8 @@ int main(int argc, char **argv)
   // Allocate and initialize registers
   // calloc initializes mememory with default value of 0
   int *registers = (int *)calloc(NUM_REGS, sizeof(int));
+
+  // set stack pointer (%esp) to 1024
   registers[6] = 1024;
 
   // Stack memory is byte-addressed, so it must be a 1-byte type
@@ -136,7 +142,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
   instruction_t instr = instructions[program_counter / 4];
 
   // sum for keeping track of the flags
-  int Flags;
+  int eFlags;
 
   // 64 bit integer for cmpl check 
   long long int difference;
@@ -184,7 +190,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 7
   case movl_reg_deref:
-    * (int*)(&memory[registers[instr.second_register] + instr.immediate]) = registers[instr.first_register];
+    *(int*)(&memory[registers[instr.second_register] + instr.immediate]) = registers[instr.first_register];
     break;
 
   // opcode 8
@@ -194,8 +200,10 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
   // opcode 9
   case cmpl:
-    // initialize flags and difference variables for every instruction
-    Flags = 0;
+    // Initialize Flags every time CMPL case is hit to determine which bits need to be set for comparison
+    eFlags = 0;
+
+    // Initialize difference everyt time CMPL case is hit for the SF and OF checks
     difference = 0;
 
     // difference for use with the overflow flag
@@ -207,20 +215,20 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     if ((uint32_t)registers[instr.second_register] < (uint32_t)registers[instr.first_register])
     {
       // set CF flag - bit 0 - 1
-      Flags = Flags | 0x1;
+      eFlags = eFlags | 0x1;
     }
     // ZF Check
     if ((uint32_t)registers[instr.second_register] == (uint32_t)registers[instr.first_register])
     {
       // set ZF Flag - bit 6 - 64
-      Flags = Flags | 0x40;
+      eFlags = eFlags | 0x40;
     }
 
     // SF Check
     if (((uint64_t)difference >> 32 & 0x1) != 0)
     {
       // set SF Flag - bit 7 - 128
-      Flags = Flags | 0x80;
+      eFlags = eFlags | 0x80;
     }
 
     // OF Check
@@ -228,17 +236,18 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     if ((registers[instr.second_register] < 0 && registers[instr.first_register] > 0) && (difference > 0))
     {
       // set OF Flag - bit 11 - 2048
-      Flags = Flags | 0x800;
+      eFlags = eFlags | 0x800;
     }
 
     // CASE 2: register 2 > 0 and register 1 < 0 and result < 0
     if ((registers[instr.second_register] > 0 && registers[instr.first_register] < 0) && (difference < 0))
     {
       // set OF Flag - bit 11 - 2048;
-      Flags = Flags | 0x800;
+      eFlags = eFlags | 0x800;
     }
 
-    registers[16] = Flags;
+    // set the %eflags register
+    registers[16] = eFlags;
 
     break;
 
@@ -251,6 +260,7 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
     break;
 
   // opcode 11
+  // xor returns 1 if the bits of the two values do not match 
   case jl:
     if ((registers[16] & 0x0080) ^ (registers[16] & 0x0800) != 0)
     {
