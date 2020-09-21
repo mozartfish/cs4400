@@ -248,7 +248,6 @@ unsigned int execute_instruction(unsigned int program_counter, instruction_t *in
 
     // set the %eflags register
     registers[16] = eFlags;
-
     break;
 
   // opcode 10
