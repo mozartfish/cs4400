@@ -34,6 +34,10 @@ void naive_complex(int dim, pixel *src, pixel *dest)
     for (j = 0; j < dim; j++)
     {
 
+      // pixel  red = (int)src[RIDX(i, j, dim)].red
+      // pixel  blue = (int)src[RIDX(i, j, dim)].blue
+      // pixel  green = (int)src[RIDX(i, j, dim)].green
+
       dest[RIDX(dim - j - 1, dim - i - 1, dim)].red = ((int)src[RIDX(i, j, dim)].red +
                                                        (int)src[RIDX(i, j, dim)].green +
                                                        (int)src[RIDX(i, j, dim)].blue) /
