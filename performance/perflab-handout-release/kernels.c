@@ -29,7 +29,7 @@ char naive_complex_descr[] = "naive_complex: Naive baseline implementation";
 void naive_complex(int dim, pixel *src, pixel *dest)
 {
   int i, j;
-  // printf("The dim value is %d \n", dim);
+
   for (i = 0; i < dim; i++)
     for (j = 0; j < dim; j++)
     {
@@ -50,16 +50,10 @@ void naive_complex(int dim, pixel *src, pixel *dest)
                                                        3;
     }
 }
-
-/* 
- * complex - Your current working version of complex
- * IMPORTANT: This is the version you will be graded on
- */
-char complex_descr[] = "complex: Current working version";
-void complex(int dim, pixel *src, pixel *dest)
+char first_complex_descr[] = "first_complex: reduce addition";
+void first_complex(int dim, pixel *src, pixel *dest)
 {
   int i, j;
-  // naive_complex(dim, src, dest);
   for (i = 0; i < dim; i++)
     for (j = 0; j < dim; j++)
     {
@@ -70,6 +64,17 @@ void complex(int dim, pixel *src, pixel *dest)
       dest[pIndex].green = colorVal;
       dest[pIndex].blue = colorVal;
     }
+}
+
+/* 
+ * complex - Your current working version of complex
+ * IMPORTANT: This is the version you will be graded on
+ */
+char complex_descr[] = "complex: Current working version";
+void complex(int dim, pixel *src, pixel *dest)
+{
+  // naive_complex(dim, src, dest);
+  first_complex(dim, src, dest);
 }
 
 /*********************************************************************
@@ -84,6 +89,7 @@ void register_complex_functions()
 {
   add_complex_function(&complex, complex_descr);
   add_complex_function(&naive_complex, naive_complex_descr);
+  add_complex_function(&first_complex, first_complex_descr);
 }
 
 /***************
