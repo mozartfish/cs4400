@@ -61,8 +61,7 @@ void first_complex(int dim, pixel *src, pixel *dest)
 {
   int i, j;
   for (i = 0; i < dim; i++)
-  {
-    for (j = 0; j < dim; dim++)
+    for (j = 0; j < dim; j++)
     {
       pixel p = src[RIDX(i, j, dim)];
       int colorVal = (int)(p.red + p.green + p.blue) / 3;
@@ -71,7 +70,6 @@ void first_complex(int dim, pixel *src, pixel *dest)
       dest[pIndex].green = colorVal;
       dest[pIndex].blue = colorVal;
     }
-  }
 }
 
 /* 
