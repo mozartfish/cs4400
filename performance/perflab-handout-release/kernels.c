@@ -77,20 +77,21 @@ void first_complex(int dim, pixel *src, pixel *dest)
 char second_complex_descr[] = "second_complex: loop tiling";
 void second_complex(int dim, pixel *src, pixel *dest)
 {
-  int i, j, ii, jj, incr;
+  int i, j, ii, jj, incr_i, incr_j;
 
   // increment value
-  incr = 32;
+  incr_i = 16;
+  incr_j = 32;
 
-  for (ii = 0; ii < dim; ii += incr)
+  for (ii = 0; ii < dim; ii += incr_i)
   {
     int dimConst = dim - 1;
-    for (jj = 0; jj < dim; jj += incr)
+    for (jj = 0; jj < dim; jj += incr_j)
     {
-      for (i = ii; i < ii + incr; i++)
+      for (i = ii; i < ii + incr_i; i++)
       {
         int di = dimConst - i;
-        for (j = jj; j < jj + incr; j++)
+        for (j = jj; j < jj + incr_j; j++)
         {
           int dj = dimConst - j;
           pixel p = src[RIDX(i, j, dim)];
