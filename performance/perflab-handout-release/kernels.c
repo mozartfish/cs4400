@@ -71,7 +71,39 @@ void first_complex(int dim, pixel *src, pixel *dest)
       dest[pIndex].blue = colorVal;
     }
 }
+/* 
+ * second_complex - The second re-write version of complex
+ */
+char second_complex_descr[] = "second_complex: loop tiling";
+void second_complex(int dim, pixel *src, pixel *dest)
+{
+  int i, j, ii, jj, incr;
 
+  // increment value
+  incr = 32;
+
+  for (ii = 0; ii < dim; ii += incr)
+  {
+    int dimConst = dim - 1;
+    for (jj = 0; jj < dim; jj += incr)
+    {
+      for (i = ii; i < ii + incr; i++)
+      {
+        int di = dimConst - i;
+        for (j = jj; j < jj + incr; j++)
+        {
+          int dj = dimConst - j;
+          pixel p = src[RIDX(i, j, dim)];
+          int colorVal = (int)(p.red + p.green + p.blue) / 3;
+          int pIndex = (RIDX(dj, di, dim));
+          dest[pIndex].red = colorVal;
+          dest[pIndex].green = colorVal;
+          dest[pIndex].blue = colorVal;
+        }
+      }
+    }
+  }
+}
 /* 
  * complex - Your current working version of complex
  * IMPORTANT: This is the version you will be graded on
@@ -79,7 +111,7 @@ void first_complex(int dim, pixel *src, pixel *dest)
 char complex_descr[] = "complex: Current working version";
 void complex(int dim, pixel *src, pixel *dest)
 {
-  first_complex(dim, src, dest);
+  second_complex(dim, src, dest);
 }
 
 /*********************************************************************
@@ -93,7 +125,8 @@ void complex(int dim, pixel *src, pixel *dest)
 void register_complex_functions()
 {
   add_complex_function(&complex, complex_descr);
-  // add_complex_function(&first_complex, first_complex_descr);
+  // add_complex_function(&second_complex, first_complex_descr);
+  add_complex_function(&first_complex, first_complex_descr);
   add_complex_function(&naive_complex, naive_complex_descr);
 }
 
