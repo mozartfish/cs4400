@@ -10,8 +10,8 @@
  * Please fill in the following student struct 
  */
 student_t student = {
-    "Pranav Rajan",      /* Full name */
-    "u1136324@utah.edu", /* Email address */
+  "Pranav Rajan",     /* Full name */
+  "u1136324@utah.edu",  /* Email address */
 };
 
 /***************
@@ -30,75 +30,25 @@ void naive_complex(int dim, pixel *src, pixel *dest)
 {
   int i, j;
 
-  for (i = 0; i < dim; i++)
-    for (j = 0; j < dim; j++)
+  for(i = 0; i < dim; i++)
+    for(j = 0; j < dim; j++)
     {
-
-      // pixel  red = (int)src[RIDX(i, j, dim)].red
-      // pixel  blue = (int)src[RIDX(i, j, dim)].blue
-      // pixel  green = (int)src[RIDX(i, j, dim)].green
 
       dest[RIDX(dim - j - 1, dim - i - 1, dim)].red = ((int)src[RIDX(i, j, dim)].red +
-                                                       (int)src[RIDX(i, j, dim)].green +
-                                                       (int)src[RIDX(i, j, dim)].blue) /
-                                                      3;
-
+						      (int)src[RIDX(i, j, dim)].green +
+						      (int)src[RIDX(i, j, dim)].blue) / 3;
+      
       dest[RIDX(dim - j - 1, dim - i - 1, dim)].green = ((int)src[RIDX(i, j, dim)].red +
-                                                         (int)src[RIDX(i, j, dim)].green +
-                                                         (int)src[RIDX(i, j, dim)].blue) /
-                                                        3;
-
+							(int)src[RIDX(i, j, dim)].green +
+							(int)src[RIDX(i, j, dim)].blue) / 3;
+      
       dest[RIDX(dim - j - 1, dim - i - 1, dim)].blue = ((int)src[RIDX(i, j, dim)].red +
-                                                        (int)src[RIDX(i, j, dim)].green +
-                                                        (int)src[RIDX(i, j, dim)].blue) /
-                                                       3;
-    }
-}
-char first_complex_descr[] = "first_complex: reduce addition";
-void first_complex(int dim, pixel *src, pixel *dest)
-{
-  int i, j;
-  for (i = 0; i < dim; i++)
-    for (j = 0; j < dim; j++)
-    {
-      pixel p = src[RIDX(i, j, dim)];
-      int colorVal = (int)(p.red + p.green + p.blue) / 3;
-      int pIndex = (RIDX(dim - j - 1, dim - i - 1, dim));
-      dest[pIndex].red = colorVal;
-      dest[pIndex].green = colorVal;
-      dest[pIndex].blue = colorVal;
-    }
-}
-char second_complex_descr[] = "second_complex: loop tiling";
-void second_complex(int dim, pixel *src, pixel *dest)
-{
-  int i, j, ii, jj, incr;
+						       (int)src[RIDX(i, j, dim)].green +
+						       (int)src[RIDX(i, j, dim)].blue) / 3;
 
-  // increment value
-  incr = 32;
-
-  for (ii = 0; ii < dim; ii += incr)
-  {
-    int dimConst = dim - 1;
-    for (jj = 0; jj < dim; jj += incr)
-    {
-      for (i = ii; i < ii + incr; i++)
-      {
-        int di = dimConst - i;
-        for (j = jj; j < jj + incr; j++)
-        {
-          int dj = dimConst - j;
-          pixel p = src[RIDX(i, j, dim)];
-          int colorVal = (int)(p.red + p.green + p.blue) / 3;
-          int pIndex = (RIDX(dj, di, dim));
-          dest[pIndex].red = colorVal;
-          dest[pIndex].green = colorVal;
-          dest[pIndex].blue = colorVal;
-        }
-      }
     }
-  }
 }
+
 
 /* 
  * complex - Your current working version of complex
@@ -107,8 +57,7 @@ void second_complex(int dim, pixel *src, pixel *dest)
 char complex_descr[] = "complex: Current working version";
 void complex(int dim, pixel *src, pixel *dest)
 {
-  // naive_complex(dim, src, dest);
-  second_complex(dim, src, dest);
+  naive_complex(dim, src, dest);
 }
 
 /*********************************************************************
@@ -119,13 +68,11 @@ void complex(int dim, pixel *src, pixel *dest)
  *     registered test function.  
  *********************************************************************/
 
-void register_complex_functions()
-{
+void register_complex_functions() {
   add_complex_function(&complex, complex_descr);
   add_complex_function(&naive_complex, naive_complex_descr);
-  add_complex_function(&first_complex, first_complex_descr);
-  add_complex_function(&second_complex, second_complex_descr);
 }
+
 
 /***************
  * MOTION KERNEL
@@ -136,10 +83,11 @@ void register_complex_functions()
  * You may modify these or add new ones any way you like.
  **************************************************************/
 
+
 /* 
  * weighted_combo - Returns new pixel value at (i,j) 
  */
-static pixel weighted_combo(int dim, int i, int j, pixel *src)
+static pixel weighted_combo(int dim, int i, int j, pixel *src) 
 {
   int ii, jj;
   pixel current_pixel;
@@ -148,46 +96,50 @@ static pixel weighted_combo(int dim, int i, int j, pixel *src)
   red = green = blue = 0;
 
   int num_neighbors = 0;
-  for (ii = 0; ii < 3; ii++)
-    for (jj = 0; jj < 3; jj++)
-      if ((i + ii < dim) && (j + jj < dim))
+  for(ii=0; ii < 3; ii++)
+    for(jj=0; jj < 3; jj++) 
+      if ((i + ii < dim) && (j + jj < dim)) 
       {
-        num_neighbors++;
-        red += (int)src[RIDX(i + ii, j + jj, dim)].red;
-        green += (int)src[RIDX(i + ii, j + jj, dim)].green;
-        blue += (int)src[RIDX(i + ii, j + jj, dim)].blue;
+	num_neighbors++;
+	red += (int) src[RIDX(i+ii,j+jj,dim)].red;
+	green += (int) src[RIDX(i+ii,j+jj,dim)].green;
+	blue += (int) src[RIDX(i+ii,j+jj,dim)].blue;
       }
-
-  current_pixel.red = (unsigned short)(red / num_neighbors);
-  current_pixel.green = (unsigned short)(green / num_neighbors);
-  current_pixel.blue = (unsigned short)(blue / num_neighbors);
-
+  
+  current_pixel.red = (unsigned short) (red / num_neighbors);
+  current_pixel.green = (unsigned short) (green / num_neighbors);
+  current_pixel.blue = (unsigned short) (blue / num_neighbors);
+  
   return current_pixel;
 }
+
+
 
 /******************************************************
  * Your different versions of the motion kernel go here
  ******************************************************/
 
+
 /*
  * naive_motion - The naive baseline version of motion 
  */
 char naive_motion_descr[] = "naive_motion: Naive baseline implementation";
-void naive_motion(int dim, pixel *src, pixel *dst)
+void naive_motion(int dim, pixel *src, pixel *dst) 
 {
   int i, j;
-
+    
   for (i = 0; i < dim; i++)
     for (j = 0; j < dim; j++)
       dst[RIDX(i, j, dim)] = weighted_combo(dim, i, j, src);
 }
+
 
 /*
  * motion - Your current working version of motion. 
  * IMPORTANT: This is the version you will be graded on
  */
 char motion_descr[] = "motion: Current working version";
-void motion(int dim, pixel *src, pixel *dst)
+void motion(int dim, pixel *src, pixel *dst) 
 {
   naive_motion(dim, src, dst);
 }
@@ -200,8 +152,7 @@ void motion(int dim, pixel *src, pixel *dst)
  *     registered test function.  
  *********************************************************************/
 
-void register_motion_functions()
-{
+void register_motion_functions() {
   add_motion_function(&motion, motion_descr);
   add_motion_function(&naive_motion, naive_motion_descr);
 }
