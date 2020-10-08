@@ -80,8 +80,8 @@ void second_complex(int dim, pixel *src, pixel *dest)
   int i, j, ii, jj, incr_i, incr_j;
 
   // increment value
-  incr_i = 16;
-  incr_j = 32;
+  incr_i = 32;
+  incr_j = 4;
 
   for (ii = 0; ii < dim; ii += incr_i)
   {
