@@ -168,6 +168,9 @@ static pixel weighted_combo(int dim, int i, int j, pixel *src)
 
   return current_pixel;
 }
+
+// remember to inline all functions as recommended by the assignment instructions
+
 /**
  * Function that handles the 3x3 combo case
  * */
@@ -178,8 +181,8 @@ __attribute__((always_inline)) static pixel three_combo(int dim, int i, int j, p
   int red, green, blue;
   red = green = blue = 0;
 
-  // grab three rows of pixels,
-  // For 32 x 32, we reduce it to 30x30
+  // grab three rows of pixels at a time
+  // For 32 x 32 image, we are computing 30x30 part
   int row1 = i * dim;
   int row2 = (i + 1) * dim;
   int row3 = (i + 2) * dim;
@@ -222,7 +225,8 @@ __attribute__((always_inline)) static pixel three_combo(int dim, int i, int j, p
   return current_pixel;
 }
 /**
- * Function that handles the 3x2 combo case
+ * Function that handles the 3x2 combo case.
+ * Handle the last two columns in a row like [0][30, [0][31]
  * */
 __attribute__((always_inline)) static pixel two_combo(int dim, int i, int j, pixel *src)
 {
@@ -232,7 +236,7 @@ __attribute__((always_inline)) static pixel two_combo(int dim, int i, int j, pix
   red = green = blue = 0;
 
   // grab 3 rows of pixels
-  // For 32x32 we are handling the case dealing with 31 and 32 since 30x30 is already handled
+  // for 32x32 case, handling the last two columns j = 31, j = 32
   int row1 = i * dim;
   int row2 = (i + 1) * dim;
   int row3 = (i + 2) * dim;
@@ -273,6 +277,7 @@ __attribute__((always_inline)) static pixel two_combo(int dim, int i, int j, pix
 }
 /**
  * Function that handles the 3x1 combo case
+ * Handle the last two columns in a row like [0][31] (edge of the picture)
  * */
 __attribute__((always_inline)) static pixel one_combo(int dim, int i, int j, pixel *src)
 {
@@ -282,7 +287,7 @@ __attribute__((always_inline)) static pixel one_combo(int dim, int i, int j, pix
   red = green = blue = 0;
 
   // grab 3 rows of pixels
-  // For 32x32 we are handling the case dealing with 32 case since the 30 case and 31 case have been handled
+  // For 32x32 we are handling the case where j = 32 (edge of the picture)
   int row1 = i * dim;
   int row2 = (i + 1) * dim;
   int row3 = (i + 2) * dim;
@@ -321,6 +326,7 @@ __attribute__((always_inline)) static pixel one_combo(int dim, int i, int j, pix
 
 /**
  * Function that handles the last two rows combo case (2x3 case)
+ * Handle the last two columns in a row like [30][0], [31][0]
  * */
 __attribute__((always_inline)) static pixel bottom_two_rows_combo(int dim, int i, int j, pixel *src)
 {
@@ -365,6 +371,7 @@ __attribute__((always_inline)) static pixel bottom_two_rows_combo(int dim, int i
 
 /**
  * Function that handles the last row combo case
+ * Handle the last two columns in a row like [31][0] (edge of the picture)
  * */
 __attribute__((always_inline)) static pixel bottom_one_row_combo(int dim, int i, int j, pixel *src)
 {
@@ -374,7 +381,7 @@ __attribute__((always_inline)) static pixel bottom_one_row_combo(int dim, int i,
   red = green = blue = 0;
 
   // grab one of pixels,
-  // For 32 x 32, we are handling the case where i = 32 (the final row)
+  // For 32 x 32, we are handling the case where i = 32 (edge of the picture)
   int row1 = i * dim;
 
   // get pixels for each row
@@ -399,6 +406,7 @@ __attribute__((always_inline)) static pixel bottom_one_row_combo(int dim, int i,
 
 /**
  * Function that handles the 2x2 case
+ * The square case in the corner after handling all the top part of the picture and the bottom part of the picture
  * */
 __attribute__((always_inline)) static pixel two_by_two_combo(int dim, int i, int j, pixel *src)
 {
@@ -440,6 +448,7 @@ __attribute__((always_inline)) static pixel two_by_two_combo(int dim, int i, int
 
 /**
  * Function that handles the 2x1 case
+ * Handle the right column of the square
  * */
 __attribute__((always_inline)) static pixel two_by_one_combo(int dim, int i, int j, pixel *src)
 {
@@ -479,6 +488,7 @@ __attribute__((always_inline)) static pixel two_by_one_combo(int dim, int i, int
 
 /**
  * Function that handles the 1x2 case
+ * Handles the case of the bottom half of the square
  * */
 __attribute__((always_inline)) static pixel one_by_two_combo(int dim, int i, int j, pixel *src)
 {
@@ -487,7 +497,7 @@ __attribute__((always_inline)) static pixel one_by_two_combo(int dim, int i, int
   int red, green, blue;
   red = green = blue = 0;
 
-  // grab 1 rows of pixels,
+  // grab 1 row of pixels,
   int row1 = i * dim;
 
   // get pixels for each row
@@ -511,6 +521,7 @@ __attribute__((always_inline)) static pixel one_by_two_combo(int dim, int i, int
 
 /**
  * Function that handles the 1x1 case
+ * Handles the pixel in the corner
  * */
 __attribute__((always_inline)) static pixel one_by_one_combo(int dim, int i, int j, pixel *src)
 {
@@ -519,7 +530,7 @@ __attribute__((always_inline)) static pixel one_by_one_combo(int dim, int i, int
   int red, green, blue;
   red = green = blue = 0;
 
-  // grab 1 rows of pixels,
+  // grab 1 row of pixels,
   int row1 = i * dim;
 
   // get pixels for each row
@@ -576,8 +587,8 @@ void first_motion(int dim, pixel *src, pixel *dst)
     dst[RIDX(i, j + 1, dim)] = one_combo(dim, i, j + 1, src);
   }
 
-  // At this point have up to i = 30 where i represents rows and j represents cols
-  // i = 30, j = 32
+  // At this point we have handled all cases for i = 30, j = 30
+
   // 2 rows for i = 31, 32
   int ii;
   for (ii = 0; ii < dim - 2; ii++)
@@ -594,7 +605,7 @@ void first_motion(int dim, pixel *src, pixel *dst)
 
   // 1x2 case
   dst[RIDX(i + 1, j, dim)] = one_by_two_combo(dim, i + 1, j, src);
-  
+
   // 1x1 case
   dst[RIDX(i + 1, j + 1, dim)] = one_by_one_combo(dim, i + 1, j + 1, src);
 }
