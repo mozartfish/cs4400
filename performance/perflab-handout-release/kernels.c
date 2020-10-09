@@ -186,7 +186,12 @@ void naive_motion(int dim, pixel *src, pixel *dst)
       dst[RIDX(i, j, dim)] = weighted_combo(dim, i, j, src);
 }
 
-/*
+/**
+ * Implement the general case of motion (the non-edge pixel case)
+**/
+
+
+/**
  * motion - Your current working version of motion. 
  * IMPORTANT: This is the version you will be graded on
  */
