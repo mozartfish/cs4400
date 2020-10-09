@@ -591,7 +591,7 @@ void first_motion(int dim, pixel *src, pixel *dst)
     dst[RIDX(ii, j + 1, dim)] = one_combo(dim, ii, j + 1, src);
   }
 
-  // At this point we have handled all cases for i = 30, j = 30
+  // At this point we have handled all cases for i = 30, j = 30, j = 31, j = 32
 
   // 2 rows for i = 31, 32
   for (jj = 0; jj < dim - 2; jj++)
