@@ -74,7 +74,7 @@ void first_complex(int dim, pixel *src, pixel *dest)
 /* 
  * second_complex - The second re-write version of complex
  */
-char second_complex_descr[] = "second_complex: loop tiling";
+char second_complex_descr[] = "second_complex: loop unrolling";
 void second_complex(int dim, pixel *src, pixel *dest)
 {
   int i, j, ii, jj, incr_i, incr_j;
@@ -168,6 +168,9 @@ static pixel weighted_combo(int dim, int i, int j, pixel *src)
 
   return current_pixel;
 }
+/**
+ * Function that handles the 3x3 combo case
+ * */
 __attribute__((always_inline)) static pixel three_combo(int dim, int i, int j, pixel *src)
 {
   pixel current_pixel;
@@ -175,7 +178,8 @@ __attribute__((always_inline)) static pixel three_combo(int dim, int i, int j, p
   int red, green, blue;
   red = green = blue = 0;
 
-  // grab three rows of pixels, dimension is length of a row/col (assuming square images)
+  // grab three rows of pixels,
+  // For 32 x 32, we reduce it to 30x30
   int row1 = i * dim;
   int row2 = (i + 1) * dim;
   int row3 = (i + 2) * dim;
@@ -194,14 +198,17 @@ __attribute__((always_inline)) static pixel three_combo(int dim, int i, int j, p
   int r3_p3 = row3 + j + 2;
 
   // sum all the pixel colors for the rows
+  // row 1 pixels
   red += (int)src[r1_p1].red + (int)src[r1_p2].red + (int)src[r1_p3].red;
   green += (int)src[r1_p1].green + (int)src[r1_p2].green + (int)src[r1_p3].green;
   blue += (int)src[r1_p1].blue + (int)src[r1_p2].blue + (int)src[r1_p3].blue;
 
+  // row 2 pixels
   red += (int)src[r2_p1].red + (int)src[r2_p2].red + (int)src[r2_p3].red;
   green += (int)src[r2_p1].green + (int)src[r2_p2].green + (int)src[r2_p3].green;
   blue += (int)src[r2_p1].blue + (int)src[r2_p2].blue + (int)src[r2_p3].blue;
 
+  // row 3 pixels
   red += (int)src[r3_p1].red + (int)src[r3_p2].red + (int)src[r3_p3].red;
   green += (int)src[r3_p1].green + (int)src[r3_p2].green + (int)src[r3_p3].green;
   blue += (int)src[r3_p1].blue + (int)src[r3_p2].blue + (int)src[r3_p3].blue;
@@ -210,6 +217,323 @@ __attribute__((always_inline)) static pixel three_combo(int dim, int i, int j, p
   current_pixel.red = (unsigned short)(red / 9);
   current_pixel.green = (unsigned short)(green / 9);
   current_pixel.blue = (unsigned short)(blue / 9);
+
+  // return the pixel
+  return current_pixel;
+}
+/**
+ * Function that handles the 3x2 combo case
+ * */
+__attribute__((always_inline)) static pixel two_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab 3 rows of pixels
+  // For 32x32 we are handling the case dealing with 31 and 32 since 30x30 is already handled
+  int row1 = i * dim;
+  int row2 = (i + 1) * dim;
+  int row3 = (i + 2) * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+  int r1_p2 = row1 + j + 1;
+
+  int r2_p1 = row2 + j + 0;
+  int r2_p2 = row2 + j + 1;
+
+  int r3_p1 = row3 + j + 0;
+  int r3_p2 = row3 + j + 1;
+
+  // sum all the pixel colors for the rows
+  // row1 pixels
+  red += (int)src[r1_p1].red + (int)src[r1_p2].red;
+  green += (int)src[r1_p1].green + (int)src[r1_p2].green;
+  blue += (int)src[r1_p1].blue + (int)src[r1_p2].blue;
+
+  // row2 pixels
+  red += (int)src[r2_p1].red + (int)src[r2_p2].red;
+  green += (int)src[r2_p1].green + (int)src[r2_p2].green;
+  blue += (int)src[r2_p1].blue + (int)src[r2_p2].blue;
+
+  // row3 pixels
+  red += (int)src[r3_p1].red + (int)src[r3_p2].red;
+  green += (int)src[r3_p1].green + (int)src[r3_p2].green;
+  blue += (int)src[r3_p1].blue + (int)src[r3_p2].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 6);
+  current_pixel.green = (unsigned short)(green / 6);
+  current_pixel.blue = (unsigned short)(blue / 6);
+
+  // return the pixel
+  return current_pixel;
+}
+/**
+ * Function that handles the 3x1 combo case
+ * */
+__attribute__((always_inline)) static pixel one_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab 3 rows of pixels
+  // For 32x32 we are handling the case dealing with 32 case since the 30 case and 31 case have been handled
+  int row1 = i * dim;
+  int row2 = (i + 1) * dim;
+  int row3 = (i + 2) * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+
+  int r2_p1 = row2 + j + 0;
+
+  int r3_p1 = row3 + j + 0;
+
+  // sum all the pixel colors for the rows
+  // row1 pixels
+  red += (int)src[r1_p1].red;
+  green += (int)src[r1_p1].green;
+  blue += (int)src[r1_p1].blue;
+
+  // row2 pixels
+  red += (int)src[r2_p1].red;
+  green += (int)src[r2_p1].green;
+  blue += (int)src[r2_p1].blue;
+
+  // row3 pixels
+  red += (int)src[r3_p1].red;
+  green += (int)src[r3_p1].green;
+  blue += (int)src[r3_p1].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 3);
+  current_pixel.green = (unsigned short)(green / 3);
+  current_pixel.blue = (unsigned short)(blue / 3);
+
+  // return the pixel
+  return current_pixel;
+}
+
+/**
+ * Function that handles the last two rows combo case (2x3 case)
+ * */
+__attribute__((always_inline)) static pixel bottom_two_rows_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab two rows of pixels,
+  // For 32 x 32, we are handling the case where i = 31, 32
+  int row1 = i * dim;
+  int row2 = (i + 1) * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+  int r1_p2 = row1 + j + 1;
+  int r1_p3 = row1 + j + 2;
+
+  int r2_p1 = row2 + j + 0;
+  int r2_p2 = row2 + j + 1;
+  int r2_p3 = row2 + j + 2;
+
+  // sum all the pixel colors for the rows
+  // row 1 pixels
+  red += (int)src[r1_p1].red + (int)src[r1_p2].red + (int)src[r1_p3].red;
+  green += (int)src[r1_p1].green + (int)src[r1_p2].green + (int)src[r1_p3].green;
+  blue += (int)src[r1_p1].blue + (int)src[r1_p2].blue + (int)src[r1_p3].blue;
+
+  // row 2 pixels
+  red += (int)src[r2_p1].red + (int)src[r2_p2].red + (int)src[r2_p3].red;
+  green += (int)src[r2_p1].green + (int)src[r2_p2].green + (int)src[r2_p3].green;
+  blue += (int)src[r2_p1].blue + (int)src[r2_p2].blue + (int)src[r2_p3].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 6);
+  current_pixel.green = (unsigned short)(green / 6);
+  current_pixel.blue = (unsigned short)(blue / 6);
+
+  // return the pixel
+  return current_pixel;
+}
+
+/**
+ * Function that handles the last row combo case
+ * */
+__attribute__((always_inline)) static pixel bottom_one_row_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab one of pixels,
+  // For 32 x 32, we are handling the case where i = 32 (the final row)
+  int row1 = i * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+  int r1_p2 = row1 + j + 1;
+  int r1_p3 = row1 + j + 2;
+
+  // sum all the pixel colors for the rows
+  // row 1 pixels
+  red += (int)src[r1_p1].red + (int)src[r1_p2].red + (int)src[r1_p3].red;
+  green += (int)src[r1_p1].green + (int)src[r1_p2].green + (int)src[r1_p3].green;
+  blue += (int)src[r1_p1].blue + (int)src[r1_p2].blue + (int)src[r1_p3].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 3);
+  current_pixel.green = (unsigned short)(green / 3);
+  current_pixel.blue = (unsigned short)(blue / 3);
+
+  // return the pixel
+  return current_pixel;
+}
+
+/**
+ * Function that handles the 2x2 case
+ * */
+__attribute__((always_inline)) static pixel two_by_two_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab two rows of pixels,
+  int row1 = i * dim;
+  int row2 = (i + 1) * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+  int r1_p2 = row1 + j + 1;
+
+  int r2_p1 = row2 + j + 0;
+  int r2_p2 = row2 + j + 1;
+
+  // sum all the pixel colors for the rows
+  // row 1 pixels
+  red += (int)src[r1_p1].red + (int)src[r1_p2].red;
+  green += (int)src[r1_p1].green + (int)src[r1_p2].green;
+  blue += (int)src[r1_p1].blue + (int)src[r1_p2].blue;
+
+  // row 2 pixels
+  red += (int)src[r2_p1].red + (int)src[r2_p2].red;
+  green += (int)src[r2_p1].green + (int)src[r2_p2].green;
+  blue += (int)src[r2_p1].blue + (int)src[r2_p2].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 4);
+  current_pixel.green = (unsigned short)(green / 4);
+  current_pixel.blue = (unsigned short)(blue / 4);
+
+  // return the pixel
+  return current_pixel;
+}
+
+/**
+ * Function that handles the 2x1 case
+ * */
+__attribute__((always_inline)) static pixel two_by_one_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab two rows of pixels,
+  int row1 = i * dim;
+  int row2 = (i + 1) * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+
+  int r2_p1 = row2 + j + 0;
+
+  // sum all the pixel colors for the rows
+  // row 1 pixels
+  red += (int)src[r1_p1].red;
+  green += (int)src[r1_p1].green;
+  blue += (int)src[r1_p1].blue;
+
+  // row 2 pixels
+  red += (int)src[r2_p1].red;
+  green += (int)src[r2_p1].green;
+  blue += (int)src[r2_p1].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 2);
+  current_pixel.green = (unsigned short)(green / 2);
+  current_pixel.blue = (unsigned short)(blue / 2);
+
+  // return the pixel
+  return current_pixel;
+}
+
+/**
+ * Function that handles the 1x2 case
+ * */
+__attribute__((always_inline)) static pixel one_by_two_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab 1 rows of pixels,
+  int row1 = i * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+  int r1_p2 = row1 + j + 1;
+
+  // sum all the pixel colors for the rows
+  // row 1 pixels
+  red += (int)src[r1_p1].red + (int)src[r1_p2].red;
+  green += (int)src[r1_p1].green + (int)src[r1_p2].green;
+  blue += (int)src[r1_p1].blue + (int)src[r1_p2].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 2);
+  current_pixel.green = (unsigned short)(green / 2);
+  current_pixel.blue = (unsigned short)(blue / 2);
+
+  // return the pixel
+  return current_pixel;
+}
+
+/**
+ * Function that handles the 1x1 case
+ * */
+__attribute__((always_inline)) static pixel one_by_one_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab 1 rows of pixels,
+  int row1 = i * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+
+  // sum all the pixel colors for the rows
+  red += (int)src[r1_p1].red;
+  green += (int)src[r1_p1].green;
+  blue += (int)src[r1_p1].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 1);
+  current_pixel.green = (unsigned short)(green / 1);
+  current_pixel.blue = (unsigned short)(blue / 1);
 
   // return the pixel
   return current_pixel;
@@ -231,11 +555,13 @@ void naive_motion(int dim, pixel *src, pixel *dst)
     for (j = 0; j < dim; j++)
       dst[RIDX(i, j, dim)] = weighted_combo(dim, i, j, src);
 }
-char first_motion_descr[] = "first_motion: optimized implementation";
+
+char first_motion_descr[] = "first_motion: first attempt implementation";
 void first_motion(int dim, pixel *src, pixel *dst)
 {
   int i, j;
 
+  // 30x30 case, i = 30 j = 30
   for (i = 0; i < dim - 2; i++)
   {
     for (j = 0; j < dim - 2; j++)
@@ -244,8 +570,29 @@ void first_motion(int dim, pixel *src, pixel *dst)
     }
   }
 
-  printf("The value of i is: %d\n", i);
-  printf("The value of j is: %d\n", j);
+  // j = 31 and 32 case
+  dst[RIDX(i, j, dim)] = two_combo(dim, i, j, src);
+
+  // j = 32 case
+  dst[RIDX(i, j + 1, dim)] = one_combo(dim, i, j + 1, src);
+
+  // At this point have up to i = 30 where i represents rows and j represents cols
+  // 2 rows for i = 31, 32
+  int k;
+  for (k = 0; k < dim - 2; k++)
+  {
+    dst[RIDX(i, k, dim)] = bottom_two_rows_combo(dim, i, k, src);
+    dst[RIDX(i + 1, k, dim)] = bottom_one_row_combo(dim, i + 1, k, src);
+  }
+
+  // 2x2 case
+  dst[RIDX(i, j, dim)] = two_by_two_combo(dim, i, j, src);
+  // 2x1 case
+  dst[RIDX(i, j + 1, dim)] = two_by_one_combo(dim, i, j + 1, src);
+  // 1x2 case
+  dst[RIDX(i + 1, j, dim)] = one_by_two_combo(dim, i + 1, j, src);
+  // 1x1 case
+  dst[RIDX(i + 1, j + 1, dim)] = one_by_one_combo(dim, i + 1, j + 1, src);
 }
 
 /**
@@ -259,7 +606,8 @@ void first_motion(int dim, pixel *src, pixel *dst)
 char motion_descr[] = "motion: Current working version";
 void motion(int dim, pixel *src, pixel *dst)
 {
-  naive_motion(dim, src, dst);
+  first_motion(dim, src, dst);
+  // naive_motion(dim, src, dst);
 }
 
 /********************************************************************* 
@@ -274,5 +622,5 @@ void register_motion_functions()
 {
   add_motion_function(&motion, motion_descr);
   add_motion_function(&naive_motion, naive_motion_descr);
-  add_motion_function(&first_motion, first_motion_descr);
+  // add_motion_function(&first_motion, first_motion_descr);
 }
