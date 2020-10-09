@@ -168,6 +168,52 @@ static pixel weighted_combo(int dim, int i, int j, pixel *src)
 
   return current_pixel;
 }
+__attribute__((always_inline)) static pixel three_combo(int dim, int i, int j, pixel *src)
+{
+  pixel current_pixel;
+
+  int red, green, blue;
+  red = green = blue = 0;
+
+  // grab three rows of pixels, dimension is length of a row/col (assuming square images)
+  int row1 = i * dim;
+  int row2 = (i + 1) * dim;
+  int row3 = (i + 2) * dim;
+
+  // get pixels for each row
+  int r1_p1 = row1 + j + 0;
+  int r1_p2 = row1 + j + 1;
+  int r1_p3 = row1 + j + 2;
+
+  int r2_p1 = row2 + j + 0;
+  int r2_p2 = row2 + j + 1;
+  int r2_p3 = row2 + j + 2;
+
+  int r3_p1 = row3 + j + 0;
+  int r3_p2 = row3 + j + 1;
+  int r3_p3 = row3 + j + 2;
+
+  // sum all the pixel colors for the rows
+  red += (int)src[r1_p1].red + (int)src[r1_p2].red + (int)src[r1_p3].red;
+  green += (int)src[r1_p1].green + (int)src[r1_p2].green + (int)src[r1_p3].green;
+  blue += (int)src[r1_p1].blue + (int)src[r1_p2].blue + (int)src[r1_p3].blue;
+
+  red += (int)src[r2_p1].red + (int)src[r2_p2].red + (int)src[r2_p3].red;
+  green += (int)src[r2_p1].green + (int)src[r2_p2].green + (int)src[r2_p3].green;
+  blue += (int)src[r2_p1].blue + (int)src[r2_p2].blue + (int)src[r2_p3].blue;
+
+  red += (int)src[r3_p1].red + (int)src[r3_p2].red + (int)src[r3_p3].red;
+  green += (int)src[r3_p1].green + (int)src[r3_p2].green + (int)src[r3_p3].green;
+  blue += (int)src[r3_p1].blue + (int)src[r3_p2].blue + (int)src[r3_p3].blue;
+
+  // set the rgb for the current pixel
+  current_pixel.red = (unsigned short)(red / 9);
+  current_pixel.green = (unsigned short)(green / 9);
+  current_pixel.blue = (unsigned short)(blue / 9);
+
+  // return the pixel
+  return current_pixel;
+}
 
 /******************************************************
  * Your different versions of the motion kernel go here
@@ -185,11 +231,26 @@ void naive_motion(int dim, pixel *src, pixel *dst)
     for (j = 0; j < dim; j++)
       dst[RIDX(i, j, dim)] = weighted_combo(dim, i, j, src);
 }
+char first_motion_descr[] = "first_motion: optimized implementation";
+void first_motion(int dim, pixel *src, pixel *dst)
+{
+  int i, j;
+
+  for (i = 0; i < dim - 2; i++)
+  {
+    for (j = 0; j < dim - 2; j++)
+    {
+      dst[RIDX(i, j, dim)] = three_combo(dim, i, j, src);
+    }
+  }
+
+  printf("The value of i is: %d\n", i);
+  printf("The value of j is: %d\n", j);
+}
 
 /**
  * Implement the general case of motion (the non-edge pixel case)
 **/
-
 
 /**
  * motion - Your current working version of motion. 
@@ -213,4 +274,5 @@ void register_motion_functions()
 {
   add_motion_function(&motion, motion_descr);
   add_motion_function(&naive_motion, naive_motion_descr);
+  add_motion_function(&first_motion, first_motion_descr);
 }
