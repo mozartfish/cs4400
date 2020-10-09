@@ -568,7 +568,8 @@ void first_motion(int dim, pixel *src, pixel *dst)
     {
       dst[RIDX(i, j, dim)] = three_combo(dim, i, j, src);
     }
-    // j = 31 and 32 case
+
+    // j = 31 case
     dst[RIDX(i, j, dim)] = two_combo(dim, i, j, src);
 
     // j = 32 case
@@ -576,20 +577,24 @@ void first_motion(int dim, pixel *src, pixel *dst)
   }
 
   // At this point have up to i = 30 where i represents rows and j represents cols
+  // i = 30, j = 32
   // 2 rows for i = 31, 32
-  int k;
-  for (k = 0; k < dim - 2; k++)
+  int ii;
+  for (ii = 0; ii < dim - 2; ii++)
   {
-    dst[RIDX(i, k, dim)] = bottom_two_rows_combo(dim, i, k, src);
-    dst[RIDX(i + 1, k, dim)] = bottom_one_row_combo(dim, i + 1, k, src);
+    dst[RIDX(i, ii, dim)] = bottom_two_rows_combo(dim, i, ii, src);
+    dst[RIDX(i + 1, ii, dim)] = bottom_one_row_combo(dim, i + 1, ii, src);
   }
 
   // 2x2 case
   dst[RIDX(i, j, dim)] = two_by_two_combo(dim, i, j, src);
+
   // 2x1 case
   dst[RIDX(i, j + 1, dim)] = two_by_one_combo(dim, i, j + 1, src);
+
   // 1x2 case
   dst[RIDX(i + 1, j, dim)] = one_by_two_combo(dim, i + 1, j, src);
+  
   // 1x1 case
   dst[RIDX(i + 1, j + 1, dim)] = one_by_one_combo(dim, i + 1, j + 1, src);
 }
