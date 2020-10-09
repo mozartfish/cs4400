@@ -570,7 +570,7 @@ void naive_motion(int dim, pixel *src, pixel *dst)
 char first_motion_descr[] = "first_motion: first attempt implementation";
 void first_motion(int dim, pixel *src, pixel *dst)
 {
-  int i, j;
+  int i, j, ii, jj;
 
   // 30x30 case, i = 30 j = 30
   for (i = 0; i < dim - 2; i++)
@@ -579,22 +579,25 @@ void first_motion(int dim, pixel *src, pixel *dst)
     {
       dst[RIDX(i, j, dim)] = three_combo(dim, i, j, src);
     }
+  }
 
+  // edge of picture cases
+  for (ii = 0; ii < dim - 2; ii++)
+  {
     // j = 31 case
-    dst[RIDX(i, j, dim)] = two_combo(dim, i, j, src);
+    dst[RIDX(ii, j, dim)] = two_combo(dim, ii, j, src);
 
     // j = 32 case
-    dst[RIDX(i, j + 1, dim)] = one_combo(dim, i, j + 1, src);
+    dst[RIDX(ii, j + 1, dim)] = one_combo(dim, ii, j + 1, src);
   }
 
   // At this point we have handled all cases for i = 30, j = 30
 
   // 2 rows for i = 31, 32
-  int ii;
-  for (ii = 0; ii < dim - 2; ii++)
+  for (jj = 0; jj < dim - 2; jj++)
   {
-    dst[RIDX(i, ii, dim)] = bottom_two_rows_combo(dim, i, ii, src);
-    dst[RIDX(i + 1, ii, dim)] = bottom_one_row_combo(dim, i + 1, ii, src);
+    dst[RIDX(i, jj, dim)] = bottom_two_rows_combo(dim, i, jj, src);
+    dst[RIDX(i + 1, jj, dim)] = bottom_one_row_combo(dim, i + 1, jj, src);
   }
 
   // 2x2 case
