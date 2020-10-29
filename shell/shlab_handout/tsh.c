@@ -304,7 +304,16 @@ int builtin_cmd(char **argv)
   //       "bg" and "fg" commands are partially handled here,
   //       but you need to implement the do_bg and do_fg functions.
 
+  // quit
+  if (!strcmp(cmd, "quit")) {
+    exit(0);
+  }
 
+  // jobs
+  if (!strcmp(cmd, "jobs")) {
+    listjobs(jobs);
+    return 1;
+  }
   if (!strcmp(cmd, "bg") || !strcmp(cmd, "fg")) { /* bg and fg commands */
       
     int jid;
