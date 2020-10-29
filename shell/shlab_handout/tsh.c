@@ -198,6 +198,7 @@ void eval(char *cmdline)
   char *argv1[MAXARGS]; /* argv for execve() */
   char *argv2[MAXARGS]; /* argv for second command execve() */
   int bg;               /* should the job run in bg or fg? */
+  pid_t pid; // pid for forking
 
   /* If the line contains two commands, split into two strings */
   char* cmd2 = strchr(cmdline, '|');
@@ -222,6 +223,16 @@ void eval(char *cmdline)
   // TODO: Execute the command(s)
   //       If cmd2 is NULL, then there is only one command
 
+  if (!builtin_cmd(argv1)) {
+    // child runs the job
+    // this section is from textbook page 755
+    if ((pid = fork()) == 0) {
+      if (execve(argv1[0], argv1, environ) < 0) {
+        printf("%s: Command not found.\n", argv1[0]);
+        exit(0);
+      } 
+    }
+  }
 
   return;
 }
@@ -305,6 +316,16 @@ int builtin_cmd(char **argv)
   //       but you need to implement the do_bg and do_fg functions.
 
 
+// quit
+if (!strcmp(cmd, "quit")) {
+  exit(0);
+}
+
+// jobs
+if (!strcmp(cmd, "jobs")) {
+  listjobs(jobs);
+  return 1;
+}
   if (!strcmp(cmd, "bg") || !strcmp(cmd, "fg")) { /* bg and fg commands */
       
     int jid;
