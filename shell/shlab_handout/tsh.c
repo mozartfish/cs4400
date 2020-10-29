@@ -371,6 +371,7 @@ void do_bg(int jid)
  */
 void do_fg(int jid) 
 {
+
   return;
 }
 
@@ -379,6 +380,10 @@ void do_fg(int jid)
  */
 void waitfg(pid_t pid)
 {
+    int status; 
+  if (waitpid(pid, &status, 0) < 0) {
+    unix_error("waitfg:wait pid error");
+  }
   return;
 }
 
