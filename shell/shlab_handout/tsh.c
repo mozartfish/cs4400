@@ -434,6 +434,75 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig)
 {
+  // these resources were consulted for how to handle sigchld handler
+  // page 743-749, 773 from textbook
+  // this link was consulted for how waitpd works and for checking exit status of reaped children
+  // https://linux.die.net/man/2/waitpid
+
+  int status;
+  pid_t pid;
+  int olderrno = errno;
+  while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0)
+  {
+    // check if the child that caused the return is currently stopped
+    if (WIFSTOPPED(status))
+    {
+      // check if the signal that caused the stop was a sigstop or sigstp
+      if (WSTOPSIG(status) == SIGSTOP || WSTOPSIG(status) == SIGTSTP)
+      {
+        // get the job associated with the pid that returns
+        struct job_t *job = getjobpid(jobs, pid);
+        if (job != NULL && job->state != ST)
+        {
+          sio_puts("Job [");
+          sio_putl(pid2jid(pid));
+          sio_puts("] ");
+          sio_puts("(");
+          sio_putl(pid);
+          sio_puts(") ");
+          sio_puts("stopped by signal ");
+          sio_putl(sig);
+          sio_puts("\n");
+
+          // set the job state to stop
+          job->state = ST;
+        }
+      }
+    } // check if the child terminated because a signal was not caught
+    if (WIFSIGNALED(status))
+    {
+      // check if the signal that caused the stop was a sigint
+      if (WTERMSIG(status) == SIGINT)
+      {
+        // get the job associated with the pid that returns
+        struct job_t *job = getjobpid(jobs, pid);
+        if (job != NULL)
+        {
+          sio_puts("Job [");
+          sio_putl(pid2jid(pid));
+          sio_puts("] ");
+          sio_puts("(");
+          sio_putl(pid);
+          sio_puts(") ");
+          sio_puts("terminated by signal ");
+          sio_putl(WTERMSIG(status));
+        }
+      }
+      // handle all other signals that might have caused termination such as
+      // sigquit, sigkill, sighup according to gnu https://www.gnu.org/software/libc/manual/html_node/Termination-Signals.html
+      else
+      {
+        deletejob(jobs, pid);
+      }
+    }
+    // check if the child terminated normally
+    if (WIFEXITED(status))
+    {
+      deletejob(jobs, pid);
+    }
+  }
+
+  errno = olderrno;
   return;
 }
 
@@ -451,13 +520,23 @@ void sigint_handler(int sig)
 
   if (fg_pid)
   {
-    kill(-fg_pid, SIGKILL);
-    printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(fg_pid), fg_pid, sig);
+    kill(-fg_pid, SIGINT);
+    sio_puts("Job [");
+    sio_putl(pid2jid(fg_pid));
+    sio_puts("] ");
+    sio_puts("(");
+    sio_putl(fg_pid);
+    sio_puts(") ");
+    sio_puts("terminated by signal ");
+    sio_putl(sig);
+    sio_puts("\n");
+    // printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(fg_pid), fg_pid, sig);
+    // terminate the foreground job according to textbook page 761
     deletejob(jobs, fg_pid);
   }
   else
   {
-    printf("job does not exist");
+    unix_error("Job does not exist");
   }
 
   errno = olderrno;
@@ -472,6 +551,36 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig)
 {
+  // this code was adapted from page 733 of the textbook
+  int olderrno = errno;
+  // find the foreground pid
+  pid_t fg_pid;
+  fg_pid = find_fg_pid(jobs);
+
+  if (fg_pid)
+  {
+    kill(-fg_pid, SIGTSTP);
+    sio_puts("Job [");
+    sio_putl(pid2jid(fg_pid));
+    sio_puts("] ");
+    sio_puts("(");
+    sio_putl(fg_pid);
+    sio_puts(") ");
+    sio_puts("stopped by signal ");
+    sio_putl(sig);
+    sio_puts("\n");
+
+    // change the state of the foregroup job to suspend according to textbook page 761
+    struct job_t *fg_job = getjobpid(jobs, fg_pid);
+    fg_job->state = ST;
+  }
+  else
+  {
+    unix_error("Job does not exist");
+  }
+
+  errno = olderrno;
+
   return;
 }
 
