@@ -223,6 +223,20 @@ void eval(char *cmdline)
   // TODO: Execute the command(s)
   //       If cmd2 is NULL, then there is only one command
 
+  // check if the command is not a built in command
+  if (!builtin_cmd(argv1)) {
+    // Block SIGCHLD signal information
+    sigset_t sigs;
+    sigemptyset(&sigs);
+    sigaddset(&sigs, SIGINT);
+    SIGPROCMASK(SIG_BLOCK, &sigs, NULL);
+    // do work here
+    // unblock SIGCHLD
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+
+
+
+  }
   return;
 }
 
