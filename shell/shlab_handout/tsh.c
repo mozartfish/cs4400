@@ -198,6 +198,7 @@ void eval(char *cmdline)
   char *argv1[MAXARGS]; /* argv for execve() */
   char *argv2[MAXARGS]; /* argv for second command execve() */
   int bg;               /* should the job run in bg or fg? */
+  pid_t pid; // process id
 
   /* If the line contains two commands, split into two strings */
   char* cmd2 = strchr(cmdline, '|');
@@ -221,7 +222,6 @@ void eval(char *cmdline)
 
   // TODO: Execute the command(s)
   //       If cmd2 is NULL, then there is only one command
-
 
   return;
 }
