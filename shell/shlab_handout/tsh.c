@@ -245,7 +245,7 @@ void eval(char *cmdline)
 
     // add job
     addjob(jobs, pid, bg + 1, cmdline);
-    
+
     // wait for foreground process to terminate
     if (!bg)
     {
@@ -255,7 +255,8 @@ void eval(char *cmdline)
         unix_error("waitfg:wait pid error");
       }
     }
-    else {
+    else
+    {
       printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
   }
@@ -442,7 +443,25 @@ void sigchld_handler(int sig)
  *    to the foreground job.  
  */
 void sigint_handler(int sig)
-{
+{ // this code was adapted from page 733 of the textbook
+  int olderrno = errno;
+  // find the foreground pid
+  pid_t fg_pid;
+  fg_pid = find_fg_pid(jobs);
+
+  if (fg_pid)
+  {
+    kill(-fg_pid, SIGKILL);
+    printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(fg_pid), fg_pid, sig);
+    deletejob(jobs, fg_pid);
+  }
+  else
+  {
+    printf("job does not exist");
+  }
+
+  errno = olderrno;
+
   return;
 }
 
@@ -584,12 +603,13 @@ int pid2jid(pid_t pid)
 }
 
 /* find_fg_pid - find the process ID of the foreground process */
-pid_t find_fg_pid(struct job_t *jobs) 
+pid_t find_fg_pid(struct job_t *jobs)
 {
   int i;
   for (i = 0; i < MAXJOBS; i++)
   {
-    if (jobs[i].state == FG) {
+    if (jobs[i].state == FG)
+    {
       return jobs[i].pid;
     }
   }
