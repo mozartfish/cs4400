@@ -264,19 +264,20 @@ void eval(char *cmdline)
     addjob(jobs, pid, bg + 1, cmdline);
 
     // wait for foreground process to terminate
-    if (!bg)
-    {
-      int status;
-      if (waitpid(pid, &status, 0) < 0)
-      {
-        unix_error("waitfg:wait pid error");
-      }
-      printf("the value of bg in foreground is: %d", bg);
-    }
-    else
-    {
-      printf("the value of bg in foreground is: %d", bg);
-    }
+    printf("The value of bg is %d", bg);
+    // if (!bg)
+    // {
+    //   int status;
+    //   // if (waitpid(pid, &status, 0) < 0)
+    //   // {
+    //   //   unix_error("waitfg:wait pid error");
+    //   // }
+    //   // printf("the value of bg in foreground is: %d", bg);
+    // }
+    // else
+    // {
+      
+    // }
   }
   return;
 }
