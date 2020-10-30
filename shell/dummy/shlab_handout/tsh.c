@@ -208,7 +208,7 @@ void eval(char *cmdline)
   pid_t pid;            // pid for forking
 
   // Set up signals for blocking
-  sigset_t mask_chld, mask_all, prev_mask_chld, prev_mask_all; // set up sig sets
+  sigset_t mask_chld, mask_all, prev_mask; // set up sig sets
   sigemptyset(&mask_chld);                                     // set up the empty set for child mask
   sigaddset(&mask_chld, SIGCHLD);                             // add the SIGCHLD to set
   sigfillset(&mask_all);
@@ -242,11 +242,11 @@ void eval(char *cmdline)
     // child runs the job
     // this section is from textbook page 755, 765
     // block SIGCHLD and save previous blocked set
-    sigprocmask(SIG_BLOCK, &mask_chld, &prev_mask_chld);
+    sigprocmask(SIG_BLOCK, &mask_chld, &prev_mask);
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
-      sigprocmask(SIG_SETMASK, &prev_mask_chld, NULL); // unblock SIGCHLD before execve
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL); // unblock SIGCHLD before execve
       if (execve(argv1[0], argv1, environ) < 0)
       {
         printf("%s: Command not found.\n", argv1[0]);
@@ -258,17 +258,17 @@ void eval(char *cmdline)
     if (!bg)
     {
       // add job
-      sigprocmask(SIG_BLOCK, &mask_all, &prev_mask_all);
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, FG, cmdline);
-      sigprocmask(SIG_SETMASK, &prev_mask_all, NULL);
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       fg_pid = pid;
       waitfg(pid);
     }
     else
     {
-      sigprocmask(SIG_BLOCK, &mask_all, &prev_mask_all);
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, BG, cmdline);
-      sigprocmask(SIG_SETMASK, &prev_mask_all, NULL);
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
   }
