@@ -514,8 +514,6 @@ void sigchld_handler(int sig)
   int status;
   pid_t pid;
   int olderrno = errno;
-  sigset_t mask_all_chld, prev_mask_chld; // set up sig sets
-  sigfillset(&mask_all_chld);
 
   // create signal blockers similar to add job for delete job
 
@@ -577,9 +575,7 @@ void sigchld_handler(int sig)
     // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT
     else
     {
-      sigprocmask(SIG_BLOCK, &mask_all_chld, NULL);
       deletejob(jobs, pid);
-      sigprocmask(SIG_SETMASK, &prev_mask_chld, NULL);
     }
   }
   errno = olderrno;
