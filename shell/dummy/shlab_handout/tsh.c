@@ -242,7 +242,7 @@ void eval(char *cmdline)
     // child runs the job
     // this section is from textbook page 755, 765
     // block SIGCHLD and save previous blocked set
-    sigprocmask(SIG_BLOCK, &mask_chld, &prev_mask);
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
