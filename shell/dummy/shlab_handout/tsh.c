@@ -588,8 +588,10 @@ void sigint_handler(int sig)
 {
   // this code was adapted from page 733 of the textbook
   int olderrno = errno;
-  
+  sigset_t mask_all_int, prev_mask_int; // set up sig sets
+  sigfillset(&mask_all_int);
 
+  sigprocmask(SIG_BLOCK, &mask_all_int, NULL);
   if (fg_pid)
   {
     sio_puts("Job [");
@@ -605,6 +607,7 @@ void sigint_handler(int sig)
     // send signal back to the process
     kill(-fg_pid, SIGINT);
     deletejob(jobs, fg_pid);
+    sigprocmask(SIG_SETMASK, &prev_mask_int, NULL);
   }
   else
   {
@@ -625,7 +628,10 @@ void sigtstp_handler(int sig)
 {
   // this code was adapted from page 733 of the textbook
   int olderrno = errno;
+  sigset_t mask_all_stp, prev_mask_stp; // set up sig sets
+  sigfillset(&mask_all_stp);
 
+  sigprocmask(SIG_BLOCK, &mask_all_stp, NULL);
   if (fg_pid)
   {
     sio_puts("Job [");
@@ -642,6 +648,7 @@ void sigtstp_handler(int sig)
     struct job_t *fg_job = getjobpid(jobs, fg_pid);
     fg_job->state = ST;
     kill(-fg_pid, SIGTSTP);
+    sigprocmask(SIG_SETMASK, &prev_mask_stp, NULL);
   }
   else
   {
