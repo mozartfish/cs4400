@@ -530,7 +530,6 @@ void sigchld_handler(int sig)
         struct job_t *job = getjobpid(jobs, pid);
         if (job != NULL && job->state != ST)
         {
-          sio_puts("\\");
           sio_puts("Job [");
           sio_putl(pid2jid(pid));
           sio_puts("] ");
@@ -559,7 +558,6 @@ void sigchld_handler(int sig)
         struct job_t *job = getjobpid(jobs, pid);
         if (job != NULL)
         {
-          sio_puts("\\");
           sio_puts("Job [");
           sio_putl(pid2jid(pid));
           sio_puts("] ");
