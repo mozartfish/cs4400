@@ -416,22 +416,22 @@ void do_bg(int jid)
 {
   int i;
   // boolean for indicating if we found a background job
-  int exist_bg = 0;
+  // int exist_bg = 0;
   for (i = 0; i < MAXJOBS; i++)
   {
     if (jobs[i].jid == jid)
     {
-      exist_bg = 1;
+      // exist_bg = 1;
       kill(-jobs[i].pid, SIGCONT);
       jobs[i].state = BG;
       printf("[%d] (%d) %s", jobs[i].jid, jobs[i].pid, jobs[i].cmdline);
     }
   }
 
-  if (!exist_bg)
-  {
-    printf("Background job not found!");
-  }
+  // if (!exist_bg)
+  // {
+  //   printf("Background job not found!");
+  // }
 
   return;
 }
@@ -443,13 +443,13 @@ void do_fg(int jid)
 {
   int j;
   // boolean for indicating whether a foreground job exists
-  int exist_fg = 0;
+  // int exist_fg = 0;
   for (j = 0; j < MAXJOBS; j++)
   {
 
     if (jobs[j].jid == jid)
     {
-      exist_fg = 1;
+      // exist_fg = 1;
       fg_pid = jobs[j].pid;
       kill(-jobs[j].pid, SIGCONT);
       jobs[j].state = FG;
@@ -457,10 +457,10 @@ void do_fg(int jid)
     }
   }
 
-  if (!exist_fg)
-  {
-    printf("A foreground job was not found");
-  }
+  // if (!exist_fg)
+  // {
+  //   printf("A foreground job was not found");
+  // }
   return;
 }
 
