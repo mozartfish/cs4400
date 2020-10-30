@@ -209,13 +209,13 @@ void eval(char *cmdline)
   // Define Signals for blocking - page 765 of the textbook
 
   // define signal set for SIGCHLD mask
-  sigset_t child_mask, prev_child_mask;
+  // sigset_t child_mask, prev_child_mask;
 
-  // Initialize set to the empty set
-  sigemptyset(&child_mask);
+  // // Initialize set to the empty set
+  // sigemptyset(&child_mask);
 
-  // add SIGCHLD to sigset
-  sigaddset(&child_mask, SIGCHLD);
+  // // add SIGCHLD to sigset
+  // sigaddset(&child_mask, SIGCHLD);
 
   /* If the line contains two commands, split into two strings */
   char *cmd2 = strchr(cmdline, '|');
@@ -243,41 +243,54 @@ void eval(char *cmdline)
 
   if (!builtin_cmd(argv1))
   {
-    // start blocking SIGCHLD SIGNAL
-    sigprocmask(SIG_BLOCK, &child_mask, &prev_child_mask);
-    // do work here
+        // child runs the job
+    // this section is from textbook page 755
     if ((pid = fork()) == 0)
     {
-      setpgid(0, 0);
-    }
-    // unblock SIGCHLD SIGNAL
-    sigprocmask(SIG_SETMASK, &prev_child_mask, NULL);
-
-    // execute execve after unblock SIGCHLD
-    if (execve(argv1[0], argv1, environ) < 0)
-    {
-      printf("%s: Command not found.\n", argv1[0]);
-      exit(0);
+      if (execve(argv1[0], argv1, environ) < 0)
+      {
+        printf("%s: Command not found.\n", argv1[0]);
+        exit(0);
+      }
     }
 
-    // add the job
-    addjob(jobs, pid, bg + 1, cmdline);
+    printf("The value of bg is: %d", bg);
 
-    // wait for foreground process to terminate
-    printf("The value of bg is %d", bg);
-    // if (!bg)
+    // start blocking SIGCHLD SIGNAL
+    // sigprocmask(SIG_BLOCK, &child_mask, &prev_child_mask);
+    // // do work here
+    // if ((pid = fork()) == 0)
     // {
-    //   int status;
-    //   // if (waitpid(pid, &status, 0) < 0)
-    //   // {
-    //   //   unix_error("waitfg:wait pid error");
-    //   // }
-    //   // printf("the value of bg in foreground is: %d", bg);
+    //   setpgid(0, 0);
     // }
-    // else
+    // // unblock SIGCHLD SIGNAL
+    // sigprocmask(SIG_SETMASK, &prev_child_mask, NULL);
+
+    // // execute execve after unblock SIGCHLD
+    // if (execve(argv1[0], argv1, environ) < 0)
     // {
+    //   printf("%s: Command not found.\n", argv1[0]);
+    //   exit(0);
+    // }
+
+    // // add the job
+    // addjob(jobs, pid, bg + 1, cmdline);
+
+    // // wait for foreground process to terminate
+    // printf("The value of bg is %d", bg);
+    // // if (!bg)
+    // // {
+    // //   int status;
+    // //   // if (waitpid(pid, &status, 0) < 0)
+    // //   // {
+    // //   //   unix_error("waitfg:wait pid error");
+    // //   // }
+    // //   // printf("the value of bg in foreground is: %d", bg);
+    // // }
+    // // else
+    // // {
       
-    // }
+    // // }
   }
   return;
 }
