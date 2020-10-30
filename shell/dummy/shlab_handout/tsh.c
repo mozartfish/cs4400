@@ -528,7 +528,7 @@ void sigchld_handler(int sig)
       }
     }
     //CASE 2: CHILD PROCESS TERMINATES DUE TO A SIGNAL NOT CAUGHT
-    else if (WIFSIGNALED(status))
+    if (WIFSIGNALED(status))
     {
       // check if the signal that caused the stop was a sigint
       if (WTERMSIG(status) == SIGINT)
@@ -551,10 +551,12 @@ void sigchld_handler(int sig)
         kill(job->pid, WTERMSIG(status));
       }
       // CASE 1: CHILD PROCESS TERMINATES NORMALLY or some other signal we didn't catch
-      else
+      if (WIFEXITED(status) || WIFSIGNALED(status))
       {
         deletejob(jobs, pid);
       }
+      errno = olderrno;
+      return;
 
       // // check if the child that caused the return is currently stopped
       // if (WIFSTOPPED(status))
@@ -575,9 +577,6 @@ void sigchld_handler(int sig)
       //   deletejob(jobs, pid);
       // }
     }
-
-    errno = olderrno;
-    return;
   }
 
   /* 
