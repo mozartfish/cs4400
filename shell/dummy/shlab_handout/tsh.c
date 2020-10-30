@@ -212,10 +212,10 @@ void eval(char *cmdline)
   sigset_t child_mask, prev_child_mask;
 
   // Initialize set to the empty set
-  Sigemptyset(&child_mask);
+  sigemptyset(&child_mask);
 
   // add SIGCHLD to sigset
-  Sigaddset(&child_mask, SIGCHLD);
+  sigaddset(&child_mask, SIGCHLD);
 
 
   /* If the line contains two commands, split into two strings */
