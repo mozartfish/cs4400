@@ -209,8 +209,8 @@ void eval(char *cmdline)
 
   // Set up signals for blocking
   sigset_t mask_chld, mask_all, prev_mask; // set up sig sets
-  sigemptyset(&mask_chld);                                     // set up the empty set for child mask
-  sigaddset(&mask_chld, SIGCHLD);                             // add the SIGCHLD to set
+  sigemptyset(&mask_chld);                 // set up the empty set for child mask
+  sigaddset(&mask_chld, SIGCHLD);          // add the SIGCHLD to set
   sigfillset(&mask_all);
 
   /* If the line contains two commands, split into two strings */
@@ -249,7 +249,7 @@ void eval(char *cmdline)
       sigprocmask(SIG_SETMASK, &prev_mask, NULL); // unblock SIGCHLD before execve
       if (execve(argv1[0], argv1, environ) < 0)
       {
-        printf("%s: No such job\n", argv1[0]);
+        printf("%s:Command not found\n", argv1[0]);
         exit(0);
       }
     }
@@ -414,16 +414,21 @@ int builtin_cmd(char **argv)
  */
 void do_bg(int jid)
 {
+  int found_bg = 0;
   int i;
   for (i = 0; i < MAXJOBS; i++)
   {
     if (jobs[i].jid == jid)
     {
-      // exist_bg = 1;
+      found_bg = 1;
       kill(-jobs[i].pid, SIGCONT);
       jobs[i].state = BG;
       printf("[%d] (%d) %s", jobs[i].jid, jobs[i].pid, jobs[i].cmdline);
     }
+  }
+  if (!found_bg)
+  {
+    printf("No such job");
   }
   return;
 }
@@ -433,10 +438,11 @@ void do_bg(int jid)
  */
 void do_fg(int jid)
 {
+  int found_fg = 0;
   int j;
   for (j = 0; j < MAXJOBS; j++)
   {
-
+    found_fg = 1;
     if (jobs[j].jid == jid)
     {
       fg_pid = jobs[j].pid;
@@ -444,6 +450,11 @@ void do_fg(int jid)
       jobs[j].state = FG;
       waitfg(fg_pid);
     }
+  }
+
+  if (!found_fg)
+  {
+    printf("No such job");
   }
   return;
 }
