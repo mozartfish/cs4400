@@ -208,9 +208,7 @@ void eval(char *cmdline)
   pid_t pid;            // pid for forking
 
   // Set up signals for blocking
-  sigset_t mask_chld, mask_all, prev_mask; // set up sig sets
-  sigemptyset(&mask_chld);                 // set up the empty set for child mask
-  sigaddset(&mask_chld, SIGCHLD);          // add the SIGCHLD to set
+  sigset_t mask_all, prev_mask; // set up sig sets
   sigfillset(&mask_all);                   // add all the signals for blocking for adding a job
 
   /* If the line contains two commands, split into two strings */
@@ -241,12 +239,12 @@ void eval(char *cmdline)
   {
     // child runs the job
     // this section is from textbook page 755, 765
-    // block SIGCHLD and save previous blocked set
+    // block all signals and save previous blocked set
     sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
-      // unblock SIGCHLD before execve
+      // unblock SIGCHLD and other signals before execve
       sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       if (execve(argv1[0], argv1, environ) < 0)
       {
@@ -259,20 +257,20 @@ void eval(char *cmdline)
     if (!bg)
     {
       // add job
-      // block all signals
+      // block all signals while waiting for adding a job
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, FG, cmdline);
-      // unblock all signals
+      // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       fg_pid = pid;
       waitfg(pid);
     }
     else
     {
-      // block all signals
+      // block all signals before adding a job
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, BG, cmdline);
-      // unblock all signals
+      // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
@@ -601,6 +599,7 @@ void sigint_handler(int sig)
     sio_putl(sig);
     sio_puts("\n");
 
+    // delete tjhe job from the job list
     deletejob(jobs, fg_pid);
 
     // send signal back to the process
