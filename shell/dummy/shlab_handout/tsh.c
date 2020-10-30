@@ -71,6 +71,7 @@ char prompt[] = "tsh> "; /* command line prompt (DO NOT CHANGE) */
 int verbose = 0;         /* if true, print additional output */
 int nextjid = 1;         /* next job ID to allocate */
 char sbuf[MAXLINE];      /* for composing sprintf messages */
+volatile int fg_pid;     // variable for keeping track of the pid of the fg process
 
 struct job_t
 {                        /* The job struct */
@@ -80,7 +81,6 @@ struct job_t
   char cmdline[MAXLINE]; /* command line */
 };
 
-volatile int fg_pid;        // variable for keeping track of the pid
 struct job_t jobs[MAXJOBS]; /* The job list */
 /* End global variables */
 
@@ -425,12 +425,19 @@ void do_bg(int jid)
   {
     if (jobs[i].jid == jid)
     {
+      // indicate we found a background job
       found_bg = 1;
+
+      // SIG CONT restarts a stopped process
       kill(-jobs[i].pid, SIGCONT);
+
+      // change the state from stopped to background since we started the job
       jobs[i].state = BG;
       printf("[%d] (%d) %s", jobs[i].jid, jobs[i].pid, jobs[i].cmdline);
     }
   }
+
+  // error checking if we do not find the job
   if (!found_bg)
   {
     printf("%%");
@@ -448,12 +455,20 @@ void do_fg(int jid)
   int j;
   for (j = 0; j < MAXJOBS; j++)
   {
-    found_fg = 1;
     if (jobs[j].jid == jid)
     {
+      // found a fg process
+      found_fg = 1;
+      // set the fg pid to the current fg proces pid
       fg_pid = jobs[j].pid;
+
+      // if the process is stopped send signal that it should continue
       kill(-jobs[j].pid, SIGCONT);
+
+      // update the state to a foregound state
       jobs[j].state = FG;
+
+      // wait for the foreground process to terminate
       waitfg(fg_pid);
     }
   }
