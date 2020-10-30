@@ -249,7 +249,7 @@ void eval(char *cmdline)
       sigprocmask(SIG_SETMASK, &prev_mask, NULL); // unblock SIGCHLD before execve
       if (execve(argv1[0], argv1, environ) < 0)
       {
-        printf("%s: No such job", argv1[0]);
+        printf("%s: No such job\n", argv1[0]);
         exit(0);
       }
     }
