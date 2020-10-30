@@ -575,7 +575,6 @@ void sigint_handler(int sig)
 
   if (fg_pid)
   {
-    kill(-fg_pid, SIGINT);
     sio_puts("Job [");
     sio_putl(pid2jid(fg_pid));
     sio_puts("] ");
@@ -585,6 +584,9 @@ void sigint_handler(int sig)
     sio_puts("terminated by signal ");
     sio_putl(sig);
     sio_puts("\n");
+
+    // send signal back to the process
+    kill(-fg_pid, SIGINT);
     deletejob(jobs, fg_pid);
   }
   else
@@ -609,7 +611,6 @@ void sigtstp_handler(int sig)
 
   if (fg_pid)
   {
-    kill(-fg_pid, SIGTSTP);
     sio_puts("Job [");
     sio_putl(pid2jid(fg_pid));
     sio_puts("] ");
@@ -623,6 +624,7 @@ void sigtstp_handler(int sig)
     // change the state of the foregroup job to suspend according to textbook page 761
     struct job_t *fg_job = getjobpid(jobs, fg_pid);
     fg_job->state = ST;
+    kill(-fg_pid, SIGTSTP);
   }
   else
   {
