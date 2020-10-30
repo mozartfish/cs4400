@@ -206,6 +206,18 @@ void eval(char *cmdline)
   int bg;               /* should the job run in bg or fg? */
   pid_t pid;            // pid for forking
 
+  // Define Signals for blocking - page 765 of the textbook
+
+  // define signal set for SIGCHLD mask
+  sigset_t child_mask, prev_child_mask;
+
+  // Initialize set to the empty set
+  Sigemptyset(&child_mask);
+
+  // add SIGCHLD to sigset
+  Sigaddset(&child_mask, SIGCHLD);
+
+
   /* If the line contains two commands, split into two strings */
   char *cmd2 = strchr(cmdline, '|');
 
@@ -434,16 +446,6 @@ void waitfg(pid_t pid)
 void sigchld_handler(int sig)
 {
   printf("The sigchld handler\n");
-  int status;
-  pid_t pid;
-  int olderrno = errno;
-  while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0) {
-    if (WIFEXITED(status)) {
-      printf("THE SIGNAL STATUS AFTER EXITING: %d", WEXITSTATUS(status));
-      deletejob(jobs, pid);
-    }
-  }
-  errno = olderrno;
   return;
 }
 
