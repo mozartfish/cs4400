@@ -71,6 +71,7 @@ char prompt[] = "tsh> "; /* command line prompt (DO NOT CHANGE) */
 int verbose = 0;         /* if true, print additional output */
 int nextjid = 1;         /* next job ID to allocate */
 char sbuf[MAXLINE];      /* for composing sprintf messages */
+volatile int fg_pid;     // variable for keeping track of the pid of the fg process
 
 struct job_t
 {                        /* The job struct */
@@ -79,6 +80,7 @@ struct job_t
   int state;             /* UNDEF, BG, FG, or ST */
   char cmdline[MAXLINE]; /* command line */
 };
+
 struct job_t jobs[MAXJOBS]; /* The job list */
 /* End global variables */
 
@@ -107,7 +109,6 @@ int deletejob(struct job_t *jobs, pid_t pid);
 struct job_t *getjobpid(struct job_t *jobs, pid_t pid);
 struct job_t *getjobjid(struct job_t *jobs, int jid);
 int pid2jid(pid_t pid);
-pid_t find_fg_pid(struct job_t *jobs); // function for finding the foreground pid
 void listjobs(struct job_t *jobs);
 
 void usage(void);
@@ -206,6 +207,10 @@ void eval(char *cmdline)
   int bg;               /* should the job run in bg or fg? */
   pid_t pid;            // pid for forking
 
+  // Set up signals for blocking
+  sigset_t mask_all, prev_mask; // set up sig sets
+  sigfillset(&mask_all);                   // add all the signals for blocking for adding a job
+
   /* If the line contains two commands, split into two strings */
   char *cmd2 = strchr(cmdline, '|');
 
@@ -233,30 +238,40 @@ void eval(char *cmdline)
   if (!builtin_cmd(argv1))
   {
     // child runs the job
-    // this section is from textbook page 755
+    // this section is from textbook page 755, 765
+    // block all signals and save previous blocked set
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
     if ((pid = fork()) == 0)
     {
+      setpgid(0, 0);
+      // unblock SIGCHLD and other signals before execve
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       if (execve(argv1[0], argv1, environ) < 0)
       {
-        printf("%s: Command not found.\n", argv1[0]);
+        printf("%s: Command not found\n", argv1[0]);
         exit(0);
       }
     }
 
-    // add job
-    addjob(jobs, pid, bg + 1, cmdline);
-
     // wait for foreground process to terminate
     if (!bg)
     {
-      int status;
-      if (waitpid(pid, &status, 0) < 0)
-      {
-        unix_error("waitfg:wait pid error");
-      }
+      // add job
+      // block all signals while waiting for adding a job
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
+      addjob(jobs, pid, FG, cmdline);
+      // unblock all signals after adding a job
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
+      fg_pid = pid;
+      waitfg(pid);
     }
     else
     {
+      // block all signals before adding a job
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
+      addjob(jobs, pid, BG, cmdline);
+      // unblock all signals after adding a job
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
   }
@@ -359,6 +374,7 @@ int builtin_cmd(char **argv)
     listjobs(jobs);
     return 1;
   }
+
   if (!strcmp(cmd, "bg") || !strcmp(cmd, "fg"))
   { /* bg and fg commands */
 
@@ -401,6 +417,30 @@ int builtin_cmd(char **argv)
  */
 void do_bg(int jid)
 {
+  int found_bg = 0;
+  int i;
+  for (i = 0; i < MAXJOBS; i++)
+  {
+    if (jobs[i].jid == jid)
+    {
+      // indicate we found a background job
+      found_bg = 1;
+
+      // SIG CONT restarts a stopped process
+      kill(-jobs[i].pid, SIGCONT);
+
+      // change the state from stopped to background since we started the job
+      jobs[i].state = BG;
+      printf("[%d] (%d) %s", jobs[i].jid, jobs[i].pid, jobs[i].cmdline);
+    }
+  }
+
+  // error checking if we do not find the job
+  if (!found_bg)
+  {
+    printf("%%");
+    printf("%d: No such job\n", jid);
+  }
   return;
 }
 
@@ -409,7 +449,33 @@ void do_bg(int jid)
  */
 void do_fg(int jid)
 {
+  int found_fg = 0;
+  int j;
+  for (j = 0; j < MAXJOBS; j++)
+  {
+    if (jobs[j].jid == jid)
+    {
+      // found a fg process
+      found_fg = 1;
+      // set the fg pid to the current fg proces pid
+      fg_pid = jobs[j].pid;
 
+      // if the process is stopped send signal that it should continue
+      kill(-jobs[j].pid, SIGCONT);
+
+      // update the state to a foregound state
+      jobs[j].state = FG;
+
+      // wait for the foreground process to terminate
+      waitfg(fg_pid);
+    }
+  }
+
+  if (!found_fg)
+  {
+    printf("%%");
+    printf("%d: No such job\n", jid);
+  }
   return;
 }
 
@@ -418,7 +484,11 @@ void do_fg(int jid)
  */
 void waitfg(pid_t pid)
 {
-  return;
+  struct job_t *fg_job = getjobpid(jobs, fg_pid);
+  while (fg_job->state == FG)
+  {
+    sleep(1);
+  }
 }
 
 /*****************
@@ -442,9 +512,13 @@ void sigchld_handler(int sig)
   int status;
   pid_t pid;
   int olderrno = errno;
+
+  // create signal blockers similar to add job for delete job
+
   while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0)
   {
-    // check if the child that caused the return is currently stopped
+    // THREE CASES
+    // CASE 3: CHILD THAT CAUSED THE RETURN IS STOPPED
     if (WIFSTOPPED(status))
     {
       // check if the signal that caused the stop was a sigstop or sigstp
@@ -461,15 +535,19 @@ void sigchld_handler(int sig)
           sio_putl(pid);
           sio_puts(") ");
           sio_puts("stopped by signal ");
-          sio_putl(sig);
+          sio_putl(WSTOPSIG(status));
           sio_puts("\n");
 
           // set the job state to stop
           job->state = ST;
+
+          // send the signal back to the process
+          kill(-pid, WSTOPSIG(status));
         }
       }
-    } // check if the child terminated because a signal was not caught
-    if (WIFSIGNALED(status))
+    }
+    // CASE 2: CHILD TERMINATED BECAUSE OF SIGNAL NOT CAUGHT
+    else if (WIFSIGNALED(status))
     {
       // check if the signal that caused the stop was a sigint
       if (WTERMSIG(status) == SIGINT)
@@ -486,41 +564,31 @@ void sigchld_handler(int sig)
           sio_puts(") ");
           sio_puts("terminated by signal ");
           sio_putl(WTERMSIG(status));
+          sio_puts("\n");
+          deletejob(jobs, pid);
         }
       }
-      // handle all other signals that might have caused termination such as
-      // sigquit, sigkill, sighup according to gnu https://www.gnu.org/software/libc/manual/html_node/Termination-Signals.html
-      else
-      {
-        deletejob(jobs, pid);
-      }
     }
-    // check if the child terminated normally
-    if (WIFEXITED(status))
+    // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT/HANDLED
+    else
     {
       deletejob(jobs, pid);
     }
   }
-
   errno = olderrno;
   return;
 }
-
 /* 
  * sigint_handler - The kernel sends a SIGINT to the shell whenver the
  *    user types ctrl-c at the keyboard.  Catch it and send it along
  *    to the foreground job.  
  */
 void sigint_handler(int sig)
-{ // this code was adapted from page 733 of the textbook
+{
+  // this code was adapted from page 733 of the textbook
   int olderrno = errno;
-  // find the foreground pid
-  pid_t fg_pid;
-  fg_pid = find_fg_pid(jobs);
-
   if (fg_pid)
   {
-    kill(-fg_pid, SIGINT);
     sio_puts("Job [");
     sio_putl(pid2jid(fg_pid));
     sio_puts("] ");
@@ -530,9 +598,12 @@ void sigint_handler(int sig)
     sio_puts("terminated by signal ");
     sio_putl(sig);
     sio_puts("\n");
-    // printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(fg_pid), fg_pid, sig);
-    // terminate the foreground job according to textbook page 761
+
+    // delete tjhe job from the job list
     deletejob(jobs, fg_pid);
+
+    // send signal back to the process
+    kill(-fg_pid, SIGINT);
   }
   else
   {
@@ -553,13 +624,9 @@ void sigtstp_handler(int sig)
 {
   // this code was adapted from page 733 of the textbook
   int olderrno = errno;
-  // find the foreground pid
-  pid_t fg_pid;
-  fg_pid = find_fg_pid(jobs);
-
   if (fg_pid)
   {
-    kill(-fg_pid, SIGTSTP);
+
     sio_puts("Job [");
     sio_putl(pid2jid(fg_pid));
     sio_puts("] ");
@@ -573,6 +640,9 @@ void sigtstp_handler(int sig)
     // change the state of the foregroup job to suspend according to textbook page 761
     struct job_t *fg_job = getjobpid(jobs, fg_pid);
     fg_job->state = ST;
+
+    // send the signal to the process
+    kill(-fg_pid, SIGTSTP);
   }
   else
   {
@@ -709,20 +779,6 @@ int pid2jid(pid_t pid)
       return jobs[i].jid;
     }
   return 0;
-}
-
-/* find_fg_pid - find the process ID of the foreground process */
-pid_t find_fg_pid(struct job_t *jobs)
-{
-  int i;
-  for (i = 0; i < MAXJOBS; i++)
-  {
-    if (jobs[i].state == FG)
-    {
-      return jobs[i].pid;
-    }
-  }
-  return 0; // return 0 to indicate failure since pids are positive (non-zero) unique numbers
 }
 
 /* listjobs - Print the job list */
