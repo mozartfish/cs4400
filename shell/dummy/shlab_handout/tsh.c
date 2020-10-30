@@ -271,10 +271,11 @@ void eval(char *cmdline)
       {
         unix_error("waitfg:wait pid error");
       }
+      printf("the value of bg in foreground is: %d", bg);
     }
     else
     {
-      printf("hello");
+      printf("the value of bg in foreground is: %d", bg);
     }
   }
   return;
