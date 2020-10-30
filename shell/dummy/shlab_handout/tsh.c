@@ -514,6 +514,11 @@ void sigchld_handler(int sig)
   int status;
   pid_t pid;
   int olderrno = errno;
+  sigset_t mask_all_chld, prev_mask_chld; // set up sig sets
+  sigfillset(&mask_all_chld);
+
+  // create signal blockers similar to add job for delete job
+
   while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0)
   {
     // THREE CASES
@@ -563,15 +568,18 @@ void sigchld_handler(int sig)
           sio_puts(") ");
           sio_puts("terminated by signal ");
           sio_putl(WTERMSIG(status));
-
+          sigprocmask(SIG_BLOCK, &mask_all_chld, NULL);
           deletejob(jobs, pid);
+          sigprocmask(SIG_SETMASK, &prev_mask_chld, NULL);
         }
       }
     }
     // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT
     else
     {
+      sigprocmask(SIG_BLOCK, &mask_all_chld, NULL);
       deletejob(jobs, pid);
+      sigprocmask(SIG_SETMASK, &prev_mask_chld, NULL);
     }
   }
   errno = olderrno;
@@ -587,6 +595,9 @@ void sigint_handler(int sig)
   // this code was adapted from page 733 of the textbook
   int olderrno = errno;
 
+  sigset_t mask_all_int, prev_mask_int; // set up sig sets
+  sigfillset(&mask_all_int);
+
   if (fg_pid)
   {
     sio_puts("Job [");
@@ -601,7 +612,9 @@ void sigint_handler(int sig)
 
     // send signal back to the process
     kill(-fg_pid, SIGINT);
+    sigprocmask(SIG_BLOCK, &mask_all_int, NULL);
     deletejob(jobs, fg_pid);
+    sigprocmask(SIG_SETMASK, &prev_mask_int, NULL);
   }
   else
   {
