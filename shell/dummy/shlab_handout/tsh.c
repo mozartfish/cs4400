@@ -566,9 +566,7 @@ void sigchld_handler(int sig)
           sio_puts(") ");
           sio_puts("terminated by signal ");
           sio_putl(WTERMSIG(status));
-          sigprocmask(SIG_BLOCK, &mask_all_chld, NULL);
           deletejob(jobs, pid);
-          sigprocmask(SIG_SETMASK, &prev_mask_chld, NULL);
         }
       }
     }
