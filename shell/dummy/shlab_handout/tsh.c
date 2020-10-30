@@ -209,9 +209,9 @@ void eval(char *cmdline)
 
   // Set up signals for blocking
   sigset_t mask_chld, mask_all, prev_mask_chld, prev_mask_all; // set up sig sets
-  Sigemptyset(&mask_chld);                                     // set up the empty set for child mask
-  Siggaddset(&mask_chld, SIGCHLD);                             // add the SIGCHLD to set
-  Sigfillset(&mask_all);
+  sigemptyset(&mask_chld);                                     // set up the empty set for child mask
+  siggaddset(&mask_chld, SIGCHLD);                             // add the SIGCHLD to set
+  sigfillset(&mask_all);
 
   /* If the line contains two commands, split into two strings */
   char *cmd2 = strchr(cmdline, '|');
