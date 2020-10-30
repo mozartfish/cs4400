@@ -428,6 +428,7 @@ void do_bg(int jid)
   }
   if (!found_bg)
   {
+    printf("%%");
     printf("%d: No such job\n", jid);
   }
   return;
@@ -454,6 +455,7 @@ void do_fg(int jid)
 
   if (!found_fg)
   {
+    printf("%%");
     printf("%d: No such job\n", jid);
   }
   return;
