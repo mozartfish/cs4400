@@ -217,7 +217,6 @@ void eval(char *cmdline)
   // add SIGCHLD to sigset
   sigaddset(&child_mask, SIGCHLD);
 
-
   /* If the line contains two commands, split into two strings */
   char *cmd2 = strchr(cmdline, '|');
 
@@ -244,15 +243,21 @@ void eval(char *cmdline)
 
   if (!builtin_cmd(argv1))
   {
-    // child runs the job
-    // this section is from textbook page 755
+    // start blocking SIGCHLD SIGNAL
+    sigprocmask(SIG_BLOCK, &child_mask, &prev_child_mask);
+    // do work here
     if ((pid = fork()) == 0)
     {
-      if (execve(argv1[0], argv1, environ) < 0)
-      {
-        printf("%s: Command not found.\n", argv1[0]);
-        exit(0);
-      }
+      setpgid(0, 0);
+    }
+    // unblock SIGCHLD SIGNAL
+    sigprocmask(SIG_SETMASK, &prev_child_mask, NULL);
+
+    // execute execve after unblock SIGCHLD
+    if (execve(argv1[0], argv1, environ) < 0)
+    {
+      printf("%s: Command not found.\n", argv1[0]);
+      exit(0);
     }
 
     // add the job
@@ -429,7 +434,6 @@ void do_fg(int jid)
  */
 void waitfg(pid_t pid)
 {
-
 }
 
 /*****************
@@ -456,6 +460,14 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig)
 {
+  int olderrno = errno;
+  int status;
+  pid_t pid;
+  while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0)
+  {
+    deletejob(jobs, pid);
+  }
+  errno = olderrno;
   return;
 }
 
