@@ -208,10 +208,9 @@ void eval(char *cmdline)
   pid_t pid;            // pid for forking
 
   // Set up signals for blocking
-  // sigset_t mask_chld, mask_all, prev_mask; // set up sig sets
-  // sigemptyset(&mask_chld);                 // set up the empty set for child mask
-  // sigaddset(&mask_chld, SIGCHLD);          // add the SIGCHLD to set
-  sigset_t mask_all, prev_mask; // set up sig sets
+  sigset_t mask_chld, mask_all, prev_mask; // set up sig sets
+  sigemptyset(&mask_chld);                 // set up the empty set for child mask
+  sigaddset(&mask_chld, SIGCHLD);          // add the SIGCHLD to set
   sigfillset(&mask_all);                   // add all the signals for blocking for adding a job
 
   /* If the line contains two commands, split into two strings */
@@ -243,7 +242,7 @@ void eval(char *cmdline)
     // child runs the job
     // this section is from textbook page 755, 765
     // block SIGCHLD and save previous blocked set
-    sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
+    sigprocmask(SIG_BLOCK, &mask_chld, &prev_mask);
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
