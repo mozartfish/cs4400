@@ -208,10 +208,11 @@ void eval(char *cmdline)
   pid_t pid;            // pid for forking
 
   // Set up signals for blocking
-  sigset_t mask_chld, mask_all, prev_mask; // set up sig sets
-  sigemptyset(&mask_chld);                 // set up the empty set for child mask
-  sigaddset(&mask_chld, SIGCHLD);          // add the SIGCHLD to set
-  sigfillset(&mask_all);
+  // sigset_t mask_chld, mask_all, prev_mask; // set up sig sets
+  // sigemptyset(&mask_chld);                 // set up the empty set for child mask
+  // sigaddset(&mask_chld, SIGCHLD);          // add the SIGCHLD to set
+  sigset_t mask_all, prev_mask; // set up sig sets
+  sigfillset(&mask_all);                   // add all the signals for blocking for adding a job
 
   /* If the line contains two commands, split into two strings */
   char *cmd2 = strchr(cmdline, '|');
@@ -242,7 +243,7 @@ void eval(char *cmdline)
     // child runs the job
     // this section is from textbook page 755, 765
     // block SIGCHLD and save previous blocked set
-    sigprocmask(SIG_BLOCK, &mask_chld, &prev_mask);
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
@@ -571,7 +572,7 @@ void sigchld_handler(int sig)
         }
       }
     }
-    // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT
+    // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT/HANDLED
     else
     {
       deletejob(jobs, pid);
@@ -601,10 +602,10 @@ void sigint_handler(int sig)
     sio_putl(sig);
     sio_puts("\n");
 
-    // send signal back to the process
-    kill(-fg_pid, SIGINT);
     deletejob(jobs, fg_pid);
 
+    // send signal back to the process
+    kill(-fg_pid, SIGINT);
   }
   else
   {
@@ -627,6 +628,7 @@ void sigtstp_handler(int sig)
   int olderrno = errno;
   if (fg_pid)
   {
+
     sio_puts("Job [");
     sio_putl(pid2jid(fg_pid));
     sio_puts("] ");
@@ -640,6 +642,8 @@ void sigtstp_handler(int sig)
     // change the state of the foregroup job to suspend according to textbook page 761
     struct job_t *fg_job = getjobpid(jobs, fg_pid);
     fg_job->state = ST;
+
+    // send the signal to the process
     kill(-fg_pid, SIGTSTP);
   }
   else
