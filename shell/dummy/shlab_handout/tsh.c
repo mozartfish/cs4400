@@ -594,9 +594,7 @@ void sigint_handler(int sig)
 {
   // this code was adapted from page 733 of the textbook
   int olderrno = errno;
-
-  sigset_t mask_all_int, prev_mask_int; // set up sig sets
-  sigfillset(&mask_all_int);
+  
 
   if (fg_pid)
   {
@@ -612,9 +610,7 @@ void sigint_handler(int sig)
 
     // send signal back to the process
     kill(-fg_pid, SIGINT);
-    sigprocmask(SIG_BLOCK, &mask_all_int, NULL);
     deletejob(jobs, fg_pid);
-    sigprocmask(SIG_SETMASK, &prev_mask_int, NULL);
   }
   else
   {
