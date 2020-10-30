@@ -249,7 +249,7 @@ void eval(char *cmdline)
       sigprocmask(SIG_SETMASK, &prev_mask, NULL); // unblock SIGCHLD before execve
       if (execve(argv1[0], argv1, environ) < 0)
       {
-        printf("%s:Command not found\n", argv1[0]);
+        printf("%s: Command not found\n", argv1[0]);
         exit(0);
       }
     }
@@ -428,7 +428,7 @@ void do_bg(int jid)
   }
   if (!found_bg)
   {
-    printf("No such job");
+    printf("No such job\n");
   }
   return;
 }
@@ -454,7 +454,7 @@ void do_fg(int jid)
 
   if (!found_fg)
   {
-    printf("No such job");
+    printf("No such job\n");
   }
   return;
 }
