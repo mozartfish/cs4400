@@ -246,7 +246,8 @@ void eval(char *cmdline)
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
-      sigprocmask(SIG_SETMASK, &prev_mask, NULL); // unblock SIGCHLD before execve
+      // unblock SIGCHLD before execve
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL); 
       if (execve(argv1[0], argv1, environ) < 0)
       {
         printf("%s: Command not found\n", argv1[0]);
@@ -258,16 +259,20 @@ void eval(char *cmdline)
     if (!bg)
     {
       // add job
+      // block all signals
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, FG, cmdline);
-      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
+      // unblock all signals
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL); 
       fg_pid = pid;
       waitfg(pid);
     }
     else
     {
+      // block all signals
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, BG, cmdline);
+      // unblock all signals
       sigprocmask(SIG_SETMASK, &prev_mask, NULL);
       printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
@@ -540,15 +545,11 @@ void sigchld_handler(int sig)
           sio_putl(WTERMSIG(status));
         }
       }
-      // handle all other signals that might have caused termination such as
-      // sigquit, sigkill, sighup according to gnu https://www.gnu.org/software/libc/manual/html_node/Termination-Signals.html
-      else
-      {
-        deletejob(jobs, pid);
-      }
     }
+          // handle all other signals that might have caused termination such as
+      // sigquit, sigkill, sighup according to gnu https://www.gnu.org/software/libc/manual/html_node/Termination-Signals.html
     // check if the child terminated normally
-    if (WIFEXITED(status))
+    if (WIFEXITED(status) || WIFSIGNALED(status))
     {
       deletejob(jobs, pid);
     }
