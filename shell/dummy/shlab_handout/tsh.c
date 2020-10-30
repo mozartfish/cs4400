@@ -513,7 +513,7 @@ void sigchld_handler(int sig)
           sio_putl(pid);
           sio_puts(") ");
           sio_puts("stopped by signal ");
-          sio_putl(sig);
+          sio_putl(WSTOPSIG(status));
           sio_puts("\n");
 
           // set the job state to stop
