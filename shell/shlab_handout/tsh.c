@@ -251,7 +251,7 @@ void eval(char *cmdline)
       if ((pid = fork()) == 0)
       {
         dup2(fds[1], 1);
-        close(fds[1]);
+        close(fds[0]);
         setpgid(0, 0);
         // unblock SIGCHLD and other signals before execve
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
@@ -269,7 +269,7 @@ void eval(char *cmdline)
       if ((pid2 = fork()) == 0)
       {
         dup2(fds[0], 0);
-        close(fds[0]);
+        close(fds[1]);
         setpgid(0, 0);
         // unblock SIGCHLD and other signals before execve
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
@@ -280,6 +280,8 @@ void eval(char *cmdline)
         }
       }
 
+      close(fds[0]);
+      close(fds[1]);
       // wait for foreground process to terminate
       if (!bg)
       {
