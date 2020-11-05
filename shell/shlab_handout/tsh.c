@@ -250,6 +250,8 @@ void eval(char *cmdline)
       sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
       if ((pid = fork()) == 0)
       {
+        dup2(fds[1], 1);
+        close(fds[1]);
         setpgid(0, 0);
         // unblock SIGCHLD and other signals before execve
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
