@@ -208,8 +208,8 @@ void eval(char *cmdline)
   pid_t pid;            // pid for forking
 
   // Set up signals for blocking
-  sigset_t mask_all, prev_mask; // set up sig sets
-  sigfillset(&mask_all);                   // add all the signals for blocking for adding a job
+  sigset_t mask_all, prev_all; // set up sig sets
+  sigfillset(&mask_all);       // add all the signals for blocking for adding a job
 
   /* If the line contains two commands, split into two strings */
   char *cmd2 = strchr(cmdline, '|');
@@ -240,12 +240,12 @@ void eval(char *cmdline)
     // child runs the job
     // this section is from textbook page 755, 765
     // block all signals and save previous blocked set
-    sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
       // unblock SIGCHLD and other signals before execve
-      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
+      sigprocmask(SIG_SETMASK, &prev_all, NULL);
       if (execve(argv1[0], argv1, environ) < 0)
       {
         printf("%s: Command not found\n", argv1[0]);
@@ -257,21 +257,21 @@ void eval(char *cmdline)
     if (!bg)
     {
       // add job
-      // block all signals while waiting for adding a job
+      // block all signals while waiting for adding a job page 777
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, FG, cmdline);
       // unblock all signals after adding a job
-      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
+      sigprocmask(SIG_SETMASK, &prev_all, NULL);
       fg_pid = pid;
       waitfg(pid);
     }
     else
     {
-      // block all signals before adding a job
+      // block all signals before adding a job page 777
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, BG, cmdline);
       // unblock all signals after adding a job
-      sigprocmask(SIG_SETMASK, &prev_mask, NULL);
+      sigprocmask(SIG_SETMASK, &prev_all, NULL);
       printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
   }
@@ -466,7 +466,7 @@ void do_fg(int jid)
       // update the state to a foregound state
       jobs[j].state = FG;
 
-      // wait for the foreground process to terminate
+      // wait for the foreground process to terminate (Page 754, Textbook)
       waitfg(fg_pid);
     }
   }
@@ -485,6 +485,7 @@ void do_fg(int jid)
 void waitfg(pid_t pid)
 {
   struct job_t *fg_job = getjobpid(jobs, fg_pid);
+  // wait for foreground process to be get updated
   while (fg_job->state == FG)
   {
     sleep(1);
@@ -505,15 +506,13 @@ void waitfg(pid_t pid)
 void sigchld_handler(int sig)
 {
   // these resources were consulted for how to handle sigchld handler
-  // page 743-749, 773 from textbook
-  // this link was consulted for how waitpd works and for checking exit status of reaped children
-  // https://linux.die.net/man/2/waitpid
-
+  // page 743-749, 773, 779 from textbook
   int status;
   pid_t pid;
   int olderrno = errno;
-
-  // create signal blockers similar to add job for delete job
+  // Set up signals for blocking
+  sigset_t mask_all, prev_all; // set up sig sets
+  sigfillset(&mask_all);       // add all the signals for blocking for deleting a job
 
   while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0)
   {
@@ -565,14 +564,24 @@ void sigchld_handler(int sig)
           sio_puts("terminated by signal ");
           sio_putl(WTERMSIG(status));
           sio_puts("\n");
+
+          // block all signals before deleting a job page 779
+          sigprocmask(SIG_BLOCK, &mask_all, NULL);
           deletejob(jobs, pid);
+          // unblock all signals after deleting a job page 779
+          sigprocmask(SIG_SETMASK, &prev_all, NULL);
         }
       }
     }
     // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT/HANDLED
     else
     {
+
+      // block all signals before deleting a job page 779
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
       deletejob(jobs, pid);
+      // unblock all signals after deleting a job page 779
+      sigprocmask(SIG_SETMASK, &prev_all, NULL);
     }
   }
   errno = olderrno;
@@ -585,8 +594,11 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig)
 {
-  // this code was adapted from page 733 of the textbook
+  // this code was adapted from page 769, 774, 779 of the textbook
   int olderrno = errno;
+  // Set up signals for blocking
+  sigset_t mask_all, prev_all; // set up sig sets
+  sigfillset(&mask_all);       // add all the signals for blocking for deleting a job
   if (fg_pid)
   {
     sio_puts("Job [");
@@ -599,8 +611,12 @@ void sigint_handler(int sig)
     sio_putl(sig);
     sio_puts("\n");
 
-    // delete tjhe job from the job list
-    deletejob(jobs, fg_pid);
+    // delete the job from the job list
+    // block all signals before deleting a job page 779
+    sigprocmask(SIG_BLOCK, &mask_all, NULL);
+    deletejob(jobs, pid);
+    // unblock all signals after deleting a job page 779
+    sigprocmask(SIG_SETMASK, &prev_all, NULL);
 
     // send signal back to the process
     kill(-fg_pid, SIGINT);
@@ -622,7 +638,7 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig)
 {
-  // this code was adapted from page 733 of the textbook
+  // this code was adapted from page 769, 774, of the textbook
   int olderrno = errno;
   if (fg_pid)
   {
