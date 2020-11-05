@@ -614,7 +614,7 @@ void sigint_handler(int sig)
     // delete the job from the job list
     // block all signals before deleting a job page 779
     sigprocmask(SIG_BLOCK, &mask_all, NULL);
-    deletejob(jobs, pid);
+    deletejob(jobs, fg_pid);
     // unblock all signals after deleting a job page 779
     sigprocmask(SIG_SETMASK, &prev_all, NULL);
 
