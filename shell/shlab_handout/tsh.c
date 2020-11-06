@@ -581,29 +581,21 @@ void sigchld_handler(int sig)
         struct job_t *job = getjobpid(jobs, pid);
         if (job != NULL && job->state != ST)
         {
-          if (WSTOPSIG(status) == SIGSTOP)
-          {
-            sigtstp_handler(status);
-          }
-          if (WSTOPSIG(status) == SIGTSTP)
-          {
-            sigtstp_handler(status);
-          }
-          // sio_puts("Job [");
-          // sio_putl(pid2jid(pid));
-          // sio_puts("] ");
-          // sio_puts("(");
-          // sio_putl(pid);
-          // sio_puts(") ");
-          // sio_puts("stopped by signal ");
-          // sio_putl(WSTOPSIG(status));
-          // sio_puts("\n");
+          sio_puts("Job [");
+          sio_putl(pid2jid(pid));
+          sio_puts("] ");
+          sio_puts("(");
+          sio_putl(pid);
+          sio_puts(") ");
+          sio_puts("stopped by signal ");
+          sio_putl(WSTOPSIG(status));
+          sio_puts("\n");
 
-          // // set the job state to stop
-          // job->state = ST;
+          // set the job state to stop
+          job->state = ST;
 
-          // // send the signal back to the process
-          // kill(-pid, WSTOPSIG(status));
+          // send the signal back to the process
+          kill(-pid, WSTOPSIG(status));
         }
       }
     }
@@ -617,22 +609,21 @@ void sigchld_handler(int sig)
         struct job_t *job = getjobpid(jobs, pid);
         if (job != NULL)
         {
-          sigint_handler(WTERMSIG(status));
-          // sio_puts("Job [");
-          // sio_putl(pid2jid(pid));
-          // sio_puts("] ");
-          // sio_puts("(");
-          // sio_putl(pid);
-          // sio_puts(") ");
-          // sio_puts("terminated by signal ");
-          // sio_putl(WTERMSIG(status));
-          // sio_puts("\n");
+          sio_puts("Job [");
+          sio_putl(pid2jid(pid));
+          sio_puts("] ");
+          sio_puts("(");
+          sio_putl(pid);
+          sio_puts(") ");
+          sio_puts("terminated by signal ");
+          sio_putl(WTERMSIG(status));
+          sio_puts("\n");
 
-          // // block all signals before deleting a job page 779
-          // sigprocmask(SIG_BLOCK, &mask_all, NULL);
-          // deletejob(jobs, pid);
-          // // unblock all signals after deleting a job page 779
-          // sigprocmask(SIG_SETMASK, &prev_all, NULL);
+          // block all signals before deleting a job page 779
+          sigprocmask(SIG_BLOCK, &mask_all, NULL);
+          deletejob(jobs, pid);
+          // unblock all signals after deleting a job page 779
+          sigprocmask(SIG_SETMASK, &prev_all, NULL);
         }
       }
     }
