@@ -236,7 +236,7 @@ void eval(char *cmdline)
 
   // TODO: Execute the command(s)
   //       If cmd2 is NULL, then there is only one command
-  {
+  
     if (!builtin_cmd(argv1))
     {
       if (cmd2 != NULL)
