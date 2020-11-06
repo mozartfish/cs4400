@@ -272,8 +272,6 @@ void eval(char *cmdline)
     {
       // // child runs the job
       // // this section is from textbook page 755, 765
-      // // block all signals and save previous blocked set
-      // sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
       if ((pid2 = fork()) == 0)
       {
         dup2(fds[0], 0);
@@ -300,8 +298,6 @@ void eval(char *cmdline)
     {
       // add job
       // // block all signals while waiting for adding a job page 777
-      // sigprocmask(SIG_BLOCK, &mask_all, NULL);
-      // addjob(jobs, pid, FG, cmdline);
       if (cmd2 != NULL)
       {
         addjob(jobs, pid2, FG, cmdline);
@@ -327,7 +323,6 @@ void eval(char *cmdline)
     else
     {
       // // block all signals before adding a job page 777
-      // sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, BG, cmdline);
       // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
@@ -581,8 +576,8 @@ void sigchld_handler(int sig)
     // sio_puts("THE STATUS VARIABLE CAUGHT");
     // sio_putl(status);
     // sio_puts("\n");
-    // THREE CASES
-    // CASE 3: CHILD THAT CAUSED THE RETURN IS STOPPED
+    // FOUR CASES
+    // CASE 4: CHILD THAT CAUSED THE RETURN IS STOPPED
     if (WIFSTOPPED(status))
     {
       // check if the signal that caused the stop was a sigstop or sigstp
@@ -610,7 +605,7 @@ void sigchld_handler(int sig)
         }
       }
     }
-    // CASE 2: CHILD TERMINATED BECAUSE OF SIGNAL NOT CAUGHT
+    // CASE 3: CHILD TERMINATED BECAUSE OF SIGNAL NOT CAUGHT
     else if (WIFSIGNALED(status))
     {
       // check if the signal that caused the stop was a sigint
@@ -638,7 +633,7 @@ void sigchld_handler(int sig)
         }
       }
     }
-    // CASE 4: EXIT NORMALLY
+    // CASE 2: EXIT NORMALLY
     else if (WIFEXITED(status))
     {
       // block all signals before deleting a job page 779
@@ -647,14 +642,9 @@ void sigchld_handler(int sig)
       // unblock all signals after deleting a job page 779
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
     }
-    // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT/HANDLED
+    // CASE 1: OTHER SIGNALS NOT CAUGHT BY THE ABOVE CASES
     else
     {
-      // // block all signals before deleting a job page 779
-      // sigprocmask(SIG_BLOCK, &mask_all, NULL);
-      // deletejob(jobs, pid);
-      // // unblock all signals after deleting a job page 779
-      // sigprocmask(SIG_SETMASK, &prev_all, NULL);
       sio_puts("Job [");
       sio_putl(pid2jid(pid));
       sio_puts("] ");
