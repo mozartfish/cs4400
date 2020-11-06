@@ -299,19 +299,25 @@ void eval(char *cmdline)
       // add job
       // block all signals while waiting for adding a job page 777
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
-      addjob(jobs, pid, FG, cmdline);
+      // addjob(jobs, pid, FG, cmdline);
       if (cmd2 != NULL)
       {
         addjob(jobs, pid2, FG, cmdline);
+        addjob(jobs, pid, BG, cmdline);
+      }
+      else {
+        addjob(jobs, pid, FG, cmdline);
       }
       // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
-      fg_pid = pid;
-      waitfg(pid);
-
       if (cmd2 != NULL)
       {
+        fg_pid = pid2;
         waitfg(pid2);
+      }
+      else {
+      fg_pid = pid;
+      waitfg(pid);
       }
     }
     else
