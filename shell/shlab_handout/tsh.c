@@ -245,6 +245,7 @@ void eval(char *cmdline)
     sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
     if (cmd2 != NULL)
     {
+      // set up the pipe for the file descriptors
       pipe(fds);
     }
 
@@ -254,7 +255,9 @@ void eval(char *cmdline)
 
       if (cmd2 != NULL)
       {
+        // redirect the file descriptor write end to a new write end
         dup2(fds[1], 1);
+        // close the ends of the pipe for the parent process according to Flatt pipe videos
         close(fds[0]);
         close(fds[1]);
       }
@@ -274,11 +277,17 @@ void eval(char *cmdline)
       // // this section is from textbook page 755, 765
       if ((pid2 = fork()) == 0)
       {
+        setpgid(0, 0);
+        
+        // send the information from the write end of the pipe to the read end for the second process
         dup2(fds[0], 0);
+        // close the ends of the pipe for the parent process according to Flatt pipe videos
         close(fds[0]);
         close(fds[1]);
         // unblock SIGCHLD and other signals before execve
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
+        // execute the second command that we got from the pipe
         if (execve(argv2[0], argv2, environ) < 0)
         {
           printf("%s: Command not found\n", argv2[0]);
@@ -287,6 +296,7 @@ void eval(char *cmdline)
       }
     }
 
+    // close the ends of the pipe for the parent process according to Flatt pipe videos
     if (cmd2 != NULL)
     {
       close(fds[0]);
@@ -300,15 +310,20 @@ void eval(char *cmdline)
       // // block all signals while waiting for adding a job page 777
       if (cmd2 != NULL)
       {
+        // piped command is always a foreground process
         addjob(jobs, pid2, FG, cmdline);
+        // add a background job for the first command
         addjob(jobs, pid, BG, cmdline);
       }
       else
       {
+        // case when we only have one command
         addjob(jobs, pid, FG, cmdline);
       }
       // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
+      // wait for the foreground process to finish
       if (cmd2 != NULL)
       {
         fg_pid = pid2;
@@ -471,13 +486,14 @@ int builtin_cmd(char **argv)
  */
 void do_bg(int jid)
 {
+  // boolean for indicating whether we found a background process
+  // non-zero true, zero, false
   int found_bg = 0;
   int i;
   for (i = 0; i < MAXJOBS; i++)
   {
     if (jobs[i].jid == jid)
     {
-      // indicate we found a background job
       found_bg = 1;
 
       // restart the process if it is currently stopped
@@ -489,7 +505,7 @@ void do_bg(int jid)
     }
   }
 
-  // error checking if we do not find the job
+  // We do not find a job
   if (!found_bg)
   {
     printf("%%");
@@ -503,14 +519,16 @@ void do_bg(int jid)
  */
 void do_fg(int jid)
 {
+  // boolean for indicating whether we found a foreground process
+  // non-zero true, zero, false
   int found_fg = 0;
   int j;
   for (j = 0; j < MAXJOBS; j++)
   {
     if (jobs[j].jid == jid)
     {
-      // found a fg process
       found_fg = 1;
+
       // set the fg pid to the current fg proces pid
       fg_pid = jobs[j].pid;
 
@@ -525,6 +543,7 @@ void do_fg(int jid)
     }
   }
 
+  // We do not find a job
   if (!found_fg)
   {
     printf("%%");
