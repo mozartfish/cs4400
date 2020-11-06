@@ -268,7 +268,7 @@ void eval(char *cmdline)
         if (cmd2 != NULL)
         {
           sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
-          if ((pid2 = fork()) == 0)
+          if ((fork()) == 0)
           {
             dup2(fds[0], 0);
             close(fds[1]);
