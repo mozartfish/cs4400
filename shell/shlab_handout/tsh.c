@@ -297,6 +297,7 @@ void eval(char *cmdline)
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
         fg_pid = pid;
         waitfg(pid);
+        waitfg(pid2);
       }
       else
       {
@@ -343,7 +344,6 @@ void eval(char *cmdline)
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
         fg_pid = pid;
         waitfg(pid);
-        waitfg(pid2);
       }
       else
       {
