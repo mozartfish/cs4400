@@ -285,12 +285,6 @@ void eval(char *cmdline)
       }
     }
 
-    if (cmd2 != NULL)
-    {
-      close(fds[0]);
-      close(fds[1]);
-    }
-
     // wait for foreground process to terminate
     if (!bg)
     {
@@ -309,6 +303,11 @@ void eval(char *cmdline)
       waitfg(pid);
       if (cmd2 != NULL)
       {
+
+          close(fds[0]);
+          close(fds[1]);
+        
+
         waitfg(pid2);
       }
     }
