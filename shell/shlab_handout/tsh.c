@@ -281,6 +281,8 @@ void eval(char *cmdline)
           }
         }
 
+        close(fds[0]);
+        close(fds[1]);
         // wait for foreground process to terminate
         if (!bg)
         {
