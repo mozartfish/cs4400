@@ -206,7 +206,7 @@ void eval(char *cmdline)
   char *argv2[MAXARGS]; /* argv for second command execve() */
   int bg;               /* should the job run in bg or fg? */
   pid_t pid;            // pid for forking
-  pid_t pid2;           // pid for forking
+  pid_t pid2;           // second pid for forking two commands
   int fds[2];           // array for the piping
 
   // Set up signals for blocking
@@ -239,10 +239,6 @@ void eval(char *cmdline)
 
   if (!builtin_cmd(argv1))
   {
-    if (cmd2 != NULL)
-    {
-      pipe(fds);
-    }
     // child runs the job
     // this section is from textbook page 755, 765
     // block all signals and save previous blocked set
@@ -251,66 +247,40 @@ void eval(char *cmdline)
     {
       setpgid(0, 0);
       // unblock SIGCHLD and other signals before execve
-
-      // set up the pipe connecting first and second commands
-      if (cmd2 != NULL)
-      {
-        dup2(fds[1], 1);
-        close(fds[0]);
-      }
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
       if (execve(argv1[0], argv1, environ) < 0)
       {
         printf("%s: Command not found\n", argv1[0]);
         exit(0);
       }
-
-      if (cmd2 != NULL)
-      {
-        if ((fork()) == 0)
-        {
-          dup2(fds[0], 0);
-          close(fds[1]);
-          if (execve(argv2[0], argv2, environ) < 0)
-          {
-            printf("%s: Command not found\n", argv2[0]);
-            exit(0);
-          }
-        }
-      }
-
-      if (cmd2 != NULL)
-      {
-        close(fds[0]);
-        close(fds[1]);
-      }
-
-      // wait for foreground process to terminate
-      if (!bg)
-      {
-        // add job
-        // block all signals while waiting for adding a job page 777
-        sigprocmask(SIG_BLOCK, &mask_all, NULL);
-        addjob(jobs, pid, FG, cmdline);
-        // unblock all signals after adding a job
-        sigprocmask(SIG_SETMASK, &prev_all, NULL);
-        fg_pid = pid;
-        waitfg(pid);
-      }
-      else
-      {
-        // block all signals before adding a job page 777
-        sigprocmask(SIG_BLOCK, &mask_all, NULL);
-        addjob(jobs, pid, BG, cmdline);
-        // unblock all signals after adding a job
-        sigprocmask(SIG_SETMASK, &prev_all, NULL);
-        printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
-      }
     }
 
-    return;
+    // wait for foreground process to terminate
+    if (!bg)
+    {
+      // add job
+      // block all signals while waiting for adding a job page 777
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
+      addjob(jobs, pid, FG, cmdline);
+      // unblock all signals after adding a job
+      sigprocmask(SIG_SETMASK, &prev_all, NULL);
+      fg_pid = pid;
+      waitfg(pid);
+    }
+    else
+    {
+      // block all signals before adding a job page 777
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
+      addjob(jobs, pid, BG, cmdline);
+      // unblock all signals after adding a job
+      sigprocmask(SIG_SETMASK, &prev_all, NULL);
+      printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
+    }
   }
+
+  return;
 }
+
 /* 
  * parseline - Parse the command line and build the argv array.
  * 
@@ -608,7 +578,6 @@ void sigchld_handler(int sig)
     // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT/HANDLED
     else
     {
-
       // block all signals before deleting a job page 779
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       deletejob(jobs, pid);
