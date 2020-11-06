@@ -256,7 +256,7 @@ void eval(char *cmdline)
       if (cmd2 != NULL)
       {
         dup2(fds[1], 1);
-        close(fds[0]);
+        close(fds[1]);
       }
 
       // unblock SIGCHLD and other signals before execve
@@ -277,7 +277,7 @@ void eval(char *cmdline)
       if ((pid2 = fork()) == 0)
       {
         dup2(fds[0], 0);
-        close(fds[1]);
+        close(fds[0]);
         // unblock SIGCHLD and other signals before execve
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
         if (execve(argv2[0], argv2, environ) < 0)
@@ -307,6 +307,7 @@ void eval(char *cmdline)
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
       fg_pid = pid;
       waitfg(pid);
+
       if (cmd2 != NULL) {
         waitfg(pid2);
       }
