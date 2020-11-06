@@ -256,7 +256,7 @@ void eval(char *cmdline)
       if (cmd2 != NULL)
       {
         dup2(fds[1], 1);
-        close(fds[1]);
+        close(fds[0]);
       }
 
       // unblock SIGCHLD and other signals before execve
@@ -270,16 +270,11 @@ void eval(char *cmdline)
 
     if (cmd2 != NULL)
     {
-      // child runs the job
-      // this section is from textbook page 755, 765
-      // block all signals and save previous blocked set
-      sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+
       if ((pid2 = fork()) == 0)
       {
         dup2(fds[0], 0);
-        close(fds[0]);
-        // unblock SIGCHLD and other signals before execve
-        sigprocmask(SIG_SETMASK, &prev_all, NULL);
+        close(fds[1]);
         if (execve(argv2[0], argv2, environ) < 0)
         {
           printf("%s: Command not found\n", argv2[0]);
