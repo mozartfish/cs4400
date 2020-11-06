@@ -209,8 +209,6 @@ void eval(char *cmdline)
   pid_t pid2;           // second pid for forking two commands
   int fds[2];           // array for the piping
 
-  pipe(fds);
-
   // Set up signals for blocking
   sigset_t mask_all, prev_all; // set up sig sets
   sigfillset(&mask_all);       // add all the signals for blocking for adding a job
@@ -245,6 +243,11 @@ void eval(char *cmdline)
     // this section is from textbook page 755, 765
     // block all signals and save previous blocked set
     sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+    if (cmd2 != NULL)
+    {
+      pipe(fds);
+    }
+
     if ((pid = fork()) == 0)
     {
       setpgid(0, 0);
