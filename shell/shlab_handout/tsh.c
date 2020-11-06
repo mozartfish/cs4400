@@ -278,7 +278,7 @@ void eval(char *cmdline)
       if ((pid2 = fork()) == 0)
       {
         setpgid(0, 0);
-        
+
         // send the information from the write end of the pipe to the read end for the second process
         dup2(fds[0], 0);
         // close the ends of the pipe for the parent process according to Flatt pipe videos
@@ -337,7 +337,6 @@ void eval(char *cmdline)
     }
     else
     {
-      // // block all signals before adding a job page 777
       addjob(jobs, pid, BG, cmdline);
       // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
