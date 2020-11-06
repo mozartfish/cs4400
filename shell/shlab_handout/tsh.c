@@ -285,7 +285,8 @@ void eval(char *cmdline)
       }
     }
 
-    if (cmd2 != NULL) {
+    if (cmd2 != NULL)
+    {
       close(fds[0]);
       close(fds[1]);
     }
@@ -297,15 +298,17 @@ void eval(char *cmdline)
       // block all signals while waiting for adding a job page 777
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, FG, cmdline);
-      if (cmd2 != NULL) {
+      if (cmd2 != NULL)
+      {
         addjob(jobs, pid2, FG, cmdline);
       }
       // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
       fg_pid = pid;
       waitfg(pid);
-      if (cmd2 != NULL) {
-        fg_pid = pid2;
+      if (cmd2 != NULL)
+      {
         waitfg(pid2);
       }
     }
