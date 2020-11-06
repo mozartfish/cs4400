@@ -263,24 +263,24 @@ void eval(char *cmdline)
         printf("%s: Command not found\n", argv1[0]);
         exit(0);
       }
+    }
 
-      if (cmd2 != NULL)
+    if (cmd2 != NULL)
+    {
+      // child runs the job
+      // this section is from textbook page 755, 765
+      // block all signals and save previous blocked set
+      sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+      if ((pid2 = fork()) == 0)
       {
-        // child runs the job
-        // this section is from textbook page 755, 765
-        // block all signals and save previous blocked set
-        sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
-        if ((pid2 = fork()) == 0)
+        dup2(fds[0], 0);
+        close(fds[1]);
+        // unblock SIGCHLD and other signals before execve
+        sigprocmask(SIG_SETMASK, &prev_all, NULL);
+        if (execve(argv2[0], argv2, environ) < 0)
         {
-          dup2(fds[0], 0);
-          close(fds[1]);
-          // unblock SIGCHLD and other signals before execve
-          sigprocmask(SIG_SETMASK, &prev_all, NULL);
-          if (execve(argv2[0], argv2, environ) < 0)
-          {
-            printf("%s: Command not found\n", argv2[0]);
-            exit(0);
-          }
+          printf("%s: Command not found\n", argv2[0]);
+          exit(0);
         }
       }
     }
