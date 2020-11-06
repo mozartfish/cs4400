@@ -292,6 +292,7 @@ void eval(char *cmdline)
         // block all signals while waiting for adding a job page 777
         sigprocmask(SIG_BLOCK, &mask_all, NULL);
         addjob(jobs, pid, FG, cmdline);
+        addjob(jobs, pid2, FG, cmdline);
         // unblock all signals after adding a job
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
         fg_pid = pid;
@@ -302,6 +303,7 @@ void eval(char *cmdline)
         // block all signals before adding a job page 777
         sigprocmask(SIG_BLOCK, &mask_all, NULL);
         addjob(jobs, pid, BG, cmdline);
+        addjob(jobs, pid2, BG, cmdline);
         // unblock all signals after adding a job
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
         printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
