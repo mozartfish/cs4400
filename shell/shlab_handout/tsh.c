@@ -573,8 +573,12 @@ void sigchld_handler(int sig)
 
   while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0)
   {
-    printf("THE PID THAT WAS CAUGHT, %d\n", pid);
-    printf("THE STATUS VARIABLE CAUGHT %d\n", status);
+    sio_puts("THE PID VALUE");
+    sio_putl(pid);
+    sio_puts("\n");
+    sio_puts("THE STATUS VARIABLE CAUGHT");
+    sio_putl(status);
+    sio_puts("\n");
     // THREE CASES
     // CASE 3: CHILD THAT CAUSED THE RETURN IS STOPPED
     if (WIFSTOPPED(status))
