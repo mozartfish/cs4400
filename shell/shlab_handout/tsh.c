@@ -255,8 +255,8 @@ void eval(char *cmdline)
       {
         dup2(fds[1], 1);
         close(fds[0]);
-        close(fds[1]);
       }
+
       // unblock SIGCHLD and other signals before execve
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
       if (execve(argv1[0], argv1, environ) < 0)
@@ -275,7 +275,6 @@ void eval(char *cmdline)
       if ((pid2 = fork()) == 0)
       {
         dup2(fds[0], 0);
-        close(fds[0]);
         close(fds[1]);
         // unblock SIGCHLD and other signals before execve
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
@@ -287,9 +286,6 @@ void eval(char *cmdline)
       }
     }
 
-    close(fds[0]);
-    close(fds[1]);
-
     // wait for foreground process to terminate
     if (!bg)
     {
@@ -299,6 +295,8 @@ void eval(char *cmdline)
       addjob(jobs, pid, FG, cmdline);
       if (cmd2 != NULL)
       {
+        close(fds[0]);
+        close(fds[1]);
         addjob(jobs, pid2, FG, cmdline);
       }
       // unblock all signals after adding a job
