@@ -270,10 +270,10 @@ void eval(char *cmdline)
 
     if (cmd2 != NULL)
     {
-      // child runs the job
-      // this section is from textbook page 755, 765
-      // block all signals and save previous blocked set
-      sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+      // // child runs the job
+      // // this section is from textbook page 755, 765
+      // // block all signals and save previous blocked set
+      // sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
       if ((pid2 = fork()) == 0)
       {
         dup2(fds[0], 0);
@@ -299,8 +299,8 @@ void eval(char *cmdline)
     if (!bg)
     {
       // add job
-      // block all signals while waiting for adding a job page 777
-      sigprocmask(SIG_BLOCK, &mask_all, NULL);
+      // // block all signals while waiting for adding a job page 777
+      // sigprocmask(SIG_BLOCK, &mask_all, NULL);
       // addjob(jobs, pid, FG, cmdline);
       if (cmd2 != NULL)
       {
@@ -326,8 +326,8 @@ void eval(char *cmdline)
     }
     else
     {
-      // block all signals before adding a job page 777
-      sigprocmask(SIG_BLOCK, &mask_all, NULL);
+      // // block all signals before adding a job page 777
+      // sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, BG, cmdline);
       // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
