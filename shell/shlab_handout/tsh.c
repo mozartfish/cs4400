@@ -305,7 +305,8 @@ void eval(char *cmdline)
         addjob(jobs, pid2, FG, cmdline);
         addjob(jobs, pid, BG, cmdline);
       }
-      else {
+      else
+      {
         addjob(jobs, pid, FG, cmdline);
       }
       // unblock all signals after adding a job
@@ -315,9 +316,10 @@ void eval(char *cmdline)
         fg_pid = pid2;
         waitfg(pid2);
       }
-      else {
-      fg_pid = pid;
-      waitfg(pid);
+      else
+      {
+        fg_pid = pid;
+        waitfg(pid);
       }
     }
     else
@@ -628,14 +630,32 @@ void sigchld_handler(int sig)
         }
       }
     }
-    // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT/HANDLED
-    else
+    // CASE 4: EXIT NORMALLY
+    else if (WIFEXITED(status))
     {
       // block all signals before deleting a job page 779
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       deletejob(jobs, pid);
       // unblock all signals after deleting a job page 779
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
+    }
+    // CASE 1: CHILD TERMINATED NORMALLY OR SOME OTHER SIGNAL WASN'T CAUGHT/HANDLED
+    else
+    {
+      // // block all signals before deleting a job page 779
+      // sigprocmask(SIG_BLOCK, &mask_all, NULL);
+      // deletejob(jobs, pid);
+      // // unblock all signals after deleting a job page 779
+      // sigprocmask(SIG_SETMASK, &prev_all, NULL);
+      sio_puts("Job [");
+      sio_putl(pid2jid(pid));
+      sio_puts("] ");
+      sio_puts("(");
+      sio_putl(pid);
+      sio_puts(") ");
+      sio_puts("terminated by signal ");
+      sio_putl(WTERMSIG(status));
+      sio_puts("\n");
     }
   }
   errno = olderrno;
