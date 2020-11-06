@@ -298,7 +298,7 @@ void eval(char *cmdline)
       sigprocmask(SIG_BLOCK, &mask_all, NULL);
       addjob(jobs, pid, FG, cmdline);
       if (cmd2 != NULL) {
-        addjobs(jobs, pid2, FG, cmdline);
+        addjob(jobs, pid2, FG, cmdline);
       }
       // unblock all signals after adding a job
       sigprocmask(SIG_SETMASK, &prev_all, NULL);
