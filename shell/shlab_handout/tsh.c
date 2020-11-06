@@ -242,7 +242,7 @@ void eval(char *cmdline)
     // set up the pipe for the two processes
     if (cmd2 != NULL)
     {
-      pipe(fds[2]);
+      pipe(fds);
     }
 
     // child runs the job
