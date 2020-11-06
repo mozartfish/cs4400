@@ -275,7 +275,7 @@ void eval(char *cmdline)
       if ((pid2 = fork()) == 0)
       {
         dup2(fds[0], 0);
-        close fds[0];
+        close (fds[0]);
         close(fds[1]);
         // unblock SIGCHLD and other signals before execve
         sigprocmask(SIG_SETMASK, &prev_all, NULL);
