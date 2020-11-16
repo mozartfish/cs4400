@@ -10,7 +10,7 @@ typedef struct fish {
 
 #define SCHOOL_COUNT(p)     *(int *)p
 #define FISH_START(p)       (char *)p + sizeof(int)
-#define NTH_FISH_SIZE(p, n) ((fish *)FISH_START(p))[n].size
+#define NTH_FISH_SIZE(p, n) ((fish *) (FISH_START(p)))[n].size
 
 static void* make_school_of_fish(int n) {
   void* p = malloc(sizeof(int) + n * sizeof(fish));
@@ -30,6 +30,8 @@ int main() {
   for(i = 0; i < SCHOOL_COUNT(p); i++)
     printf(" %f", NTH_FISH_SIZE(p, i));
   printf("\n");
+
+  free(p);
 
   return 0;
 }

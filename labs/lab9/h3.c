@@ -40,9 +40,13 @@ int main() {
   int x[N] = { 10, 100, 1000, 10000, 1000,
 	       10, 100, 1000, 10000, 1000 };
   int* y;
+  int* y2;
+
 
   y = matrix_times_vector(A, x);
+  y2 = matrix_times_vector(A, x);
   show_vector(y);
+  show_vector(y2);
 
   return 0;
 }

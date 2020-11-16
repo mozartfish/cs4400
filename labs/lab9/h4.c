@@ -9,7 +9,7 @@ static int* matrix_times_vector(int A[N][N], int* x) {
   int i, j;
 
   /* initialize y */
-  for(i = N+1; i--; )
+  for(i = N; i--; )
     y[i] = 0;
 
   for(i = 0; i < N; i++)
@@ -43,6 +43,7 @@ int main() {
 
   y = matrix_times_vector(A, x);
   show_vector(y);
+  free(y);
 
   return 0;
 }
