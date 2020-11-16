@@ -3,7 +3,7 @@
 int main() {
   char s[8];
 
-  gets(s);
+ fgets(s, 8, stdin);
   printf("Got %s\n", s);
 
   return 0;
