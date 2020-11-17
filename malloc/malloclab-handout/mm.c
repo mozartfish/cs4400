@@ -26,6 +26,10 @@
 /* rounds up to the nearest multiple of mem_pagesize() */
 #define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
 
+/* create a typedef called block_header and block_footer according to assignment hints */
+typedef block_header; 
+typedef block_footer;
+
 void *current_avail = NULL;
 int current_avail_size = 0;
 
