@@ -26,9 +26,54 @@
 /* rounds up to the nearest multiple of mem_pagesize() */
 #define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
 
+/************************************************************************************/
+
 /* create a typedef called block_header and block_footer according to assignment hints */
 typedef block_header; 
 typedef block_footer;
+
+/* macro to keep track of overhead. if the overhead is not taken care of we get a segfault */
+#define OVERHEAD (sizeof(block_header)+sizeof(block_footer))
+
+/* macros for getting the header or footer */
+#define HDRP(bp) ((char *)(bp) - sizeof(block_header))
+#define FTRP(bp) ((char *)(bp)+GET_SIZE(HDRP(bp))-OVERHEAD)
+
+/* macros for getting the next or previous payload pointers */
+#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)))
+#define PREV_BLKP(bp) ((char *)(bp)-GET_SIZE((char *)(bp)-OVERHEAD))
+
+/*************************************************************************************/
+
+/* create size_t for header and footer according to assignment hints */
+size_t header;
+size_t footer;
+
+/* Given a pointer to a header, get or set its value */
+#define GET(p) (*(size_t *)(p))
+#define PUT(p, val) (*(size_t *)(p) = (val))
+
+/* Combine a size and alloc bit */
+#define PACK(size, alloc) ((size) | (alloc))
+
+/* Given a header pointer, get the alloc or size */
+#define GET_ALLOC(p) (GET(p) & 0x1)
+#define GET_SIZE(p) (GET(p) & ~0xF)
+
+/**************************************************************************************/
+
+/* define a data structure for a doubly linked list for keeping track of memory */
+typedef struct node {
+  struct node* next; // pointer to the next node in the linked list 
+  struct node* prev; // pointer to the previous node in the linked list 
+}node;
+
+/*Given a header pointer, get the alloc or size*/
+#define GET_ALLOC(p) ((block_header *)(p))->allocated
+#define GET_SIZE(p) ((block_header *)(p))->size
+
+
+
 
 void *current_avail = NULL;
 int current_avail_size = 0;
