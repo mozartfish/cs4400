@@ -7,6 +7,16 @@
  *
  * NOTE TO STUDENTS: Replace this header comment with your own header
  * comment that gives a high level description of your solution.
+ * 
+ * Pranav Rajan
+ * Implements 4 basic strategies to quickly and efficiently allocate memory
+ * according to Luis Ceze's Lectures 1-4 https://www.youtube.com/playlist?list=PL0oekSefhQVJdk0hSRu6sZ2teWM740NtL
+ *  and in class:
+ * 1) Explicit free list
+ * 2) coalesce free blocks
+ * 3) unmapping unused pages
+ * 4) doubling chunk size 
+ * 5) LIFO / Addressed Ordered By Policy
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,9 +82,7 @@ typedef struct node {
 #define GET_ALLOC(p) ((block_header *)(p))->allocated
 #define GET_SIZE(p) ((block_header *)(p))->size
 
-
-
-
+//
 void *current_avail = NULL;
 int current_avail_size = 0;
 
