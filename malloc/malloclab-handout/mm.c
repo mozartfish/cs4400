@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 #include "mm.h"
 #include "memlib.h"
@@ -93,7 +94,7 @@ int mm_init(void)
 {
   current_avail = NULL;
   current_avail_size = 0;
-  
+  // return 0 if there are no errors for the allocation 
   return 0;
 }
 
@@ -103,21 +104,37 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  int newsize = ALIGN(size);
-  void *p;
-  
-  if (current_avail_size < newsize) {
-    current_avail_size = PAGE_ALIGN(newsize);
-    current_avail = mem_map(current_avail_size);
-    if (current_avail == NULL)
-      return NULL;
+  // check if the size given is 0 
+  if (size == 0) {
+    return NULL;
   }
 
-  p = current_avail;
-  current_avail += newsize;
-  current_avail_size -= newsize;
+  // check if the requested memory is greater than what is available
+  if (size > current_avail_size) {
+    printf("There is not enough memory available to satisfy the malloc size request");
+    return NULL;
+  }
+
+
+
+  /*
+   * THE ORIGINAL ORIGINAL CODE GIVEN
+  */
+  // int newsize = ALIGN(size);
+  // void *p;
   
-  return p;
+  // if (current_avail_size < newsize) {
+  //   current_avail_size = PAGE_ALIGN(newsize);
+  //   current_avail = mem_map(current_avail_size);
+  //   if (current_avail == NULL)
+  //     return NULL;
+  // }
+
+  // p = current_avail;
+  // current_avail += newsize;
+  // current_avail_size -= newsize;
+  
+  // return p;
 }
 
 /*
