@@ -28,12 +28,6 @@
 #include "mm.h"
 #include "memlib.h"
 
-/* Request more memory by calling mem_map
-*  Initialize the new chunk of memory as applicable
-*  Update free list if applicable
-*/
-static void extend(size_t s);
-
 /* always use 16-byte alignment */
 #define ALIGNMENT 16
 
@@ -79,7 +73,44 @@ typedef struct node {
   struct node* prev; // pointer to the previous node in the linked list 
 }node;
 
+/* HELPER FUNCTIONS */
 
+/* Request more memory by calling mem_map
+*  Initialize the new chunk of memory as applicable
+*  Update free list if applicable
+*/
+static void extend(size_t s);
+
+/* Set a block to allocated
+*  Update block headers/footers as needed
+*  Update free list if applicable
+*  Split block if applicable
+*/
+// static void set_allocated(void *b, size_t size);
+
+/* Coalesce a free block if applicable
+*  Returns pointer to new coalesced block
+*/
+// static void *coalesce(void *bp);
+/*************************************************************************************/
+
+/* Request more memory by calling mem_map
+*  Initialize the new chunk of memory as applicable
+*  Update free list if applicable
+*/
+static void extend(size_t s);
+
+/* Set a block to allocated
+*  Update block headers/footers as needed
+*  Update free list if applicable
+*  Split block if applicable
+*/
+// static void set_allocated(void *b, size_t size);
+
+/* Coalesce a free block if applicable
+*  Returns pointer to new coalesced block
+*/ 
+// static void *coalesce(void *bp);
 // GLOBAL VARIABLES
 
 // pointer to the memory that is currently available
@@ -160,3 +191,14 @@ static void extend(size_t size) {
 
 }
 
+/* Set a block to allocated
+*  Update block headers/footers as needed
+*  Update free list if applicable
+*  Split block if applicable
+*/
+// static void set_allocated(void *b, size_t size)
+
+/* Coalesce a free block if applicable
+*  Returns pointer to new coalesced block
+*/
+// static void *coalesce(void *bp)
