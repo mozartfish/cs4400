@@ -28,6 +28,12 @@
 #include "mm.h"
 #include "memlib.h"
 
+/* Request more memory by calling mem_map
+*  Initialize the new chunk of memory as applicable
+*  Update free list if applicable
+*/
+static void extend(size_t s);
+
 /* always use 16-byte alignment */
 #define ALIGNMENT 16
 
@@ -40,25 +46,19 @@
 /************************************************************************************/
 
 /* create a typedef called block_header and block_footer according to assignment hints */
-typedef block_header; 
-typedef block_footer;
+typedef size_t block_header; 
+typedef size_t block_footer;
 
-/* macro to keep track of overhead. if the overhead is not taken care of we get a segfault */
 #define OVERHEAD (sizeof(block_header)+sizeof(block_footer))
 
-/* macros for getting the header or footer */
+/* Given a payload pointer, get the header or footer pointer */
 #define HDRP(bp) ((char *)(bp) - sizeof(block_header))
 #define FTRP(bp) ((char *)(bp)+GET_SIZE(HDRP(bp))-OVERHEAD)
 
-/* macros for getting the next or previous payload pointers */
+/* Given a payload pointer, get the next or previous payload pointer */
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)))
 #define PREV_BLKP(bp) ((char *)(bp)-GET_SIZE((char *)(bp)-OVERHEAD))
-
 /*************************************************************************************/
-
-/* create size_t for header and footer according to assignment hints */
-size_t header;
-size_t footer;
 
 /* Given a pointer to a header, get or set its value */
 #define GET(p) (*(size_t *)(p))
@@ -79,12 +79,13 @@ typedef struct node {
   struct node* prev; // pointer to the previous node in the linked list 
 }node;
 
-/*Given a header pointer, get the alloc or size*/
-#define GET_ALLOC(p) ((block_header *)(p))->allocated
-#define GET_SIZE(p) ((block_header *)(p))->size
 
-//
+// GLOBAL VARIABLES
+
+// pointer to the memory that is currently available
 void *current_avail = NULL;
+
+// the size of the of the memory that is currently available
 int current_avail_size = 0;
 
 /* 
@@ -143,3 +144,19 @@ void *mm_malloc(size_t size)
 void mm_free(void *ptr)
 {
 }
+
+/**************************************************************************************************/
+
+/*Helper Functions*/
+
+/* Request more memory by calling mem_map
+*  Initialize the new chunk of memory as applicable
+*  Update free list if applicable
+*/
+static void extend(size_t size) {
+  // request memory for list data structure and storing the information for malloc
+  current_avail_size = PAGE_ALIGN(size);
+  current_avail_size = mem_map(size);
+
+}
+
