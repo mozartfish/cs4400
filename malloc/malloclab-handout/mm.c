@@ -178,9 +178,31 @@ static void extend(size_t s) {
 
  // PAYLOAD FOOTER
   PUT(g + current_avail_size - 16, PACK(current_avail_size - 32, 0));
-  
+
   // EPILOG HEADER
   PUT(g + current_avail_size - 8, PACK(0, 1));
+}
+
+static void mem_next(void *page_chunk)
+{
+  memory_list *new_chunk = (memory_list *)page_chunk;
+
+  // check if the start is null
+  if (mem_start == NULL)
+  {
+    mem_start = new_chunk;
+    mem_start->next = NULL;
+    mem_start->prev = NULL;
+    mem_end->next = NULL;
+    mem_end->prev = mem_start;
+  }
+  else
+  {
+    // update the pointers of the new
+    new_chunk->next = NULL;
+    new_chunk->prev = mem_end->prev;
+    mem_end = new_chunk;
+  }
 }
 
 /*
