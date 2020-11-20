@@ -67,11 +67,11 @@ typedef size_t block_footer;
 
 /**************************************************************************************/
 
-/* define a data structure for a doubly linked list for keeping track of memory */
-typedef struct node {
-  struct node* next; // pointer to the next node in the linked list 
-  struct node* prev; // pointer to the previous node in the linked list 
-}node;
+/* define a doubly linked list for keeping track of the available heap */
+typedef struct memory_list{
+  struct memory_list* next; 
+  struct memory_list* prev;
+}memory_list;
 
 /* HELPER FUNCTIONS */
 
@@ -80,6 +80,11 @@ typedef struct node {
 *  Update free list if applicable
 */
 static void extend(size_t s);
+
+/* Function that adds nodes to the doubly linked list
+* that is keeping track of memory 
+*/
+static void mem_next(void *page_chunk);
 
 /* Set a block to allocated
 *  Update block headers/footers as needed
@@ -98,7 +103,31 @@ static void extend(size_t s);
 *  Initialize the new chunk of memory as applicable
 *  Update free list if applicable
 */
-static void extend(size_t s);
+static void extend(size_t size) {
+  current_avail_size = PAGE_ALIGN(size);
+  current_avail = mem_map(current_avail_size);
+
+  
+}
+
+static void mem_next(void *page_chunk) {
+  memory_list * new_chunk = (memory_list *)page_chunk;
+
+  // check if the start is null 
+  if (mem_start == NULL) {
+    mem_start = new_chunk;
+    mem_start->next = NULL;
+    mem_start->prev = NULL;
+    mem_end->next = NULL;
+    mem_end->prev = mem_start;
+  }
+  else {
+    // update the pointers of the new
+    new_chunk->next = NULL;
+    new_chunk->prev = mem_end->prev;
+    mem_end = new_chunk;
+  }
+}
 
 /* Set a block to allocated
 *  Update block headers/footers as needed
@@ -119,14 +148,19 @@ void *current_avail = NULL;
 // the size of the of the memory that is currently available
 int current_avail_size = 0;
 
+// global pointers for keeping track of the start and end of the list
+static memory_list *mem_start = NULL;
+static memory_list *mem_end = NULL;
+
 /* 
  * mm_init - initialize the malloc package.
  */
 int mm_init(void)
 {
   current_avail = NULL;
+  mem_start = NULL;
+  mem_end = NULL;
   current_avail_size = 0;
-  // return 0 if there are no errors for the allocation 
   return 0;
 }
 
@@ -141,14 +175,10 @@ void *mm_malloc(size_t size)
     return NULL;
   }
 
-  // check if the requested memory is greater than what is available
-  if (size > current_avail_size) {
-    printf("There is not enough memory available to satisfy the malloc size request");
-    return NULL;
-  }
+  int new_size = ALIGN(size);
 
-
-
+  // print the new size
+  printf("The new size: %d\n", new_size);
   /*
    * THE ORIGINAL ORIGINAL CODE GIVEN
   */
@@ -176,29 +206,3 @@ void mm_free(void *ptr)
 {
 }
 
-/**************************************************************************************************/
-
-/*Helper Functions*/
-
-/* Request more memory by calling mem_map
-*  Initialize the new chunk of memory as applicable
-*  Update free list if applicable
-*/
-static void extend(size_t size) {
-  // request memory for list data structure and storing the information for malloc
-  current_avail_size = PAGE_ALIGN(size);
-  current_avail_size = mem_map(size);
-
-}
-
-/* Set a block to allocated
-*  Update block headers/footers as needed
-*  Update free list if applicable
-*  Split block if applicable
-*/
-// static void set_allocated(void *b, size_t size)
-
-/* Coalesce a free block if applicable
-*  Returns pointer to new coalesced block
-*/
-// static void *coalesce(void *bp)
