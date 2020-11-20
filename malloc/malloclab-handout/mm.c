@@ -144,7 +144,8 @@ void *mm_malloc(size_t size)
   {
     // update the current available size by align by aligning
     current_avail_size = PAGE_ALIGN(new_size);
-    current_avail = extend(current_avail_size);
+    extend(current_avail_size);
+    // current_avail = mem_map(current_avail_size);
     if (current_avail == NULL)
       return NULL;
   }
