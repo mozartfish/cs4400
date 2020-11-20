@@ -10,13 +10,10 @@
  * 
  * Pranav Rajan
  * Implements 4 basic strategies to quickly and efficiently allocate memory
- * according to Luis Ceze's Lectures 1-4 https://www.youtube.com/playlist?list=PL0oekSefhQVJdk0hSRu6sZ2teWM740NtL
- *  and in class:
  * 1) Explicit free list
  * 2) coalesce free blocks
  * 3) unmapping unused pages
  * 4) doubling chunk size 
- * 5) LIFO / Addressed Ordered By Policy
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,10 +65,10 @@ typedef size_t block_footer;
 /**************************************************************************************/
 
 /* define a doubly linked list for keeping track of the available heap */
-typedef struct memory_list{
-  struct memory_list* next; 
-  struct memory_list* prev;
-}memory_list;
+typedef struct mem_chunk_node{
+  struct mem_chunk_node* next; 
+  struct mem_chunk_node* prev;
+}mem_chunk_node;
 
 /* HELPER FUNCTIONS */
 
@@ -84,7 +81,7 @@ static void extend(size_t s);
 /* Function that adds nodes to the doubly linked list
 * that is keeping track of memory 
 */
-static void mem_next(void *page_chunk);
+static void add_chunk(void *page_chunk);
 
 /* Set a block to allocated
 *  Update block headers/footers as needed
@@ -106,9 +103,10 @@ void *current_avail = NULL;
 // the size of the of the memory that is currently available in a page chunk
 int current_avail_size = 0;
 
-// global pointers for keeping track of the start and end of the list
-static memory_list *mem_start = NULL;
-static memory_list *mem_end = NULL;
+// global pointer that represents the start of the free list
+// represents the start of the doubly linked list for the page stuff
+static mem_chunk_node *start_chunk = NULL;
+static mem_chunk_node *end_chunk = NULL;
 
 /* 
  * mm_init - initialize the malloc package.
@@ -116,9 +114,9 @@ static memory_list *mem_end = NULL;
 int mm_init(void)
 {
   current_avail = NULL;
-  mem_start = NULL;
-  mem_end = NULL;
   current_avail_size = 0;
+  start_chunk = NULL;
+  end_chunk = NULL;
   return 0;
 }
 
@@ -128,21 +126,21 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  // 1) Check if the user requests 0 bytes
-  if (size == 0) {
-    return NULL;
-  }
 
-  // align the requested size by the user
+  /** THE ORIGINAL STARTER CODE GIVEN THAT WORKS */
+  // variable that stores the aligned size of the amt of bytes requested by the user
   int new_size = ALIGN(size);
 
-  // create a pointer p that will contain an address to an unitialized block of contiguous memory
+  // pointer that will be returned to the user that points to a contiguous chunk of memory that fits the size requested by the user
   void *p;
-  
-  // if the current available memory does not satisfy the size requirement of the user
-  if (current_avail_size < new_size) {
-    // call the extend function to request memory from the heap
-    extend(new_size);
+
+  // if there is not enough space available to satisfy the user request then request for memory by calling mem_map (or extend)
+  if (current_avail_size < new_size)
+  {
+    // update the current available size by align by aligning
+    //  
+    current_avail_size = PAGE_ALIGN(new_size); 
+    current_avail = mem_map(current_avail_size);
     if (current_avail == NULL)
       return NULL;
   }
@@ -150,7 +148,7 @@ void *mm_malloc(size_t size)
   p = current_avail;
   current_avail += new_size;
   current_avail_size -= new_size;
-  
+
   return p;
 }
 
@@ -161,16 +159,18 @@ static void extend(size_t s) {
   current_avail = mem_map(current_avail_size);
 
   // add the new chunk to the memory linked list
-  memory_list *new_chunk = (memory_list *)current_avail;
-  mem_next(new_chunk);
+  mem_chunk_node *new_chunk = (mem_chunk_node *)current_avail;
+  add_chunk(new_chunk);
 
-  // add prolog header, prolog footer, payload and epilog header to memory
+  // add prolog header, prolog footer, payload and epilog header to memory++
   char *g = (char *)current_avail;
 
   // PROLOG HEADER HEADER
+  // OVERHEAD is 16 bytes
   PUT(g, PACK(OVERHEAD, 1));
 
   // PROLOG FOOTER
+  // overhead is 16 bytes
   PUT(g + 8, PACK(OVERHEAD, 1));
 
   // PAYLOAD HEADER
@@ -183,25 +183,29 @@ static void extend(size_t s) {
   PUT(g + current_avail_size - 8, PACK(0, 1));
 }
 
-static void mem_next(void *page_chunk)
+static void add_chunk(void *page_chunk)
 {
-  memory_list *new_chunk = (memory_list *)page_chunk;
+  mem_chunk_node *new_chunk = (mem_chunk_node *)page_chunk;
 
-  // check if the start is null
-  if (mem_start == NULL)
+  // CASE 1: START CHUNK IS NULL 
+  if (start_chunk == NULL)
   {
-    mem_start = new_chunk;
-    mem_start->next = NULL;
-    mem_start->prev = NULL;
-    mem_end->next = NULL;
-    mem_end->prev = mem_start;
+    start_chunk = new_chunk;
+    end_chunk = new_chunk;
+    start_chunk->next = NULL;
+    start_chunk->prev = NULL;
+
+    // SET THE END CHUNK TO NULL
+    end_chunk->next = NULL;
+    end_chunk->prev = NULL;
   }
   else
   {
-    // update the pointers of the new
-    new_chunk->next = NULL;
-    new_chunk->prev = mem_end->prev;
-    mem_end = new_chunk;
+    // update the last node
+    new_chunk->prev = end_chunk;
+    end_chunk->next = new_chunk;
+    end_chunk = new_chunk;
+    end_chunk->next = NULL;
   }
 }
 
