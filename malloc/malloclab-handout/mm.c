@@ -97,55 +97,13 @@ static void mem_next(void *page_chunk);
 *  Returns pointer to new coalesced block
 */
 // static void *coalesce(void *bp);
-/*************************************************************************************/
 
-/* Request more memory by calling mem_map
-*  Initialize the new chunk of memory as applicable
-*  Update free list if applicable
-*/
-static void extend(size_t size) {
-  current_avail_size = PAGE_ALIGN(size);
-  current_avail = mem_map(current_avail_size);
-
-  
-}
-
-static void mem_next(void *page_chunk) {
-  memory_list * new_chunk = (memory_list *)page_chunk;
-
-  // check if the start is null 
-  if (mem_start == NULL) {
-    mem_start = new_chunk;
-    mem_start->next = NULL;
-    mem_start->prev = NULL;
-    mem_end->next = NULL;
-    mem_end->prev = mem_start;
-  }
-  else {
-    // update the pointers of the new
-    new_chunk->next = NULL;
-    new_chunk->prev = mem_end->prev;
-    mem_end = new_chunk;
-  }
-}
-
-/* Set a block to allocated
-*  Update block headers/footers as needed
-*  Update free list if applicable
-*  Split block if applicable
-*/
-// static void set_allocated(void *b, size_t size);
-
-/* Coalesce a free block if applicable
-*  Returns pointer to new coalesced block
-*/ 
-// static void *coalesce(void *bp);
 // GLOBAL VARIABLES
 
-// pointer to the memory that is currently available
+// pointer to the memory that is currently available in a page chunk
 void *current_avail = NULL;
 
-// the size of the of the memory that is currently available
+// the size of the of the memory that is currently available in a page chunk
 int current_avail_size = 0;
 
 // global pointers for keeping track of the start and end of the list
@@ -170,33 +128,59 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  // check if the size given is 0 
+  // 1) Check if the user requests 0 bytes
   if (size == 0) {
     return NULL;
   }
 
+  // align the requested size by the user
   int new_size = ALIGN(size);
 
-  // print the new size
-  printf("The new size: %d\n", new_size);
-  /*
-   * THE ORIGINAL ORIGINAL CODE GIVEN
-  */
-  // int newsize = ALIGN(size);
-  // void *p;
+  // create a pointer p that will contain an address to an unitialized block of contiguous memory
+  void *p;
   
-  // if (current_avail_size < newsize) {
-  //   current_avail_size = PAGE_ALIGN(newsize);
-  //   current_avail = mem_map(current_avail_size);
-  //   if (current_avail == NULL)
-  //     return NULL;
-  // }
+  // if the current available memory does not satisfy the size requirement of the user
+  if (current_avail_size < new_size) {
+    // call the extend function to request memory from the heap
+    extend(new_size);
+    if (current_avail == NULL)
+      return NULL;
+  }
 
-  // p = current_avail;
-  // current_avail += newsize;
-  // current_avail_size -= newsize;
+  p = current_avail;
+  current_avail += new_size;
+  current_avail_size -= new_size;
   
-  // return p;
+  return p;
+}
+
+static void extend(size_t s) {
+  // Request slightly more than what the user requested to we make fewer calls to
+  // mmap similar to how array lists avoid copying elements over in java
+  current_avail_size = PAGE_ALIGN(s * 15);
+  current_avail = mem_map(current_avail_size);
+
+  // add the new chunk to the memory linked list
+  memory_list *new_chunk = (memory_list *)current_avail;
+  mem_next(new_chunk);
+
+  // add prolog header, prolog footer, payload and epilog header to memory
+  char *g = (char *)current_avail;
+
+  // PROLOG HEADER HEADER
+  PUT(g, PACK(OVERHEAD, 1));
+
+  // PROLOG FOOTER
+  PUT(g + 8, PACK(OVERHEAD, 1));
+
+  // PAYLOAD HEADER
+  PUT(g + 16, PACK(current_avail_size - 32, 0));
+
+ // PAYLOAD FOOTER
+  PUT(g + current_avail_size - 16, PACK(current_avail_size - 32, 0));
+  
+  // EPILOG HEADER
+  PUT(g + current_avail_size - 8, PACK(0, 1));
 }
 
 /*
