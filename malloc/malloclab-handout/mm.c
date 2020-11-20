@@ -118,9 +118,9 @@ int mm_init(void)
   start_chunk = NULL;
   end_chunk = NULL;
 
-  int new_size = ALIGN(10);
-  current_avail_size = PAGE_ALIGN(new_size);
-  extend(current_avail_size);
+  // int new_size = ALIGN(10);
+  // current_avail_size = PAGE_ALIGN(new_size);
+  // extend(current_avail_size);
 
   return 0;
 }
@@ -143,8 +143,8 @@ void *mm_malloc(size_t size)
   if (current_avail_size < new_size)
   {
     // update the current available size by align by aligning
-    current_avail_size = PAGE_ALIGN(new_size); 
-    current_avail = mem_map(current_avail_size);
+    current_avail_size = PAGE_ALIGN(new_size);
+    current_avail = extend(current_avail_size);
     if (current_avail == NULL)
       return NULL;
   }
