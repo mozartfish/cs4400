@@ -15,6 +15,7 @@
  * 3) unmapping unused pages
  * 4) doubling chunk size 
  */
+/*****************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -34,12 +35,11 @@
 /* rounds up to the nearest multiple of mem_pagesize() */
 #define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
 
-/************************************************************************************/
-
-/* create a typedef called block_header and block_footer according to assignment hints */
+/* represent the header and the footer of a block */
 typedef size_t block_header; 
 typedef size_t block_footer;
 
+/*Compute the overhead of the block header and footer */
 #define OVERHEAD (sizeof(block_header)+sizeof(block_footer))
 
 /* Given a payload pointer, get the header or footer pointer */
@@ -63,13 +63,6 @@ typedef size_t block_footer;
 #define GET_SIZE(p) (GET(p) & ~0xF)
 
 /**************************************************************************************/
-
-/* define a doubly linked list for keeping track of the available heap */
-typedef struct mem_chunk_node{
-  struct mem_chunk_node* next; 
-  struct mem_chunk_node* prev;
-}mem_chunk_node;
-
 /* HELPER FUNCTIONS */
 
 /* Request more memory by calling mem_map
@@ -81,7 +74,7 @@ static void extend(size_t s);
 /* Function that adds nodes to the doubly linked list
 * that is keeping track of memory 
 */
-static void add_chunk(void *page_chunk);
+static void add_page_chunk(void *page_chunk);
 
 /* Set a block to allocated
 *  Update block headers/footers as needed
@@ -94,8 +87,9 @@ static void add_chunk(void *page_chunk);
 *  Returns pointer to new coalesced block
 */
 // static void *coalesce(void *bp);
+/****************************************************************************************************/
 
-// GLOBAL VARIABLES
+/* GLOBAL VARIABLES AND DATA STRUCTURES */
 
 // pointer to the memory that is currently available in a page chunk
 void *current_avail = NULL;
@@ -103,20 +97,30 @@ void *current_avail = NULL;
 // the size of the of the memory that is currently available in a page chunk
 int current_avail_size = 0;
 
-// global pointer that represents the start of the free list
-// represents the start of the doubly linked list for the page stuff
-static mem_chunk_node *start_chunk = NULL;
-static mem_chunk_node *end_chunk = NULL;
+/* linked list structure for keeping track of the memory for use with memmap*/
+typedef struct mem_node {
+  struct mem_node *dummy; // pointer for aligning on 16 byte boundary
+  struct mem_node *next;
+  struct mem_node *prev;
+} mem_node;
+
+/* global variable for keeping track of start of the heap */
+static mem_node *heap = NULL;
+
+
+/***************************************************************************************************/
 
 /* 
  * mm_init - initialize the malloc package.
  */
-int mm_init(void)
+int
+mm_init(void)
 {
   current_avail = NULL;
   current_avail_size = 0;
-  start_chunk = NULL;
-  end_chunk = NULL;
+  heap = NULL;
+  // start_chunk = NULL;
+  // end_chunk = NULL;
 
   // int new_size = ALIGN(10);
   // current_avail_size = PAGE_ALIGN(new_size);
@@ -142,10 +146,16 @@ void *mm_malloc(size_t size)
   // if there is not enough space available to satisfy the user request then request for memory by calling mem_map (or extend)
   if (current_avail_size < new_size)
   {
+    // CASE 1: HEAP DOES NOT EXIST
+    // allocate some memory for the heap for initialization
+    // and then perform the malloc
+    if (heap == NULL) {
+      extend(new_size);
+    }
     // update the current available size by align by aligning
     current_avail_size = PAGE_ALIGN(new_size);
-    extend(current_avail_size);
-    // current_avail = mem_map(current_avail_size);
+    // extend(current_avail_size);
+    current_avail = mem_map(current_avail_size);
     if (current_avail == NULL)
       return NULL;
   }
@@ -158,60 +168,135 @@ void *mm_malloc(size_t size)
 }
 
 static void extend(size_t s) {
-  // Request slightly more than what the user requested to we make fewer calls to
-  // mmap similar to how array lists avoid copying elements over in java
-  current_avail_size = PAGE_ALIGN(s * 15);
-  current_avail = mem_map(current_avail_size);
+  // const int byte_threshold = 1 << 8; // 2^8 = 256 bytes
+  int new_avail_size = 0;
+  void *new_avail = NULL;
 
-  // add the new chunk to the memory linked list
-  mem_chunk_node *new_chunk = (mem_chunk_node *)current_avail;
-  add_chunk(new_chunk);
+  // if (s > byte_threshold)
+  // {
+  //   new_avail_size = PAGE_ALIGN(s * 4);
+  //   new_avail = mem_map(new_avail_size);
 
-  // add prolog header, prolog footer, payload and epilog header to memory++
-  char *g = (char *)current_avail;
+  //   // update the page linked list
+  //   add_page_chunk(new_avail);
 
-  // PROLOG HEADER HEADER
-  // OVERHEAD is 16 bytes
-  PUT(g, PACK(OVERHEAD, 1));
+    new_avail_size = PAGE_ALIGN(s);
+    new_avail = mem_map(new_avail_size);
 
-  // PROLOG FOOTER
-  // overhead is 16 bytes
-  PUT(g + 8, PACK(OVERHEAD, 1));
+    // update the page linked list
+    add_page_chunk(new_avail);
 
-  // PAYLOAD HEADER
-  PUT(g + 16, PACK(current_avail_size - 32, 0));
+    // cast page to char* to update the prologue,epilogue, header and footer pages
+    char *page_info = (char *)new_avail;
 
- // PAYLOAD FOOTER
-  PUT(g + current_avail_size - 16, PACK(current_avail_size - 32, 0));
+    // define some constants for alignment
+    const int page_pro_header = page_info + 24;
+    const int page_pro_footer = page_info + 32;
+    const int payload_data = page_info + 48;
+    const int new_payload_size = new_avail_size - 40;
+    const int page_epi_header = new_avail_size - 8;
+    const int new_payload_footer = page_epi_header - 8;
 
-  // EPILOG HEADER
-  PUT(g + current_avail_size - 8, PACK(0, 1));
+    // PROLOGUE HEADER
+    PUT(page_pro_header, PACK(OVERHEAD, 1));
+
+    // PROLOGUE FOOTER
+    PUT(page_pro_footer, PACK(OVERHEAD, 1));
+
+    // PAYLOAD HEADER
+    PUT(HDRP(payload_data), PACK(new_payload_size, 0));
+
+    // EPILOGUE
+    PUT(page_epi_header, PACK(0, 1));
+
+    // PAYLOAD FOOTER
+    PUT()
+
+
+    // Request slightly more than what the user requested to we make fewer calls to
+    // mmap similar to how array lists avoid copying elements over in java
+    //   current_avail_size = PAGE_ALIGN(s * 15);
+    //   current_avail = mem_map(current_avail_size);
+
+    //   // add the new chunk to the memory linked list
+    //   mem_chunk_node *new_chunk = (mem_chunk_node *)current_avail;
+    //   add_page_chunk(new_chunk);
+
+    //   // add prolog header, prolog footer, payload and epilog header to memory++
+    //   char *g = (char *)current_avail;
+
+    //   // PROLOG HEADER HEADER
+    //   // OVERHEAD is 16 bytes
+    //   PUT(g, PACK(OVERHEAD, 1));
+
+    //   // PROLOG FOOTER
+    //   // overhead is 16 bytes
+    //   PUT(g + 8, PACK(OVERHEAD, 1));
+
+    //   // PAYLOAD HEADER
+    //   PUT(g + 16, PACK(current_avail_size - 32, 0));
+
+    //  // PAYLOAD FOOTER
+    //   PUT(g + current_avail_size - 16, PACK(current_avail_size - 32, 0));
+
+    //   // EPILOG HEADER
+    //   PUT(g + current_avail_size - 8, PACK(0, 1));
 }
 
-static void add_chunk(void *page_chunk)
+static void add_page_chunk(void *page_chunk)
 {
-  mem_chunk_node *new_chunk = (mem_chunk_node *)page_chunk;
+  mem_node *new_chunk = (mem_node *)page_chunk;
 
-  // CASE 1: START CHUNK IS NULL 
-  if (start_chunk == NULL)
-  {
-    start_chunk = new_chunk;
-    end_chunk = new_chunk;
-    start_chunk->next = NULL;
-    start_chunk->prev = NULL;
+  // CASE 1: HEAP IS NULL
+  if (heap == NULL) {
+    heap = new_chunk;
+    heap->next = NULL;
+    heap->prev = NULL;
+    heap->dummy = NULL;
+  }
 
-    // SET THE END CHUNK TO NULL
-    end_chunk->next = NULL;
-    end_chunk->prev = NULL;
+  else {
+    // CASE 2: HEAP IS NOT NULL
+
+    // add chunk node to the front of the linked list
+    // set the next chunk next to the current heap head
+    new_chunk->next = heap;
+
+    // set the previous of the new chunk to null
+    new_chunk->prev = NULL;
+
+    // update the dummy of the new_chunk
+    new_chunk->dummy = NULL;
+
+    // set the previous of heap to the new chunk
+    heap->prev = new_chunk;
+
+    // set the head of the heap to the new chunk
+    heap = new_chunk;
   }
-  else
-  {
-    // update the last node
-    new_chunk->prev = end_chunk;
-    end_chunk->next = new_chunk;
-    end_chunk = new_chunk;
-    end_chunk->next = NULL;
-  }
+
+  // mem_chunk_node *new_chunk = (mem_chunk_node *)page_chunk;
+
+  // // CASE 1: START CHUNK IS NULL 
+  // if (start_chunk == NULL)
+  // {
+  //   start_chunk = new_chunk;
+  //   end_chunk = new_chunk;
+  //   start_chunk->next = NULL;
+  //   start_chunk->prev = NULL;
+
+  //   // SET THE END CHUNK TO NULL
+  //   end_chunk->next = NULL;
+  //   end_chunk->prev = NULL;
+  // }
+  // else
+  // {
+  //   // update the last node
+  //   new_chunk->prev = end_chunk;
+  //   end_chunk->next = new_chunk;
+  //   end_chunk = new_chunk;
+  //   end_chunk->next = NULL;
+  // }
 }
 
 /*
