@@ -66,7 +66,9 @@ typedef size_t block_footer;
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 /* Get the first payload header */
-#define GET_PAYLOAD_HEADER(page_pointer) ((char *)(page_pointer) + sizeof(page_node) + OVERHEAD)
+#define GET_PAYLOAD_HEADER(p) ((char *)(p) + sizeof(page_node) + OVERHEAD)
+/* Get the payload from the header pointer */
+#define GET_PAYLOAD(p) ((char *)(p) + sizeof(block_header))
 
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
@@ -171,17 +173,24 @@ void *mm_malloc(size_t size)
   // pointer that will be returned to the user that points to a contiguous chunk of memory that fits the size requested by the user
   void *p;
 
-  // // check if the heap is null 
-  // // CASE 1: IF THE HEAP IS NULL ->  REQUEST MEMORY
-  // if (heap == NULL) {
-  //   extend(new_size);
-  // }
+  // check if the heap is null 
+  // CASE 1: IF THE HEAP IS NULL ->  REQUEST MEMORY
+  if (heap == NULL) {
+    extend(new_size);
+  }
 
   // AFTER THE FIRST CALL TO EXTEND THE HEAP NOW HAS AVAILABLE MEMORY FOR TRAVERSING
 
   while(1) {
+    // get the first payload header
     char *first_block_header = GET_PAYLOAD_HEADER(heap);
-    printf("THE SIZE OF THE CURRENT HEADER IS: %zu\n", GET_SIZE(first_block_header));
+
+    // get the size of the first header block
+    size_t block_size = GET_SIZE(first_block_header);
+
+    // check whether it is allocated 
+    // size_t block_all_stat = 
+
   }
 
   // traverse the page linked list
@@ -189,12 +198,12 @@ void *mm_malloc(size_t size)
   // // if there is not enough space available to satisfy the user request then request for memory by calling mem_map (or extend)
   // if (current_avail_size < new_size)
   // {
-  //   // CASE 1: HEAP DOES NOT EXIST
-  //   // allocate some memory for the heap for initialization
-  //   // and then perform the malloc
-    if (heap == NULL) {
-      extend(new_size);
-    }
+  // //   // CASE 1: HEAP DOES NOT EXIST
+  // //   // allocate some memory for the heap for initialization
+  // //   // and then perform the malloc
+  //   if (heap == NULL) {
+  //     extend(new_size);
+  //   }
   //   // update the current available size by align by aligning
   //   current_avail_size = PAGE_ALIGN(new_size);
   //   // extend(current_avail_size);
@@ -253,73 +262,7 @@ static void extend(size_t s) {
   // EPILOGUE HEADER
   PUT(p_epi_header, PACK(0, 1));
 
-  //   new_avail_size = PAGE_ALIGN(s * 4);
-  //   new_avail = mem_map(new_avail_size);
 
-  //   // update the page linked list
-  //   add_pages(new_avail);
-
-    // new_avail_size = PAGE_ALIGN(s);
-    // new_avail = mem_map(new_avail_size);
-
-    // update the page linked list
-    // add_pages(new_avail);
-
-    // // cast page to char* to update the prologue,epilogue, header and footer pages
-    // char *page_info = (char *)new_avail;
-
-    // // define some constants for alignment
-    // const int page_pro_header = page_info + 24;
-    // const int page_pro_footer = page_info + 32;
-    // const int payload_data = page_info + 48;
-    // const int new_payload_size = new_avail_size - 40;
-    // const int page_epi_header = new_avail_size - 8;
-    // const int new_payload_footer = page_epi_header - 8;
-
-    // // PROLOGUE HEADER
-    // PUT(page_pro_header, PACK(OVERHEAD, 1));
-
-    // // PROLOGUE FOOTER
-    // PUT(page_pro_footer, PACK(OVERHEAD, 1));
-
-    // // PAYLOAD HEADER
-    // PUT(HDRP(payload_data), PACK(new_payload_size, 0));
-
-    // // EPILOGUE
-    // PUT(page_epi_header, PACK(0, 1));
-
-    // // PAYLOAD FOOTER
-    // // PUT()
-
-
-    // Request slightly more than what the user requested to we make fewer calls to
-    // mmap similar to how array lists avoid copying elements over in java
-    //   current_avail_size = PAGE_ALIGN(s * 15);
-    //   current_avail = mem_map(current_avail_size);
-
-    //   // add the new chunk to the memory linked list
-    //   mem_chunk_node *new_chunk = (mem_chunk_node *)current_avail;
-    //   add_pages(new_chunk);
-
-    //   // add prolog header, prolog footer, payload and epilog header to memory++
-    //   char *g = (char *)current_avail;
-
-    //   // PROLOG HEADER HEADER
-    //   // OVERHEAD is 16 bytes
-    //   PUT(g, PACK(OVERHEAD, 1));
-
-    //   // PROLOG FOOTER
-    //   // overhead is 16 bytes
-    //   PUT(g + 8, PACK(OVERHEAD, 1));
-
-    //   // PAYLOAD HEADER
-    //   PUT(g + 16, PACK(current_avail_size - 32, 0));
-
-    //  // PAYLOAD FOOTER
-    //   PUT(g + current_avail_size - 16, PACK(current_avail_size - 32, 0));
-
-    //   // EPILOG HEADER
-    //   PUT(g + current_avail_size - 8, PACK(0, 1));
 }
 
 static void add_pages(void *page_amt)
@@ -354,29 +297,6 @@ static void add_pages(void *page_amt)
     // set the head of the heap to the new chunk
     heap = new_chunk;
   }
-
-  // mem_chunk_node *new_chunk = (mem_chunk_node *)page_chunk;
-
-  // // CASE 1: START CHUNK IS NULL 
-  // if (start_chunk == NULL)
-  // {
-  //   start_chunk = new_chunk;
-  //   end_chunk = new_chunk;
-  //   start_chunk->next = NULL;
-  //   start_chunk->prev = NULL;
-
-  //   // SET THE END CHUNK TO NULL
-  //   end_chunk->next = NULL;
-  //   end_chunk->prev = NULL;
-  // }
-  // else
-  // {
-  //   // update the last node
-  //   new_chunk->prev = end_chunk;
-  //   end_chunk->next = new_chunk;
-  //   end_chunk = new_chunk;
-  //   end_chunk->next = NULL;
-  // }
 }
 
 /*
