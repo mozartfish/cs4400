@@ -174,14 +174,45 @@ void *mm_malloc(size_t size)
 }
 
 static void extend(size_t s) {
-  // align s to the nearest whole number of pages 
-  const int aligned_size = PAGE_ALIGN(s);
+  // total overhead for calling the extend function
+
+  // pages_node struct:
+  // Dummy pointer : 0-7 +8 bytes
+  // Next pointer : 8-15 +16 bytes
+  // Previous pointer : 16-23 +24 bytes
+
+  // prologue overhead:
+  // prologue header: 24-31 +32 bytes
+  // prologue footer: 32-39 +40 bytes
+
+  // payload overhead:
+  // payload header: 40-47 +48 bytes
+  // payload footer: +56 bytes
+
+  // Epilogue overhead:
+  // Epilogue Header: +64 bytes
+  const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
+
+  // align s to the nearest whole number of pages
+  const int aligned_page_size = PAGE_ALIGN(s + total_overhead);
 
   // request a number of pages to satisfy the requested number of aligned pages
-  void *mem_pages = mem_map(aligned_size);
+  void *mem_pages = mem_map(aligned_page_size);
 
   // update the page linked list by adding the requested memory to the heap
   add_pages(mem_pages);
+
+  // convert the page memory to a char* pointer to have control of multiples of single bytes
+  char *pages_info = (char *)mem_pages;
+
+  // Bytes already allocated at this point
+  // Dummy pointer : 0-7 +8 bytes
+  // Next pointer : 8-15 +16 bytes
+  // Previous pointer : 16-23 +24 bytes
+
+  // Define some global constants for pointer arithmetic
+  const int p_pro_header = pages_info + 24;
+  const int p_pro_footer = pages_info + 32;
 
   //   new_avail_size = PAGE_ALIGN(s * 4);
   //   new_avail = mem_map(new_avail_size);
@@ -264,7 +295,7 @@ static void add_pages(void *page_amt)
     heap->prev = NULL;
     heap->dummy = NULL;
   }
-  
+
   else {
     // CASE 2: HEAP IS NOT NULL
 
