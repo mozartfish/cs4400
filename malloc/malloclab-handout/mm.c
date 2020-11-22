@@ -161,6 +161,7 @@ void *mm_malloc(size_t size)
 
   // Epilogue overhead: +8 bytes
   // Epilogue Header: +64 bytes
+
   const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
 
   /** THE ORIGINAL STARTER CODE GIVEN THAT WORKS */
@@ -212,8 +213,6 @@ void *mm_malloc(size_t size)
 static void extend(size_t s) {
   // total overhead for calling the extend function
 
-
-
   // align s to the nearest whole number of pages
   const int aligned_request_size = PAGE_ALIGN(s);
 
@@ -235,6 +234,7 @@ static void extend(size_t s) {
   char *p_pro_header = pages_info + 24;
   char *p_pro_footer = pages_info + 32;
   char *p_payload_data = pages_info + 48;
+
   char *p_epi_header = pages_info - 8;
   char *p_payload_footer = pages_info - 16;
 
@@ -245,10 +245,10 @@ static void extend(size_t s) {
   PUT(p_pro_footer, PACK(16, 1));
 
   // PAYLOAD HEADER
-  PUT(HDRP(p_payload_data), PACK(aligned_request_size - 32, 0));
+  PUT(HDRP(p_payload_data), PACK(aligned_request_size - 48, 0));
   
   // PAYLOAD FOOTER
-  PUT(p_payload_footer, PACK(aligned_request_size - 32, 0));
+  PUT(p_payload_footer, PACK(aligned_request_size - 48, 0));
 
   // EPILOGUE HEADER
   PUT(p_epi_header, PACK(0, 1));
