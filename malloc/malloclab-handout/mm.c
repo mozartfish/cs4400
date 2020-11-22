@@ -176,7 +176,7 @@ void *mm_malloc(size_t size)
 
   while(1) {
     char *first_block_header = GET_PAYLOAD_HEADER(heap);
-    printf("THE SIZE OF THE CURRENT HEADER IS: %d\n", GET_SIZE(first_block_header));
+    printf("THE SIZE OF THE CURRENT HEADER IS: %zu\n", GET_SIZE(first_block_header));
   }
 
   // traverse the page linked list
