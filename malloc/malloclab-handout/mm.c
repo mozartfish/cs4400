@@ -65,6 +65,9 @@ typedef size_t block_footer;
 /* max macro for getting the maximum value */
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
+/* Get the first payload header */
+#define GET_PAYLOAD_HEADER(page_pointer) ((char *)(page_pointer) + sizeof(page_node) + OVERHEAD)
+
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
 
@@ -164,10 +167,19 @@ void *mm_malloc(size_t size)
   void *p;
 
   // check if the heap is null 
-  // CASE 1: IF THE HEAP IS NULL REQUEST MEMORY
+  // CASE 1: IF THE HEAP IS NULL ->  REQUEST MEMORY
   if (heap == NULL) {
     extend(new_size);
   }
+
+  // AFTER THE FIRST CALL TO EXTEND THE HEAP NOW HAS AVAILABLE MEMORY FOR TRAVERSING
+
+  while(1) {
+    char *first_block_header = GET_PAYLOAD_HEADER(heap);
+    printf("THE SIZE OF THE CURRENT HEADER IS: %d\n", GET_SIZE(first_block_header));
+  }
+
+  // traverse the page linked list
 
   // // if there is not enough space available to satisfy the user request then request for memory by calling mem_map (or extend)
   // if (current_avail_size < new_size)
