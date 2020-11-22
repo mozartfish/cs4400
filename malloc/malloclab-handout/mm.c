@@ -232,11 +232,11 @@ static void extend(size_t s) {
   // Previous pointer : 16-23 +24 bytes
 
   // Define some global constants for pointer arithmetic
-  const int p_pro_header = pages_info + 24;
-  const int p_pro_footer = pages_info + 32;
-  const int p_payload_data = pages_info + 48;
-  const int p_epi_header = aligned_request_size - 8;
-  const int p_payload_footer = aligned_request_size - 16;
+  char *p_pro_header = pages_info + 24;
+  char *p_pro_footer = pages_info + 32;
+  char *p_payload_data = pages_info + 48;
+  char *p_epi_header = aligned_request_size - 8;
+  char *p_payload_footer = aligned_request_size - 16;
 
   // PROLOGUE HEADER
   PUT(p_pro_header, PACK(16, 1));
