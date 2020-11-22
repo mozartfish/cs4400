@@ -62,6 +62,9 @@ typedef size_t block_footer;
 #define GET_ALLOC(p) (GET(p) & 0x1)
 #define GET_SIZE(p) (GET(p) & ~0xF)
 
+/* max macro for getting the maximum value */
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
 
@@ -136,9 +139,26 @@ mm_init(void)
 void *mm_malloc(size_t size)
 {
 
+  // pages_node struct: +24 bytes
+  // Dummy pointer : 0-7 +8 bytes
+  // Next pointer : 8-15 +16 bytes
+  // Previous pointer : 16-23 +24 bytes
+
+  // prologue overhead: +16 bytes
+  // prologue header: 24-31 +32 bytes
+  // prologue footer: 32-39 +40 bytes
+
+  // payload overhead: +16 bytes
+  // payload header: 40-47 +48 bytes
+  // payload footer: +56 bytes
+
+  // Epilogue overhead: +8 bytes
+  // Epilogue Header: +64 bytes
+  const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
+
   /** THE ORIGINAL STARTER CODE GIVEN THAT WORKS */
   // variable that stores the aligned size of the amt of bytes requested by the user
-  int new_size = ALIGN(size);
+  int new_size = ALIGN(MAX (size, total_overhead));
 
   // pointer that will be returned to the user that points to a contiguous chunk of memory that fits the size requested by the user
   void *p;
@@ -176,28 +196,13 @@ void *mm_malloc(size_t size)
 static void extend(size_t s) {
   // total overhead for calling the extend function
 
-  // pages_node struct:
-  // Dummy pointer : 0-7 +8 bytes
-  // Next pointer : 8-15 +16 bytes
-  // Previous pointer : 16-23 +24 bytes
 
-  // prologue overhead:
-  // prologue header: 24-31 +32 bytes
-  // prologue footer: 32-39 +40 bytes
-
-  // payload overhead:
-  // payload header: 40-47 +48 bytes
-  // payload footer: +56 bytes
-
-  // Epilogue overhead:
-  // Epilogue Header: +64 bytes
-  const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
 
   // align s to the nearest whole number of pages
-  const int aligned_page_size = PAGE_ALIGN(s + total_overhead);
+  const int aligned_request_size = PAGE_ALIGN(s);
 
   // request a number of pages to satisfy the requested number of aligned pages
-  void *mem_pages = mem_map(aligned_page_size);
+  void *mem_pages = mem_map(aligned_request_size);
 
   // update the page linked list by adding the requested memory to the heap
   add_pages(mem_pages);
@@ -213,6 +218,24 @@ static void extend(size_t s) {
   // Define some global constants for pointer arithmetic
   const int p_pro_header = pages_info + 24;
   const int p_pro_footer = pages_info + 32;
+  const int p_payload_data = pages_info + 48;
+  const int p_epi_header = aligned_request_size - 8;
+  const int p_payload_footer = aligned_request_size - 16;
+
+  // PROLOGUE HEADER
+  PUT(p_pro_header, PACK(16, 1));
+
+  // PROLOGUE FOOTER
+  PUT(p_pro_footer, PACK(16, 1));
+
+  // PAYLOAD HEADER
+  PUT(HDRP(p_payload_data), PACK(aligned_request_size - 32, 0));
+  
+  // PAYLOAD FOOTER
+  PUT(p_payload_footer, PACK(aligned_request_size - 32, 0));
+
+  // EPILOGUE HEADER
+  PUT(p_epi_header, PACK(0, 1));
 
   //   new_avail_size = PAGE_ALIGN(s * 4);
   //   new_avail = mem_map(new_avail_size);
