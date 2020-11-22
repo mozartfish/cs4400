@@ -235,8 +235,8 @@ static void extend(size_t s) {
   char *p_pro_header = pages_info + 24;
   char *p_pro_footer = pages_info + 32;
   char *p_payload_data = pages_info + 48;
-  char *p_epi_header = aligned_request_size - 8;
-  char *p_payload_footer = aligned_request_size - 16;
+  char *p_epi_header = pages_info - 8;
+  char *p_payload_footer = pages_info - 16;
 
   // PROLOGUE HEADER
   PUT(p_pro_header, PACK(16, 1));
