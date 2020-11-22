@@ -168,7 +168,7 @@ void *mm_malloc(size_t size)
   // int new_size = ALIGN(MAX (size, total_overhead));
 
   // pointer that will be returned to the user that points to a contiguous chunk of memory that fits the size requested by the user
-  void *p;
+  void *p = NULL;
 
   // // check if the heap is null 
   // // CASE 1: IF THE HEAP IS NULL ->  REQUEST MEMORY
