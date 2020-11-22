@@ -179,10 +179,10 @@ void *mm_malloc(size_t size)
 
   // AFTER THE FIRST CALL TO EXTEND THE HEAP NOW HAS AVAILABLE MEMORY FOR TRAVERSING
 
-  // while(1) {
-  //   char *first_block_header = GET_PAYLOAD_HEADER(heap);
-  //   printf("THE SIZE OF THE CURRENT HEADER IS: %zu\n", GET_SIZE(first_block_header));
-  // }
+  while(1) {
+    char *first_block_header = GET_PAYLOAD_HEADER(heap);
+    printf("THE SIZE OF THE CURRENT HEADER IS: %zu\n", GET_SIZE(first_block_header));
+  }
 
   // traverse the page linked list
 
