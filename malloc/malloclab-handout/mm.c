@@ -113,6 +113,8 @@ typedef struct page_node {
 /* global variable for keeping track of start of the heap */
 static page_node *heap = NULL;
 
+/* gloabl variable for keeping track of the data returned by mem map */
+void *mem_pages = NULL;
 
 /***************************************************************************************************/
 
@@ -125,6 +127,7 @@ mm_init(void)
   // current_avail = NULL;
   // current_avail_size = 0;
   heap = NULL;
+  mem_pages = NULL;
   // start_chunk = NULL;
   // end_chunk = NULL;
   const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
@@ -215,7 +218,7 @@ static void extend(size_t s) {
   const int aligned_request_size = PAGE_ALIGN(s);
 
   // request a number of pages to satisfy the requested number of aligned pages
-  void *mem_pages = mem_map(aligned_request_size);
+  mem_pages = mem_map(aligned_request_size);
 
   // update the page linked list by adding the requested memory to the heap
   add_pages(mem_pages);
