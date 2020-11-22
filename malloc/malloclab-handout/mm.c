@@ -130,11 +130,11 @@ mm_init(void)
   mem_pages = NULL;
   // start_chunk = NULL;
   // end_chunk = NULL;
-  const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
-  int new_size = ALIGN(MAX(10, total_overhead));
-  extend(new_size);
-  // current_avail_size = PAGE_ALIGN(new_size);
-  // extend(current_avail_size);
+  // const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
+  // int new_size = ALIGN(MAX(10, total_overhead));
+  // extend(new_size);
+  // // current_avail_size = PAGE_ALIGN(new_size);
+  // // extend(current_avail_size);
 
   return 0;
 }
@@ -161,14 +161,14 @@ void *mm_malloc(size_t size)
 
   // Epilogue overhead: +8 bytes
   // Epilogue Header: +64 bytes
-  // const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
+  const int total_overhead = sizeof(page_node) + OVERHEAD + OVERHEAD + 8;
 
-  // /** THE ORIGINAL STARTER CODE GIVEN THAT WORKS */
-  // // variable that stores the aligned size of the amt of bytes requested by the user
-  // int new_size = ALIGN(MAX (size, total_overhead));
+  /** THE ORIGINAL STARTER CODE GIVEN THAT WORKS */
+  // variable that stores the aligned size of the amt of bytes requested by the user
+  int new_size = ALIGN(MAX (size, total_overhead));
 
   // pointer that will be returned to the user that points to a contiguous chunk of memory that fits the size requested by the user
-  void *p = NULL;
+  void *p;
 
   // // check if the heap is null 
   // // CASE 1: IF THE HEAP IS NULL ->  REQUEST MEMORY
@@ -191,9 +191,9 @@ void *mm_malloc(size_t size)
   //   // CASE 1: HEAP DOES NOT EXIST
   //   // allocate some memory for the heap for initialization
   //   // and then perform the malloc
-  //   if (heap == NULL) {
-  //     extend(new_size);
-  //   }
+    if (heap == NULL) {
+      extend(new_size);
+    }
   //   // update the current available size by align by aligning
   //   current_avail_size = PAGE_ALIGN(new_size);
   //   // extend(current_avail_size);
