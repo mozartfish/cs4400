@@ -26,27 +26,39 @@
 /* rounds up to the nearest multiple of mem_pagesize() */
 #define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
 
-void *current_avail = NULL;
-int current_avail_size = 0;
-
 /***************************************************************************************/
 /*DEFINE DATA STRUCTURES FOR MALLOC */
+// 24 bytes 
 typedef struct header_block {
   size_t block_size; // variable for indicating the size
   size_t allocated; // variable for indicating whether the block has been set
-  struct header_block *next; // pointer to the next node
+  struct header_block *next; // pointer to the next header block
 } header_block;
 
+// 16 bytes
 typedef struct footer_block {
   size_t block_size; // variable for indicating the size
   size_t allocated; // variable for indicating whether the block has been allocated
 } footer_block;
 
+// 24 bytes
 typedef struct page_node {
   struct page_node *next; // pointer to the next set of pages in the memory list
   struct page_node *prev; // pointer to the previous set of pages in the memory list
   size_t bytes_avail; // variable for keeping track of the number of bytes used in a chunk of pages
 } page_node;
+/**********************************************************************************************/
+/* GLOBAL VARIABLES */
+static page_node *heap = NULL; // global variable for keeping track of the heap
+void *mem_pages = NULL; // global variable for keeping track of the pages in use 
+
+void *current_avail = NULL;
+int current_avail_size = 0;
+/**********************************************************************************************/
+/* HELPER FUNCTIONS */
+static void extend(size_t s);
+static void add_pages(void *page_amt);
+/*********************************************************************************************/
 
 /* 
  * mm_init - initialize the malloc package.
@@ -54,9 +66,12 @@ typedef struct page_node {
 
 mm_init(void)
 {
+  // initialize structs
+  heap = NULL;
+  mem_pages = NULL;
+  current_avail = NULL;
+  current_avail_size = 0;
 
-// initialize the header block
-  
   return 0;
 }
 
