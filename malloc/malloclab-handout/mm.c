@@ -188,9 +188,8 @@ void *mm_malloc(size_t size)
     // get the size of the first header block
     size_t block_size = GET_SIZE(first_block_header);
 
-    // check whether it is allocated 
-    // size_t block_all_stat = 
-
+    // check whether it is allocated
+    size_t block_all_stat = GET_ALLOC(first_block_header);
   }
 
   // traverse the page linked list

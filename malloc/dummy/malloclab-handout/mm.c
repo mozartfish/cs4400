@@ -29,13 +29,33 @@
 void *current_avail = NULL;
 int current_avail_size = 0;
 
+/***************************************************************************************/
+/*DEFINE DATA STRUCTURES FOR MALLOC */
+typedef struct header_block {
+  size_t block_size; // variable for indicating the size
+  size_t allocated; // variable for indicating whether the block has been set
+  struct header_block *next; // pointer to the next node
+} header_block;
+
+typedef struct footer_block {
+  size_t block_size; // variable for indicating the size
+  size_t allocated; // variable for indicating whether the block has been allocated
+} footer_block;
+
+typedef struct page_node {
+  struct page_node *next; // pointer to the next set of pages in the memory list
+  struct page_node *prev; // pointer to the previous set of pages in the memory list
+  size_t bytes_avail; // variable for keeping track of the number of bytes used in a chunk of pages
+} page_node;
+
 /* 
  * mm_init - initialize the malloc package.
  */
-int mm_init(void)
+
+mm_init(void)
 {
-  current_avail = NULL;
-  current_avail_size = 0;
+
+// initialize the header block
   
   return 0;
 }
