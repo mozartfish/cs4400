@@ -31,7 +31,7 @@ static void extend(size_t s);
 static void add_to_free_list(void *bp);
 static void remove_from_free_list(void *bp);
 static void set_allocated(void *bp, size_t size);
-static void *coalesce(void *bp);
+// static void *coalesce(void *bp);
 /*********************************************************************************************/
 /*MACRO CONSTANTS*/
 // This assumes you have a struct or typedef called "block_header" and "block_footer"
@@ -134,6 +134,7 @@ void *mm_malloc(size_t size)
         start = start->next;
       }
     }
+    return NULL;
 }
 
 /* Request more memory by calling mem_map
@@ -278,9 +279,9 @@ static void set_allocated(void *bp, size_t size)
   }
 }
 /* Coalesce a free block if applicable*  Returns pointer to new coalesced block*/
-static void *coalesce(void *bp)
-{
-}
+// static void *coalesce(void *bp)
+// {
+// }
 
 /*
  * mm_free - Freeing a block does nothing.
