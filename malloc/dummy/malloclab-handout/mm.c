@@ -29,7 +29,7 @@
 /* HELPER FUNCTIONS */
 static void extend(size_t s);
 static void add_to_free_list(void *bp);
-static void set_allocated(void *b, size_t size);
+static void set_allocated(void *bp, size_t size);
 /*********************************************************************************************/
 /*MACRO CONSTANTS*/
 // This assumes you have a struct or typedef called "block_header" and "block_footer"
@@ -107,10 +107,24 @@ void *mm_malloc(size_t size)
   int newsize = ALIGN(size);
   void *p;
 
-  // // check if the heap is empty
-  // if (heap == NULL) {
-  //   extend(newsize);
-  // }
+  // check if the free list is empty
+  if (free_list== NULL) {
+    extend(newsize);
+  }
+
+  // traverse the free list looking for space
+  // create a new list node variable that starts at the free list
+  // since the free list gets updated
+  list_node *start = free_list;
+
+  // look for space
+  while (1) {
+    // get the header for the current free block in the list
+    char *header = HDRP(start);
+
+    // get the size in the header
+    size_t available_size = GET_SIZE(header);
+  }
 
   // page_chunk *current_page_chunk = heap;
 
@@ -170,8 +184,8 @@ static void extend(size_t s) {
   PUT(payload_footer, PACK(current_avail_size - 32, 0));
   PUT(payload_footer, PACK(0, 1));
 
-  // add the node to the free block linked list 
-
+  // add the node to the free block linked list
+  add_to_free_list(payload_pointer);
 
   //   // typecast current available to set the number of bytes from page_align size
   //   page_chunk *page_struct = (page_chunk *)(current_avail);
@@ -227,7 +241,7 @@ static void extend(size_t s) {
 * and adds it to the free list
 */
 static void add_to_free_list(void *bp) {
-  // convert the page amount to a node
+  // cast the block pointer to a node pointer
   list_node *new_block = (list_node *)(bp);
 
   // CASE 1: THE FREE LIST IS EMPTY
@@ -236,6 +250,7 @@ static void add_to_free_list(void *bp) {
     free_list->next = NULL;
     free_list->prev = NULL;
   }
+  // CASE 2: FREE BLOCK LIST IS NOT EMPTY
   else {
     free_list->prev = new_block;
     new_block->next = free_list;
