@@ -94,7 +94,7 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  int newsize = ALIGN(size);
+  int newsize = ALIGN(size + PAGE_OVERHEAD);
   void *p;
 
   // check if the free list of blocks is empty
