@@ -109,8 +109,6 @@ void *mm_malloc(size_t size)
   list_node *start = free_list;
 
   // look for space continously
-  while (1)
-  {
     // while there is an available free block in the free list
     while (start != NULL)
     {
@@ -127,15 +125,15 @@ void *mm_malloc(size_t size)
         p = (void *)(start);
         return p;
       }
-      // if there is no space available, move on to the next free block
-      start = start->next;
+      // check if the next free block is null
+      if (start->next == NULL) {
+        extend(newsize);
+        start = free_list;
+      }
+      else {
+        start = start->next;
+      }
     }
-    // THE NEXT IS NULL : HAVE TO REQUEST MORE SPACE
-    extend(newsize);
-
-    // set the start to the beginning of the free list
-    start = free_list;
-  }
 }
 
 /* Request more memory by calling mem_map
