@@ -31,6 +31,7 @@ static void extend(size_t s);
 static void add_to_free_list(void *bp);
 static void remove_from_free_list(void *bp);
 static void set_allocated(void *bp, size_t size);
+static void *coalesce(void *bp);
 /*********************************************************************************************/
 /*MACRO CONSTANTS*/
 // This assumes you have a struct or typedef called "block_header" and "block_footer"
@@ -61,20 +62,6 @@ static void set_allocated(void *bp, size_t size);
 /*DEFINE DATA STRUCTURES FOR MALLOC */
 typedef size_t block_header;
 typedef size_t block_footer;
-
-// 16 bytes
-// typedef struct header_block
-// {
-//   size_t block_size; // variable for indicating the size
-//   size_t allocated;  // variable for indicating whether the block has been set
-// } block_header;
-
-// // 16 bytes
-// typedef struct footer_block
-// {
-//   size_t block_size; // variable for indicating the size
-//   size_t allocated;  // variable for indicating whether the block has been allocated
-// } block_footer;
 
 /*Doubly Linked List Data Structure for keeping track of the free blocks */
 typedef struct list_node
@@ -124,8 +111,9 @@ void *mm_malloc(size_t size)
   // look for space continously
   while (1)
   {
-    // while there is an available free block in the free list 
-    while (start != NULL) {
+    // while there is an available free block in the free list
+    while (start != NULL)
+    {
       // get the header for the current free block in the list
       char *header = HDRP(start);
 
@@ -144,10 +132,9 @@ void *mm_malloc(size_t size)
     }
     // THE NEXT IS NULL : HAVE TO REQUEST MORE SPACE
     extend(newsize);
-    
+
     // set the start to the beginning of the free list
     start = free_list;
-
   }
 }
 
@@ -176,7 +163,6 @@ static void extend(size_t s)
   char *payload_pointer = total_bytes + 32;
   char *payload_footer = FTRP(payload_pointer);
   char *epilogue_header = payload_footer + 8;
-
 
   // Padding contains some unused value according to textbook
   PUT(padding, 8);
@@ -286,11 +272,16 @@ static void set_allocated(void *bp, size_t size)
     // add the new payload pointer to the free list
     add_to_free_list(next_payload);
   }
-  else {
+  else
+  {
     // allocate the entire block of space
     PUT(block_header, PACK(old_size, 1));
     PUT(block_footer, PACK(old_size, 1));
   }
+}
+/* Coalesce a free block if applicable*  Returns pointer to new coalesced block*/
+static void *coalesce(void *bp)
+{
 }
 
 /*
