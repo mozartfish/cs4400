@@ -29,6 +29,7 @@
 /* HELPER FUNCTIONS */
 static void extend(size_t s);
 static void add_to_free_list(void *bp);
+static void remove_from_free_list(void *bp);
 static void set_allocated(void *bp, size_t size);
 /*********************************************************************************************/
 /*MACRO CONSTANTS*/
@@ -117,13 +118,31 @@ void *mm_malloc(size_t size)
   // since the free list gets updated
   list_node *start = free_list;
 
-  // look for space
+  // look for space continously
   while (1) {
     // get the header for the current free block in the list
     char *header = HDRP(start);
 
     // get the size in the header
     size_t available_size = GET_SIZE(header);
+
+    if (available_size >= size) {
+      // allocate the space
+      p = (void *)(start);
+      return p;
+    }
+
+    // if the current free block does not have enough space for the request check the next free block
+    if (free_list->next != NULL) {
+      start = free_list->next;
+    }
+
+    // if the next free block is null request for more space
+    if (free_list->next == NULL) {
+      extend(newsize);
+      // allocate space in the new head of the free list
+      start = free_list;
+    }
   }
 
   // page_chunk *current_page_chunk = heap;
@@ -256,6 +275,34 @@ static void add_to_free_list(void *bp) {
     new_block->next = free_list;
     new_block->prev = NULL;
     free_list = new_block;
+  }
+}
+/*
+* Function that removes a block from
+* the free list */
+static void remove_from_free_list(void *bp) {
+  // type cast the block pointer to a list node
+  list_node *allocated_block = (list_node *)(bp);
+  list_node *allocated_next = allocated_block->next;
+  list_node *allocated_prev = allocated_block->prev;
+
+  // CASE 1: PREVIOUS NULL, NEXT NULL
+  if (allocated_prev == NULL && allocated_next == NULL) {
+    allocated_block = NULL;
+  }
+  // CASE 2: PREVIOUS NULL, NEXT NOT NULL
+  else if (allocated_prev == NULL && allocated_next != NULL) {
+    allocated_block = allocated_next;
+    allocated_block->prev = NULL;
+  }
+  // CASE 3: PREVIOUS NOT NULL, NEXT NOT NULL
+  else if (allocated_prev != NULL && allocated_next != NULL) {
+    allocated_prev->next = allocated_next;
+    allocated_next->prev = allocated_prev;
+  }
+  // CASE 4: PREVIOUS NOT NULL, NEXT NULL
+  else {
+    allocated_prev->next = NULL;
   }
 }
 
