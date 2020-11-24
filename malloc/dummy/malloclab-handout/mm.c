@@ -110,7 +110,7 @@ void *mm_malloc(size_t size)
   int newsize = ALIGN(size);
   void *p;
 
-  // check if the free list is empty
+  // check if the free list of blocks is empty
   if (free_list == NULL)
   {
     extend(newsize);
@@ -124,33 +124,30 @@ void *mm_malloc(size_t size)
   // look for space continously
   while (1)
   {
-    // get the header for the current free block in the list
-    char *header = HDRP(start);
+    // while there is an available free block in the free list 
+    while (start != NULL) {
+      // get the header for the current free block in the list
+      char *header = HDRP(start);
 
-    // get the size in the header
-    size_t available_size = GET_SIZE(header);
+      // get the size in the header
+      size_t available_size = GET_SIZE(header);
 
-    if (available_size >= size)
-    {
-      // allocate the space
-      set_allocated(start, size);
-      p = (void *)(start);
-      return p;
+      if (available_size >= size)
+      {
+        // allocate the space
+        set_allocated(start, size);
+        p = (void *)(start);
+        return p;
+      }
+      // if there is no space available, move on to the next free block
+      start = start->next;
     }
+    // THE NEXT IS NULL : HAVE TO REQUEST MORE SPACE
+    extend(newsize);
+    
+    // set the start to the beginning of the free list
+    start = free_list;
 
-    // if the current free block does not have enough space for the request check the next free block
-    if (free_list->next != NULL)
-    {
-      start = free_list->next;
-    }
-
-    // if the next free block is null request for more space
-    if (free_list->next == NULL)
-    {
-      extend(newsize);
-      // allocate space in the new head of the free list
-      start = free_list;
-    }
   }
 }
 
@@ -182,7 +179,7 @@ static void extend(size_t s)
 
 
   // Padding contains some unused value according to textbook
-  PUT(padding, 16);
+  PUT(padding, 8);
   PUT(prologue_header, PACK(OVERHEAD, 1));
   PUT(prologue_footer, PACK(OVERHEAD, 1));
   PUT(payload_header, PACK(current_avail_size - PAGE_OVERHEAD, 0));
