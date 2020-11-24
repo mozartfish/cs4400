@@ -89,7 +89,7 @@ int current_avail_size = 0;         // the size of the available pages
  * mm_init - initialize the malloc package.
  */
 
-mm_init(void)
+int mm_init(void)
 {
   // initialize structs
   free_list = NULL;
@@ -182,7 +182,7 @@ static void extend(size_t s) {
   PUT(prologue_footer, PACK(16, 1));
   PUT(payload_header, PACK(current_avail_size - 32, 0));
   PUT(payload_footer, PACK(current_avail_size - 32, 0));
-  PUT(payload_footer, PACK(0, 1));
+  PUT(epilogue_header, PACK(0, 1));
 
   // add the node to the free block linked list
   add_to_free_list(payload_pointer);
