@@ -118,10 +118,10 @@ void *mm_malloc(size_t size)
       // get the size in the header
       size_t available_size = GET_SIZE(header);
 
-      if (available_size >= size)
+      if (available_size >= newsize)
       {
         // allocate the space
-        set_allocated(start, size);
+        set_allocated(start, available_size);
         p = (void *)(start);
         return p;
       }
@@ -144,7 +144,7 @@ void *mm_malloc(size_t size)
 static void extend(size_t s)
 {
   // align the number of bytes for the pages requested
-  current_avail_size = PAGE_ALIGN(s);
+  current_avail_size = PAGE_ALIGN(s) * 2;
 
   // request some memory
   current_avail = mem_map(current_avail_size); // currently a void * pointer
