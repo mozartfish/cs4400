@@ -161,6 +161,8 @@ static void extend(size_t new_size)
   // get a number p bytes that are equivalent to page_chunk_size
   void *p = mem_map(current_size);
 
+  printf("The current size returned is: %u", sizeof(p));
+
   // add a page chunk to the linked list
   add_page_chunk(p);
 
@@ -182,11 +184,11 @@ static void extend(size_t new_size)
   // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
 }
 
-static void heap_checker(void *p) {
-  // start at the beginning of the page chunk 
-  // // get the first block
-  // check if it is empty or not
-}
+// static void heap_checker(void *p) {
+//   // start at the beginning of the page chunk 
+//   // // get the first block
+//   // check if it is empty or not
+// }
 
 static void add_page_chunk(void *memory)
 {
