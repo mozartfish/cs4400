@@ -97,7 +97,7 @@ void *mm_malloc(size_t size)
 {
   // printf("original size: %d\n", size);
   int newsize = ALIGN(size + OVERHEAD);
-  // printf("aligned size: %d\n", newsize);
+  printf("aligned size: %d\n", newsize);
 
   // check if the page list is empty
   if (first_page_chunk == NULL)
@@ -140,8 +140,8 @@ static void extend(size_t new_size)
   // get the chunk of memory that was returned
   void *p = mem_map(current_size);
 
-  // print the size of the amount of memory
-  printf("%d\n", sizeof(p));
+  // // print the size of the amount of memory
+  // printf("%d\n", sizeof(p));
 
   // print the number of pages mapped
   printf("%d\n", mem_heapsize);
