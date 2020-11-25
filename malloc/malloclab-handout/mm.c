@@ -64,6 +64,7 @@
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
 static void set_allocated(void *bp, size_t size);
+// static void heap_checker(void *p);
 static void *coalesce(void *bp);
 static void add_page_chunk(void *memory);
 
@@ -162,9 +163,10 @@ static void extend(size_t new_size)
 
   // add a page chunk to the linked list
   add_page_chunk(p);
+
   p += sizeof(page_chunk);                            // move the p pointer past the first 16 bytes since that's assigned for the pages
   PUT(p, 0);                                          // padding of 8 bytes
-  PUT(p + 8, OVERHEAD);                               // PROLOGUE Header;
+  PUT(p + 8, PACK(OVERHEAD, 1));                               // PROLOGUE Header;
   PUT(p + 16, PACK(OVERHEAD, 1));                     // PROLOGUE FOOTER;
   PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Header
   first_bp = p + 32;
@@ -179,6 +181,11 @@ static void extend(size_t new_size)
   // PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
   // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
 }
+
+// static void heap_checker(void *p) {
+//   // cast the page chunk to a page chunk type
+//   p += 32;
+// }
 
 static void add_page_chunk(void *memory)
 {
