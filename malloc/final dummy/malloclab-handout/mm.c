@@ -156,7 +156,7 @@ static void extend(size_t new_size)
   PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // PAYLOAD HEADER
   first_bp = p + 32;                                          // first payload pointer
   PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
-  PUT(FTRP(first_bp) + 8, pack(0, 1));                        // Epilog Header;
+  PUT(FTRP(first_bp) + 8, PACK(0, 1));                        // Epilog Header;
 }
 
 static void add_page_node(void *pg)
