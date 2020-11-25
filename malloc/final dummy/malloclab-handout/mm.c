@@ -131,6 +131,7 @@ static void extend(size_t new_size)
   size_t current_size = PAGE_ALIGN(new_size);
   printf("page align : %d\n", current_size);
 }
+
 static void add_page_node(void *pg)
 {
   // cast memory to a page chunk
