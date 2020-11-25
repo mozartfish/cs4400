@@ -63,6 +63,7 @@
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
+static void set_allocated(void *bp, size_t size);
 
 /****************************************************************************************************/
 
@@ -98,6 +99,9 @@ void *mm_malloc(size_t size)
 
   // call the extend function to get space for allocating stuff
   extend(new_size);
+
+  // set bp pointer
+  bp = first_bp;
 }
 
 /*
@@ -115,11 +119,24 @@ static void extend(size_t new_size)
   // get a number p bytes that are equivalent to page_chunk_size
   void *p = mem_map(current_size);
 
-  PUT(p, 16);                                                 // 8 bytes padding
+  PUT(p, 0);                                                 // 8 bytes padding
   PUT(p + 8, PACK(OVERHEAD, 1));                              // Prologue Header
   PUT(p + 16, PACK(OVERHEAD, 1));                             // Prologue Footer
   PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // payload header
   first_bp = p + 32;                                          // payload pointer for the first block
-  PUT(FTRP(first_bp), Pack(current_size - PAGE_OVERHEAD, 0)); // payload footer
+  PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
   PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
+}
+
+static void set_allocated(void *bp, size_t size) {
+  size_t extra_size = GET_SIZE(HDRP(bp)) - size;
+
+  // Check if we can split the page
+  if (extra_size > ALIGN(1 + OVERHEAD)) {
+    PUT(HDRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
+    PUT(FTRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
+  }
+  
+    PUT(HDRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
+    PUT(FTRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
 }
