@@ -95,8 +95,12 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  printf("original size: %d\n", size);
-  int newsize = ALIGN(size);
+  // printf("original size: %d\n", size);
+  int newsize = ALIGN(size + OVERHEAD);
+  printf("aligned size: %d\n", newsize);
+
+  extend(newsize);
+
   void *p;
 
   if (current_avail_size < newsize)
@@ -121,6 +125,12 @@ void mm_free(void *ptr)
 {
 }
 
+static void extend(size_t new_size)
+{
+  // get a chunk of pages that satisfies the new requested size
+  size_t current_size = PAGE_ALIGN(new_size);
+  printf("page align : %d\n", current_size);
+}
 static void add_page_node(void *pg)
 {
   // cast memory to a page chunk
