@@ -259,21 +259,14 @@ static void add_page_chunk(void *memory)
 static void set_allocated(void *bp, size_t size)
 {
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
-
-  PUT(HDRP(bp), PACK(size, 1));
-  PUT(FTRP(bp), PACK(size, 1));
-
   // Check if we can split the page
   if (extra_size > ALIGN(PAGE_OVERHEAD))
   {
     PUT(HDRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
     PUT(FTRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
   }
-  else
-  {
-    PUT(HDRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
-    PUT(FTRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
-  }
+  PUT(HDRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
+  PUT(FTRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
 }
 
 static void *coalesce(void *bp)
