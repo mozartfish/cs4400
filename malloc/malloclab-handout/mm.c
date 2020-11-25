@@ -187,16 +187,17 @@ static void extend(size_t new_size)
 
 static void heap_checker(void *bp)
 {
+  void *p = NULL;
 
   // set bp pointer
-  bp = first_bp;
+  p = bp;
 
-  while (bp != NULL)
+  while (p != NULL)
   {
-    printf("The size of the current block is: %d\n", GET_SIZE(HDRP(bp)));
-    printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(bp)));
+    printf("The size of the current block is: %d\n", GET_SIZE(HDRP(p)));
+    printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(p)));
     // check if the current block is allocated and get its next block
-    bp = NEXT_BLK(bp);
+    p = NEXT_BLKP(p);
     // if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
     // {
     //   set_allocated(bp, new_size);
