@@ -59,7 +59,7 @@
 #define GET_SIZE(p) (GET(p) & ~0xF)
 
 // overall overhead for a page
-#define PAGE_OVERHEAD 48
+#define PAGE_OVERHEAD 32
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
@@ -182,10 +182,11 @@ static void extend(size_t new_size)
   // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
 }
 
-// static void heap_checker(void *p) {
-//   // cast the page chunk to a page chunk type
-//   p += 32;
-// }
+static void heap_checker(void *p) {
+  // start at the beginning of the page chunk 
+  // // get the first block
+  // check if it is empty or not
+}
 
 static void add_page_chunk(void *memory)
 {
