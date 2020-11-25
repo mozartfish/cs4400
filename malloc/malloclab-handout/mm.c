@@ -127,6 +127,8 @@ void *mm_malloc(size_t size)
 
     while (GET_SIZE(HDRP(bp)) != 0)
     {
+      printf("The size available is : %d", GET_SIZE(HDRP(bp)));
+      printf("The new size: %d", new_size);
       if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
       {
         set_allocated(bp, new_size);
