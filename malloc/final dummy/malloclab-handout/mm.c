@@ -97,25 +97,31 @@ void *mm_malloc(size_t size)
 {
   // printf("original size: %d\n", size);
   int newsize = ALIGN(size + OVERHEAD);
-  printf("aligned size: %d\n", newsize);
+  // printf("aligned size: %d\n", newsize);
 
-  extend(newsize);
-
-  void *p;
-
-  if (current_avail_size < newsize)
+  // check if the page list is empty
+  if (first_page_chunk == NULL)
   {
-    current_avail_size = PAGE_ALIGN(newsize);
-    current_avail = mem_map(current_avail_size);
-    if (current_avail == NULL)
-      return NULL;
+    // call the extend function
+    extend(newsize);
   }
 
-  p = current_avail;
-  current_avail += newsize;
-  current_avail_size -= newsize;
+  // void *p;
 
-  return p;
+  // if (current_avail_size < newsize)
+  // {
+  //   current_avail_size = PAGE_ALIGN(newsize);
+  //   current_avail = mem_map(current_avail_size);
+  //   if (current_avail == NULL)
+  //     return NULL;
+  // }
+
+  // p = current_avail;
+  // current_avail += newsize;
+  // current_avail_size -= newsize;
+
+  // return p;
+  return NULL;
 }
 
 /*
@@ -129,7 +135,28 @@ static void extend(size_t new_size)
 {
   // get a chunk of pages that satisfies the new requested size
   size_t current_size = PAGE_ALIGN(new_size);
-  printf("page align : %d\n", current_size);
+  // printf("page align : %d\n", current_size);
+
+  // get the chunk of memory that was returned
+  void *p = mem_map(current_size);
+
+  // print the size of the amount of memory
+  printf("%d\n", sizeof(p));
+
+  // print the number of pages mapped
+  printf("%d\n", mem_heapsize);
+
+  // call the add page function
+  add_page_node(p);
+
+  p = p + sizeof(page_node);                                  // move the pointer 16 bytes to account for page pointers
+  PUT(p, 0);                                                  // padding of 8 bytes
+  PUT(p + 8, PACK(OVERHEAD, 1));                              // PROLOG HEADER
+  PUT(p + 16, PACK(OVERHEAD, 1));                             // PROLOG FOOTER
+  PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // PAYLOAD HEADER
+  first_bp = p + 32;                                          // first payload pointer
+  PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
+  PUT(FTRP(first_bp) + 8, pack(0, 1));                        // Epilog Header;
 }
 
 static void add_page_node(void *pg)
