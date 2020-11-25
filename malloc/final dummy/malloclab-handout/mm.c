@@ -70,6 +70,7 @@ typedef struct page_node
 
 static void *first_bp = NULL;
 static void *bp = NULL;
+static page_node *first_page_chunk = NULL;
 void *current_avail = NULL;
 int current_avail_size = 0;
 
@@ -84,6 +85,7 @@ int mm_init(void)
   current_avail_size = 0;
   first_bp = NULL;
   bp = NULL;
+  first_page_chunk = NULL;
   return 0;
 }
 
@@ -117,4 +119,31 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
+}
+
+static void add_page_node(void *pg)
+{
+  // cast memory to a page chunk
+  page_node *new_page_chunk = (page_node *)(pg);
+
+  if (new_page_chunk == NULL)
+  {
+    new_page_chunk->next = NULL;
+    new_page_chunk->prev = NULL;
+    new_page_chunk = new_page_chunk;
+  }
+  else
+  {
+    // set the first page chunk previous
+    first_page_chunk->prev = new_page_chunk;
+
+    // set the new page chunk next
+    new_page_chunk->next = first_page_chunk;
+
+    // set the new page chunk previous
+    new_page_chunk->prev = NULL;
+
+    // set the first page chunk as the next page chunk
+    first_page_chunk = new_page_chunk;
+  }
 }
