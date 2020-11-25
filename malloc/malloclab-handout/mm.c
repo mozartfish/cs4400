@@ -64,7 +64,7 @@
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
 static void set_allocated(void *bp, size_t size);
-static void heap_checker(void *bp);
+static int heap_checker(void *bp);
 static void *coalesce(void *bp);
 static void add_page_chunk(void *memory);
 
@@ -185,7 +185,7 @@ static void extend(size_t new_size)
   // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
 }
 
-static void heap_checker(void *bp)
+static int heap_checker(void *bp)
 {
   void *p = NULL;
 
@@ -196,8 +196,12 @@ static void heap_checker(void *bp)
   {
     printf("The size of the current block is: %d\n", GET_SIZE(HDRP(p)));
     printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(p)));
-    // check if the current block is allocated and get its next block
-    p = NEXT_BLKP(p);
+    if (GET_ALLOC(HDRP(p)) != 1) {
+      printf("The block should be allocated!");
+      return -1;
+    }
+      // check if the current block is allocated and get its next block
+      p = NEXT_BLKP(p);
     // if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
     // {
     //   set_allocated(bp, new_size);
@@ -237,6 +241,9 @@ static void add_page_chunk(void *memory)
 static void set_allocated(void *bp, size_t size)
 {
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
+
+  PUT(HDRP(bp), PACK(size, 1));
+  PUT(FTRP(bp), PACK(size, 1));
 
   // Check if we can split the page
   if (extra_size > ALIGN(PAGE_OVERHEAD))
