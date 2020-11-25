@@ -168,7 +168,7 @@ static void add_page_node(void *pg)
   {
     new_page_chunk->next = NULL;
     new_page_chunk->prev = NULL;
-    new_page_chunk = new_page_chunk;
+    first_page_chunk = new_page_chunk;
   }
   else
   {
