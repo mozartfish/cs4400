@@ -127,7 +127,7 @@ void *mm_malloc(size_t size)
       if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
       {
         set_allocated(bp, new_size);
-        heap_checker(first_bp);
+        //heap_checker(first_bp);
         return bp;
       }
       bp = NEXT_BLKP(bp);
@@ -137,6 +137,9 @@ void *mm_malloc(size_t size)
     if (first_page_chunk->next == NULL)
     {
       extend(new_size);
+    }
+    else {
+      bp = sizeof(page_chunk) + OVERHEAD + sizeof(block_header);
     }
   }
 }
