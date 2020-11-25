@@ -196,11 +196,13 @@ static int heap_checker(void *bp)
   {
     printf("The size of the current block is: %d\n", GET_SIZE(HDRP(p)));
     printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(p)));
-    if (GET_ALLOC(HDRP(p)) != 1) {
+    if (GET_ALLOC(HDRP(p)) != 1)
+    {
       printf("The block should be allocated!\n");
       return -1;
     }
-    else {
+    else
+    {
       printf("The next block should be free\n");
       // check if the current block is allocated and get its next block
       p = NEXT_BLKP(p);
@@ -215,6 +217,7 @@ static int heap_checker(void *bp)
       //   return bp;
       // }
       // bp = NEXT_BLKP(bp);
+    }
   }
   return 1;
 }
