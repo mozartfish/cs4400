@@ -64,7 +64,7 @@
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
 static void set_allocated(void *bp, size_t size);
-// static void heap_checker(void *p);
+static void heap_checker(void *bp);
 static void *coalesce(void *bp);
 static void add_page_chunk(void *memory);
 
@@ -127,6 +127,7 @@ void *mm_malloc(size_t size)
       if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
       {
         set_allocated(bp, new_size);
+        heap_checker(first_bp);
         return bp;
       }
       bp = NEXT_BLKP(bp);
@@ -168,7 +169,7 @@ static void extend(size_t new_size)
 
   p += sizeof(page_chunk);                            // move the p pointer past the first 16 bytes since that's assigned for the pages
   PUT(p, 0);                                          // padding of 8 bytes
-  PUT(p + 8, PACK(OVERHEAD, 1));                               // PROLOGUE Header;
+  PUT(p + 8, PACK(OVERHEAD, 1));                      // PROLOGUE Header;
   PUT(p + 16, PACK(OVERHEAD, 1));                     // PROLOGUE FOOTER;
   PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Header
   first_bp = p + 32;
@@ -184,11 +185,26 @@ static void extend(size_t new_size)
   // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
 }
 
-// static void heap_checker(void *p) {
-//   // start at the beginning of the page chunk 
-//   // // get the first block
-//   // check if it is empty or not
-// }
+static void heap_checker(void *bp)
+{
+
+  // set bp pointer
+  bp = first_bp;
+
+  while (bp != NULL)
+  {
+    printf("The size of the current block is: %d\n", GET_SIZE(HDRP(bp)));
+    printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(bp)));
+    // check if the current block is allocated and get its next block
+    bp = NEXT_BLK(bp);
+    // if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
+    // {
+    //   set_allocated(bp, new_size);
+    //   return bp;
+    // }
+    // bp = NEXT_BLKP(bp);
+  }
+}
 
 static void add_page_chunk(void *memory)
 {
