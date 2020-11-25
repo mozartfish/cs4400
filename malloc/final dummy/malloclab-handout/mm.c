@@ -164,7 +164,7 @@ static void add_page_node(void *pg)
   // cast memory to a page chunk
   page_node *new_page_chunk = (page_node *)(pg);
 
-  if (new_page_chunk == NULL)
+  if (first_page_chunk == NULL)
   {
     new_page_chunk->next = NULL;
     new_page_chunk->prev = NULL;
