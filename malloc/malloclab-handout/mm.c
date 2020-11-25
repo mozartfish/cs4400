@@ -130,7 +130,10 @@ void *mm_malloc(size_t size)
         //heap_checker(first_bp);
         return bp;
       }
-      bp = NEXT_BLKP(bp);
+      else
+      {
+        bp = NEXT_BLKP(bp);
+      }
     }
 
     // if we reach an epilogue check if there is another page chunk
@@ -138,7 +141,8 @@ void *mm_malloc(size_t size)
     {
       extend(new_size);
     }
-    else {
+    else
+    {
       bp = sizeof(page_chunk) + OVERHEAD + sizeof(block_header);
     }
   }
