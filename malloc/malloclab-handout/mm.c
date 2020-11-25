@@ -261,6 +261,10 @@ static void add_page_chunk(void *memory)
 
 static void set_allocated(void *bp, size_t size)
 {
+  // print the next block pointer to make sure it is the epilogue
+  printf("The epilogue header size is: %d\n", GET_SIZE(HDRP(NEXT_BLKP(bp))));
+  printf("The epilogue should be allocated: %d\n", GET_ALLOC(HDRP(NEXT_BLKP(bp))));
+  
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
   // Check if we can split the page
   if (extra_size > ALIGN(PAGE_OVERHEAD))
