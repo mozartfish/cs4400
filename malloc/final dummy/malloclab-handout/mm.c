@@ -108,7 +108,7 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  printf("The original number of bytes requested by the user: %d\n", size);
+  // printf("The original number of bytes requested by the user: %d\n", size);
   // variable to store the new size which is aligned to take care of the overhead
   int new_size = ALIGN(size + OVERHEAD);
 
@@ -127,8 +127,8 @@ void *mm_malloc(size_t size)
 
     while (GET_SIZE(HDRP(bp)) != 0)
     {
-      printf("The size available is : %d", GET_SIZE(HDRP(bp)));
-      printf("The new size: %d", new_size);
+      // printf("The size available is : %d", GET_SIZE(HDRP(bp)));
+      // printf("The new size: %d", new_size);
       if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
       {
         set_allocated(bp, new_size);
@@ -191,17 +191,9 @@ static void extend(size_t new_size)
   first_bp = p + 32;                                          // Payload memory
   PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Footer
   PUT(FTRP(first_bp) + 8, PACK(0, 1));                        // EPILOGUE Header
-  // NEXT_BLKP(first_bp) = (char *)(FTRP(first_bp) + 8); // have the next block pointer be the epilogue
 
-  // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // EPILOGUE Header
-
-  // PUT(p, 0);                                                  // 8 bytes padding
-  // PUT(p + 8, PACK(OVERHEAD, 1));                              // Prologue Header
-  // PUT(p + 16, PACK(OVERHEAD, 1));                             // Prologue Footer
-  // PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // payload header
-  // first_bp = p + 32;                                          // payload pointer for the first block
-  // PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
-  // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
+  printf("%d", GET_SIZE(HDRP(first_bp)));
+  printf("%d", GET_SIZE(HDRP(NEXT_BLKP(first_bp))));
 }
 
 static int heap_checker(void *bp)
