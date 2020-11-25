@@ -179,9 +179,12 @@ static void extend(size_t new_size)
   PUT(p + 8, PACK(OVERHEAD, 1));                      // PROLOGUE Header;
   PUT(p + 16, PACK(OVERHEAD, 1));                     // PROLOGUE FOOTER;
   PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Header
-  first_bp = p + 32;
+  first_bp = p + 32;                                 // Payload memory
   PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Footer
-  PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // EPILOGUE Header
+  PUT(FTRP(first_bp) + 8, PACK(0, 1)); // EPILOGUE Header
+  PUT(HDRP(NEXT_BLKP(first_bp)), FTRP(first_bp) + 8); // have the next block pointer be the epilogue
+
+  // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // EPILOGUE Header
 
   // PUT(p, 0);                                                  // 8 bytes padding
   // PUT(p + 8, PACK(OVERHEAD, 1));                              // Prologue Header
