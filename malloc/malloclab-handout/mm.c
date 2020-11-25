@@ -182,7 +182,7 @@ static void extend(size_t new_size)
   first_bp = p + 32;                                 // Payload memory
   PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Footer
   PUT(FTRP(first_bp) + 8, PACK(0, 1)); // EPILOGUE Header
-  PUT(HDRP(NEXT_BLKP(first_bp)), FTRP(first_bp) + 8); // have the next block pointer be the epilogue
+  // NEXT_BLKP(first_bp) = (char *)(FTRP(first_bp) + 8); // have the next block pointer be the epilogue
 
   // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // EPILOGUE Header
 
@@ -264,7 +264,7 @@ static void set_allocated(void *bp, size_t size)
   // print the next block pointer to make sure it is the epilogue
   printf("The epilogue header size is: %d\n", GET_SIZE(HDRP(NEXT_BLKP(bp))));
   printf("The epilogue should be allocated: %d\n", GET_ALLOC(HDRP(NEXT_BLKP(bp))));
-  
+
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
   // Check if we can split the page
   if (extra_size > ALIGN(PAGE_OVERHEAD))
