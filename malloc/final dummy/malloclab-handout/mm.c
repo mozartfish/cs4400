@@ -154,12 +154,12 @@ static void extend(size_t new_size)
   // call the add page function
   add_page_node(p);
 
-  p = p + sizeof(page_node);                                  // move the pointer 16 bytes to account for page pointers
+  p += sizeof(page_node);                                  // move the pointer 16 bytes to account for page pointers
   PUT(p, 0);                                                  // padding of 8 bytes
   PUT(p + 8, PACK(OVERHEAD, 1));                              // PROLOG HEADER
   PUT(p + 16, PACK(OVERHEAD, 1));                             // PROLOG FOOTER
   PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // PAYLOAD HEADER
-  first_bp = p + 32;                                          // first payload pointer
+  first_bp = p + 32;                                       // first payload pointer
   PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
   PUT(FTRP(first_bp) + 8, PACK(0, 1));                        // Epilog Header;
 }
