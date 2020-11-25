@@ -59,22 +59,34 @@
 #define GET_SIZE(p) (GET(p) & ~0xF)
 
 // overall overhead for a page
-#define PAGE_OVERHEAD 32
+#define PAGE_OVERHEAD 48
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
 static void set_allocated(void *bp, size_t size);
+static void *coalesce(void *bp);
+static void add_page_chunk(void *memory);
 
 /****************************************************************************************************/
 
 /* GLOBAL VARIABLES AND DATA STRUCTURES */
 typedef size_t block_header;
 typedef size_t block_footer;
+
+typedef struct page_chunk
+{
+  struct page_chunk *next;
+  struct page_chunk *prev;
+} page_chunk;
+
 // pointer to keep track of the first block payload
 static void *first_bp;
 
 // pointer to keep track of the subsequent block payloads
 static void *bp;
+
+// global pointer to the first page chunk
+static page_chunk *first_page_chunk = NULL;
 
 /***************************************************************************************************/
 
@@ -85,6 +97,7 @@ int mm_init(void)
 {
   first_bp = NULL;
   bp = NULL;
+  first_page_chunk = NULL;
   return 0;
 }
 
@@ -97,11 +110,33 @@ void *mm_malloc(size_t size)
   // variable to store the new size which is aligned to take care of the overhead
   int new_size = ALIGN(size + OVERHEAD);
 
-  // call the extend function to get space for allocating stuff
-  extend(new_size);
+  // check if there is a page chunk available
+  if (first_page_chunk == NULL)
+  {
+    extend(new_size);
+  }
 
-  // set bp pointer
-  bp = first_bp;
+  while (1)
+  {
+    // set bp pointer
+    bp = first_bp;
+
+    while (GET_SIZE(HDRP(bp)) != 0)
+    {
+      if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
+      {
+        set_allocated(bp, new_size);
+        return bp;
+      }
+      bp = NEXT_BLKP(bp);
+    }
+
+    // if we reach an epilogue check if there is another page chunk
+    if (first_page_chunk->next == NULL)
+    {
+      extend(new_size);
+    }
+  }
 }
 
 /*
@@ -109,6 +144,12 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
+  size_t size = GET_SIZE(HDRP(ptr));
+  PUT(HDRP(bp), PACK(size, 0));
+  PUT(FTRP(ptr), PACK(size, 0));
+
+  // call the coalesce function
+  coalesce(ptr);
 }
 
 static void extend(size_t new_size)
@@ -119,24 +160,107 @@ static void extend(size_t new_size)
   // get a number p bytes that are equivalent to page_chunk_size
   void *p = mem_map(current_size);
 
-  PUT(p, 0);                                                 // 8 bytes padding
-  PUT(p + 8, PACK(OVERHEAD, 1));                              // Prologue Header
-  PUT(p + 16, PACK(OVERHEAD, 1));                             // Prologue Footer
-  PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // payload header
-  first_bp = p + 32;                                          // payload pointer for the first block
-  PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
-  PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
+  // add a page chunk to the linked list
+  add_page_chunk(p);
+  p += sizeof(page_chunk);                            // move the p pointer past the first 16 bytes since that's assigned for the pages
+  PUT(p, 0);                                          // padding of 8 bytes
+  PUT(p + 8, OVERHEAD);                               // PROLOGUE Header;
+  PUT(p + 16, PACK(OVERHEAD, 1));                     // PROLOGUE FOOTER;
+  PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Header
+  first_bp = p + 32;
+  PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Footer
+  PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // EPILOGUE Header
+
+  // PUT(p, 0);                                                  // 8 bytes padding
+  // PUT(p + 8, PACK(OVERHEAD, 1));                              // Prologue Header
+  // PUT(p + 16, PACK(OVERHEAD, 1));                             // Prologue Footer
+  // PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // payload header
+  // first_bp = p + 32;                                          // payload pointer for the first block
+  // PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
+  // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
 }
 
-static void set_allocated(void *bp, size_t size) {
+static void add_page_chunk(void *memory)
+{
+  // cast memory to a page chunk
+  page_chunk *new_page_chunk = (page_chunk *)(memory);
+
+  if (first_page_chunk == NULL)
+  {
+    new_page_chunk->next = NULL;
+    new_page_chunk->prev = NULL;
+    first_page_chunk = new_page_chunk;
+  }
+  else
+  {
+    // set the first page chunk previous
+    first_page_chunk->prev = new_page_chunk;
+
+    // set the new page chunk next
+    new_page_chunk->next = first_page_chunk;
+
+    // set the new page chunk previous
+    new_page_chunk->prev = NULL;
+
+    // set the first page chunk as the next page chunk
+    first_page_chunk = new_page_chunk;
+  }
+}
+
+static void set_allocated(void *bp, size_t size)
+{
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
 
   // Check if we can split the page
-  if (extra_size > ALIGN(1 + OVERHEAD)) {
+  if (extra_size > ALIGN(1 + PAGE_OVERHEAD))
+  {
     PUT(HDRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
     PUT(FTRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
   }
-  
+  else
+  {
     PUT(HDRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
     PUT(FTRP(bp), PACK(GET_SIZE(HDRP(bp)), 1));
+  }
+}
+
+static void *coalesce(void *bp)
+{
+  size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
+  size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
+  size_t size = GET_SIZE(HDRP(bp));
+
+  // CASE 1: BOTH ALLOCATED
+  if (prev_alloc && next_alloc)
+  {
+    return bp;
+  }
+
+  // CASE 2: PREVIOUS ALLOCATED and next not allocated
+  else if (prev_alloc && !next_alloc)
+  {
+    size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
+    PUT(HDRP(bp), PACK(size, 0));
+    PUT(FTRP(bp), PACK(size, 0));
+  }
+
+  // CASE 3: previous alloacted and next not allocated
+  else if (!prev_alloc && next_alloc)
+  {
+    size += GET_SIZE(HDRP(PREV_BLKP(bp)));
+    PUT(FTRP(bp), PACK(size, 0));
+    PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+    bp = PREV_BLK(bp);
+  }
+
+  // both unallocated
+  else
+  {
+    size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
+    PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+    PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+    bp = PREV_BLK(bp);
+  }
+
+  return bp;
 }
