@@ -59,7 +59,7 @@
 #define GET_SIZE(p) (GET(p) & ~0xF)
 
 // overall overhead for a page
-#define PAGE_OVERHEAD 32
+#define PAGE_OVERHEAD 48 // prolog header + prolog footer + epilog header + padding + chunk pointers
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
@@ -161,7 +161,7 @@ static void extend(size_t new_size)
   // get a number p bytes that are equivalent to page_chunk_size
   void *p = mem_map(current_size);
 
-  printf("The current size returned is: %u", sizeof(p));
+  // printf("The current size returned is: %u", sizeof(p));
 
   // add a page chunk to the linked list
   add_page_chunk(p);
