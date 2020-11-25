@@ -93,7 +93,7 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  printf("original size: %d", size);
+  printf("original size: %d\n", size);
   int newsize = ALIGN(size);
   void *p;
 
