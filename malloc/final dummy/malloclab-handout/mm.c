@@ -97,7 +97,7 @@ void *mm_malloc(size_t size)
 {
   // printf("original size: %d\n", size);
   int newsize = ALIGN(size + OVERHEAD);
-  printf("aligned size: %d\n", newsize);
+  // printf("aligned size: %d\n", newsize);
 
   // check if the page list is empty
   if (first_page_chunk == NULL)
@@ -105,6 +105,11 @@ void *mm_malloc(size_t size)
     // call the extend function
     extend(newsize);
   }
+
+  // get the number of bytes in the first block header
+  printf("%d", GET_SIZE(HDRP(first_bp)));
+  // make sure the next block is a null terminator
+  printf("%d", GET_SIZE(HDRP(NEXT_BLKP(first_bp))));
 
   // void *p;
 
