@@ -108,8 +108,11 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
+  printf("The original number of bytes requested by the user: %d\n", size);
   // variable to store the new size which is aligned to take care of the overhead
   int new_size = ALIGN(size + OVERHEAD);
+
+  printf("The new aligned size requested by the user: %d\n", new_size);
 
   // check if there is a page chunk available
   if (first_page_chunk == NULL)
@@ -166,8 +169,12 @@ static void extend(size_t new_size)
   // get a chunk of pages that satisfy the requested size
   size_t current_size = PAGE_ALIGN(new_size);
 
+  printf("The number of pages for the request: %d", current_size);
+
   // get a number p bytes that are equivalent to page_chunk_size
   void *p = mem_map(current_size);
+
+  printf("The number of bytes returned: %d\n", sizeof(p));
 
   // printf("The current size returned is: %u", sizeof(p));
 
