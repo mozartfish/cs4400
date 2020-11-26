@@ -111,6 +111,41 @@ void *mm_malloc(size_t size)
     extend(new_size);
   }
 
+  // print the new free block header
+  printf("%d", GET_SIZE(HDRP(first_bp)));
+
+  while (1)
+  {
+    // set bp pointer
+    bp = first_bp;
+
+    while (GET_SIZE(HDRP(bp)) != 0)
+    {
+      // printf("The size available is : %d", GET_SIZE(HDRP(bp)));
+      // printf("The new size: %d", new_size);
+      if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
+      {
+        set_allocated(bp, new_size);
+        //heap_checker(first_bp);
+        return bp;
+      }
+      else
+      {
+        bp = NEXT_BLKP(bp);
+      }
+    }
+
+    // if we reach an epilogue check if there is another page chunk
+    if (first_page_chunk->next == NULL)
+    {
+      extend(new_size);
+    }
+    else
+    {
+      bp = sizeof(list_node) + OVERHEAD + sizeof(block_header);
+    }
+  }
+
   return NULL;
   // int newsize = ALIGN(size);
   // void *p;
