@@ -110,7 +110,7 @@ void *mm_malloc(size_t size)
   {
     extend(new_size);
   }
-
+  printf("hello");
   return NULL;
   // int newsize = ALIGN(size);
   // void *p;
