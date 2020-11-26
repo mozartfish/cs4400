@@ -111,25 +111,6 @@ void *mm_malloc(size_t size)
     extend(new_size);
   }
 
-  while (1) {
-    // set the bp pointer to the first bp
-    bp = first_bp;
-    while (GET_SIZE(HDRP(bp)) != 0)
-    {
-      // printf("The size available is : %d", GET_SIZE(HDRP(bp)));
-      // printf("The new size: %d", new_size);
-      if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
-      {
-        set_allocated(bp, new_size);
-        return bp;
-      }
-      else
-      {
-        bp = NEXT_BLKP(bp);
-      }
-    }
-    exit(0);
-  }
   return NULL;
   // int newsize = ALIGN(size);
   // void *p;
@@ -206,12 +187,12 @@ static void set_allocated(void *bp, size_t asize)
   size_t csize = GET_SIZE(HDRP(bp));
   if (csize - asize >= PAGE_OVERHEAD)
   {
-    PUT(HDRP(bp), PACK(asize, 1));
-    PUT(FTRP(bp), PACK(asize, 1));
+    put(HDRP(bp), PACK(asize, 1));
+    put(FTRP(bp), PACK(asize, 1));
     bp = NEXT_BLKP(bp);
     PUT(HDRP(bp), PACK(csize - asize, 0));
-    // printf("next size %d\n", GET_SIZE(HDRP(bp)));
-    // printf("next alloc %d\n", GET_ALLOC(HDRP(bp)));
+    printf("next size %d\n", GET_SIZE(HDRP(bp)));
+    printf("next alloc %d\n", GET_ALLOC(HDRP(bp)));
     PUT(FTRP(bp), PACK(csize - asize, 0));
   }
   else
