@@ -207,7 +207,7 @@ static void set_allocated(void *bp, size_t asize)
   if (csize - asize >= PAGE_OVERHEAD)
   {
     put(HDRP(bp), PACK(asize, 1));
-    put(FTRP(bp), PACK(asize, 1));
+    PUT(FTRP(bp), PACK(asize, 1));
     bp = NEXT_BLKP(bp);
     PUT(HDRP(bp), PACK(csize - asize, 0));
     printf("next size %d\n", GET_SIZE(HDRP(bp)));
