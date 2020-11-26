@@ -21,10 +21,10 @@
 #define ALIGNMENT 16
 
 /* rounds up to the nearest multiple of ALIGNMENT */
-#define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
+#define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
 
 /* rounds up to the nearest multiple of mem_pagesize() */
-#define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
+#define PAGE_ALIGN(size) (((size) + (mem_pagesize() - 1)) & ~(mem_pagesize() - 1))
 
 // This assumes you have a struct or typedef called "block_header" and "block_footer"
 #define OVERHEAD (sizeof(block_header) + sizeof(block_footer))
@@ -125,7 +125,7 @@ void *mm_malloc(size_t size)
   // p = current_avail;
   // current_avail += newsize;
   // current_avail_size -= newsize;
-  
+
   // return p;
 }
 
@@ -147,14 +147,14 @@ static void extend(size_t new_size)
   // add a page chunk to the linked list
   add_node(current_avail);
 
-  current_avail += sizeof(list_node);                                     // move the p pointer past the first 16 bytes since that's assigned for the pages
-  PUT(current_avail, 0);                                                  // padding of 8 bytes
-  PUT(current_avail + 8, PACK(OVERHEAD, 1));                              // PROLOGUE Header;
-  PUT(current_avail + 16, PACK(OVERHEAD, 1));                             // PROLOGUE FOOTER;
-  PUT(current_avail + 24, PACK(current_avail_size - PAGE_OVERHEAD, 0));         // Payload Header
-  first_bp = current_avail + 32;                                          // Payload memory
-  PUT(FTRP(first_bp), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Payload Footer
-  PUT(FTRP(first_bp) + 8, PACK(0, 1));                        // EPILOGUE Header
+  current_avail += sizeof(list_node);                                   // move the p pointer past the first 16 bytes since that's assigned for the pages
+  PUT(current_avail, 0);                                                // padding of 8 bytes
+  PUT(current_avail + 8, PACK(OVERHEAD, 1));                            // PROLOGUE Header;
+  PUT(current_avail + 16, PACK(OVERHEAD, 1));                           // PROLOGUE FOOTER;
+  PUT(current_avail + 24, PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Payload Header
+  first_bp = current_avail + 32;                                        // Payload memory
+  PUT(FTRP(first_bp), PACK(current_avail_size - PAGE_OVERHEAD, 0));     // Payload Footer
+  PUT(FTRP(first_bp) + 8, PACK(0, 1));                                  // EPILOGUE Header
 }
 static void add_node(void *pgs)
 {
@@ -182,16 +182,21 @@ static void add_node(void *pgs)
     first_page_chunk = new_page_chunk;
   }
 }
-static void set_allocated(void *bp, size_t asize) {
+static void set_allocated(void *bp, size_t asize)
+{
   size_t csize = GET_SIZE(HDRP(bp));
-  if (csize-asize >= PAGE_OVERHEAD) {
+  if (csize - asize >= PAGE_OVERHEAD)
+  {
     put(HDRP(bp), PACK(asize, 1));
     put(FTRP(bp), PACK(asize, 1));
     bp = NEXT_BLKP(bp);
     PUT(HDRP(bp), PACK(csize - asize, 0));
+    printf("next size %d\n", GET_SIZE(HDRP(bp)));
+    printf("next alloc %d\n", GET_ALLOC(HDRP(bp)));
     PUT(FTRP(bp), PACK(csize - asize, 0));
   }
-  else {
+  else
+  {
     PUT(HDRP(bp), PACK(csize, 1));
     PUT(FTRP(bp), PACK(csize, 1));
   }
