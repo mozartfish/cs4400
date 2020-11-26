@@ -78,8 +78,8 @@ static void *bp;
 // global pointer to the first page chunk
 static list_node *first_page_chunk = NULL;
 /***************************************************************************************************/
-void *current_avail = NULL;
-int current_avail_size = 0;
+// void *current_avail = NULL;
+// int current_avail_size = 0;
 
 /* 
  * mm_init - initialize the malloc package.
@@ -88,6 +88,7 @@ int mm_init(void)
 {
   first_bp = NULL;
   bp = NULL;
+  extend(ALIGN(10 + OVERHEAD));
   // current_avail = NULL;
   // current_avail_size = 0;
 
@@ -137,8 +138,10 @@ void mm_free(void *ptr)
 
 static void extend(size_t new_size)
 {
+  printf("%d", new_size);
   // get a chunk of pages that satisfy the requested size
   size_t current_size = PAGE_ALIGN(new_size);
+  printf("%d", current_size);
 
   // printf("The number of pages for the request: %d", current_size);
 
