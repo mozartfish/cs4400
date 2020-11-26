@@ -74,11 +74,11 @@ static void add_page_chunk(void *memory);
 typedef size_t block_header;
 typedef size_t block_footer;
 
-typedef struct page_chunk
+typedef struct list_node
 {
-  struct page_chunk *next;
-  struct page_chunk *prev;
-} page_chunk;
+  struct list_node *next;
+  struct list_node *prev;
+} list_node;
 
 // pointer to keep track of the first block payload
 static void *first_bp;
@@ -87,7 +87,7 @@ static void *first_bp;
 static void *bp;
 
 // global pointer to the first page chunk
-static page_chunk *first_page_chunk = NULL;
+static list_node *first_page_chunk = NULL;
 
 /***************************************************************************************************/
 
@@ -108,17 +108,20 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  printf("The original number of bytes requested by the user: %d\n", size);
+  // printf("The original number of bytes requested by the user: %d\n", size);
   // variable to store the new size which is aligned to take care of the overhead
   int new_size = ALIGN(size + OVERHEAD);
 
-  printf("The new aligned size requested by the user: %d\n", new_size);
+  // printf("The new aligned size requested by the user: %d\n", new_size);
 
   // check if there is a page chunk available
   if (first_page_chunk == NULL)
   {
     extend(new_size);
   }
+
+  // print the new free block header
+  printf("%d", GET_SIZE(HDRP(first_bp)));
 
   while (1)
   {
@@ -148,7 +151,7 @@ void *mm_malloc(size_t size)
     }
     else
     {
-      bp = sizeof(page_chunk) + OVERHEAD + sizeof(block_header);
+      bp = sizeof(list_node) + OVERHEAD + sizeof(block_header);
     }
   }
 }
@@ -183,68 +186,57 @@ static void extend(size_t new_size)
   // add a page chunk to the linked list
   add_page_chunk(p);
 
-  p += sizeof(page_chunk);                            // move the p pointer past the first 16 bytes since that's assigned for the pages
-  PUT(p, 0);                                          // padding of 8 bytes
-  PUT(p + 8, PACK(OVERHEAD, 1));                      // PROLOGUE Header;
-  PUT(p + 16, PACK(OVERHEAD, 1));                     // PROLOGUE FOOTER;
-  PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Header
-  first_bp = p + 32;                                 // Payload memory
+  p += sizeof(list_node);                                     // move the p pointer past the first 16 bytes since that's assigned for the pages
+  PUT(p, 0);                                                  // padding of 8 bytes
+  PUT(p + 8, PACK(OVERHEAD, 1));                              // PROLOGUE Header;
+  PUT(p + 16, PACK(OVERHEAD, 1));                             // PROLOGUE FOOTER;
+  PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // Payload Header
+  first_bp = p + 32;                                          // Payload memory
   PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Footer
-  PUT(FTRP(first_bp) + 8, PACK(0, 1)); // EPILOGUE Header
-  // NEXT_BLKP(first_bp) = (char *)(FTRP(first_bp) + 8); // have the next block pointer be the epilogue
-
-  // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // EPILOGUE Header
-
-  // PUT(p, 0);                                                  // 8 bytes padding
-  // PUT(p + 8, PACK(OVERHEAD, 1));                              // Prologue Header
-  // PUT(p + 16, PACK(OVERHEAD, 1));                             // Prologue Footer
-  // PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // payload header
-  // first_bp = p + 32;                                          // payload pointer for the first block
-  // PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // payload footer
-  // PUT(HDRP(NEXT_BLKP(first_bp)), PACK(0, 1));                 // epilogue header
+  PUT(FTRP(first_bp) + 8, PACK(0, 1));                        // EPILOGUE Header
 }
 
-static int heap_checker(void *bp)
-{
-  void *p = NULL;
+// static int heap_checker(void *bp)
+// {
+//   void *p = NULL;
 
-  // set bp pointer
-  p = bp;
+//   // set bp pointer
+//   p = bp;
 
-  while (p != NULL)
-  {
-    printf("The size of the current block is: %d\n", GET_SIZE(HDRP(p)));
-    printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(p)));
-    if (GET_ALLOC(HDRP(p)) != 1)
-    {
-      printf("The block should be allocated!\n");
-      return -1;
-    }
-    else
-    {
-      printf("The next block should be free\n");
-      // check if the current block is allocated and get its next block
-      p = NEXT_BLKP(p);
-      printf("The size of the current block is: %d\n", GET_SIZE(HDRP(p)));
-      printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(p)));
+//   while (p != NULL)
+//   {
+//     printf("The size of the current block is: %d\n", GET_SIZE(HDRP(p)));
+//     printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(p)));
+//     if (GET_ALLOC(HDRP(p)) != 1)
+//     {
+//       printf("The block should be allocated!\n");
+//       return -1;
+//     }
+//     else
+//     {
+//       printf("The next block should be free\n");
+//       // check if the current block is allocated and get its next block
+//       p = NEXT_BLKP(p);
+//       printf("The size of the current block is: %d\n", GET_SIZE(HDRP(p)));
+//       printf("The current block allocation status is: %d\n", GET_ALLOC(HDRP(p)));
 
-      return 1;
+//       return 1;
 
-      // if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
-      // {
-      //   set_allocated(bp, new_size);
-      //   return bp;
-      // }
-      // bp = NEXT_BLKP(bp);
-    }
-  }
-  return 1;
-}
+//       // if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
+//       // {
+//       //   set_allocated(bp, new_size);
+//       //   return bp;
+//       // }
+//       // bp = NEXT_BLKP(bp);
+//     }
+//   }
+//   return 1;
+// }
 
 static void add_page_chunk(void *memory)
 {
   // cast memory to a page chunk
-  page_chunk *new_page_chunk = (page_chunk *)(memory);
+  list_node *new_page_chunk = (list_node *)(memory);
 
   if (first_page_chunk == NULL)
   {

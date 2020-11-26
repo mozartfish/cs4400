@@ -9,11 +9,7 @@
  * comment that gives a high level description of your solution.
  * 
  * Pranav Rajan
- * Implements 4 basic strategies to quickly and efficiently allocate memory
- * 1) Explicit free list
- * 2) coalesce free blocks
- * 3) unmapping unused pages
- * 4) doubling chunk size 
+ * Implements a implicit linked list 
  */
 /*****************************************************************************************/
 #include <stdio.h>
@@ -59,7 +55,11 @@
 #define GET_SIZE(p) (GET(p) & ~0xF)
 
 // overall overhead for a page
-#define PAGE_OVERHEAD 32 // padding + prolog header + prolog footer + epilog header
+#define PAGE_OVERHEAD 48 // padding + prolog header + prolog footer + epilog header
+
+// define a word size
+#define WSIZE 8  // word/header and footer size (bytes)
+#define DSIZE 16 // double word size in bytes
 /**************************************************************************************/
 /* HELPER FUNCTIONS */
 // static void extend(size_t new_size);
@@ -122,7 +122,7 @@ void *mm_malloc(size_t size)
   //       set_allocated(bp, new_size);
   //       return bp;
   //     }
-  //       bp = NEXT_BLKP(bp); 
+  //       bp = NEXT_BLKP(bp);
   //   }
 
   //   // if we reach an epilogue check if there is another page chunk
@@ -213,19 +213,22 @@ void *mm_malloc(size_t size)
  * This function adds a free block to the free block list
  * using a LIFO Procedure as described in the textbook
  * page 863 */
-static void add_free_block(void *fbp) {
+static void add_free_block(void *fbp)
+{
   // cast fbp to a free block node
   free_block *new_free_block = (free_block *)(fbp);
 
   // CASE 1: THE FIRST FREE BLOCK IS NULL
-  if (first_free_block = NULL) {
+  if (first_free_block = NULL)
+  {
     first_free_block = new_free_block;
     first_free_block->next = NULL;
     first_free_block->prev = NULL;
   }
   // CASE 2: THE FIRST FREE BLOCK IS NOT NULL
   // ADD THE NEW FREE BLOCK TO THE FRONT OF THE LINKED LIST ACCORDING TO LIFO POLICY
-  else {
+  else
+  {
     first_free_block->prev = new_free_block;
     new_free_block->next = first_free_block;
     new_free_block->prev = NULL;
@@ -236,37 +239,68 @@ static void add_free_block(void *fbp) {
 /**
  * This function removes a free block from the free list
  **/
-static void remove_free_block (void *abp) {
+static void remove_free_block(void *abp)
+{
   // cast abp to a free block node
   free_block *allocated_block = (free_block *)(abp);
 
   // CASE 1: allocated block is the first free block (according to LIFO POLICY in textbook)
-  if (allocated_block == first_free_block) {
+  if (allocated_block == first_free_block)
+  {
     // CASE 1: first free block has zero children
-    if (allocated_block->next == NULL && allocated_block->prev == NULL) {
+    if (allocated_block->next == NULL && allocated_block->prev == NULL)
+    {
       allocated_block->next == NULL;
       allocated_block->prev = NULL;
       allocated_block = NULL;
     }
-    // CASE 2: first free block has a next block 
-    else {
-      if (allocated_block->next != NULL && allocated_block->prev == NULL) {
+    // CASE 2: first free block has a next block
+    else
+    {
+      if (allocated_block->next != NULL && allocated_block->prev == NULL)
+      {
         first_free_block = allocated_block->next;
         first_free_block->prev = NULL;
       }
     }
   }
   // CASE 2: delete a block in the middle of the linked list of blocks
-  else if (allocated_block->next != NULL && allocated_block->prev != NULL) {
+  else if (allocated_block->next != NULL && allocated_block->prev != NULL)
+  {
     free_block *allocated_prev = allocated_block->prev;
     free_block *allocated_next = allocated_block->next;
     allocated_prev->next = allocated_next;
     allocated_next->prev = allocated_prev;
   }
   // CASE 3: delete a block at the end of the linked list of blocks
-  else {
+  else
+  {
     free_block *allocated_prev = allocated_block->prev;
     allocated_prev->next = NULL;
+  }
+}
+/**
+ * This function follows the textbook practice problem on page 
+ * 884 */
+static void set_allocated(void *bp, size_t allocated_size)
+{
+  size_t current_size = GET_SIZE(HDRP(bp));
+
+  if ((current_size - allocated_size) >= 2 * DSIZE)
+  {
+    PUT(HDRP(bp), PACK(allocated_size, 1));
+    PUT(FTRP(bp), PACK(allocated_size, 1));
+    // remove the allocated block
+    remove_free_block(bp);
+    bp = NEXT_BLKP(bp);
+    PUT(HDRP(bp), PACK(current_size - allocated_size, 0));
+    PUT(FTRP(bp), PACK(current_size - allocated_size, 0));
+  }
+  else
+  {
+    PUT(HDRP(bp), PACK(current_size, 1));
+    PUT(FTRP(bp), PACK(current_size, 1));
+    remove_free_block(bp);
   }
 }
 // static void add_page_chunk(void *memory)
