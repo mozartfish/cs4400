@@ -55,9 +55,8 @@
 /* HELPER FUNCTIONS */
 static void extend(size_t new_size);
 static void set_allocated(void *bp, size_t size);
-static int heap_checker(void *bp);
 static void *coalesce(void *bp);
-static void add_node(void *memory);
+static void add_node(void *pgs);
 /****************************************************************************************************/
 /* GLOBAL VARIABLES AND DATA STRUCTURES */
 typedef size_t block_header;
@@ -78,8 +77,8 @@ static void *bp;
 // global pointer to the first page chunk
 static list_node *first_page_chunk = NULL;
 /***************************************************************************************************/
-// void *current_avail = NULL;
-// int current_avail_size = 0;
+void *current_avail = NULL;
+int current_avail_size = 0;
 
 /* 
  * mm_init - initialize the malloc package.
@@ -88,9 +87,8 @@ int mm_init(void)
 {
   first_bp = NULL;
   bp = NULL;
-  extend(ALIGN(10 + OVERHEAD));
-  // current_avail = NULL;
-  // current_avail_size = 0;
+  current_avail = NULL;
+  current_avail_size = 0;
 
   return 0;
 }
@@ -112,9 +110,11 @@ void *mm_malloc(size_t size)
   {
     extend(new_size);
   }
+
+  return NULL;
   // int newsize = ALIGN(size);
   // void *p;
-  
+
   // if (current_avail_size < newsize) {
   //   current_avail_size = PAGE_ALIGN(newsize);
   //   current_avail = mem_map(current_avail_size);
@@ -138,36 +138,28 @@ void mm_free(void *ptr)
 
 static void extend(size_t new_size)
 {
-  printf("%d", new_size);
   // get a chunk of pages that satisfy the requested size
-  size_t current_size = PAGE_ALIGN(new_size);
-  printf("%d", current_size);
-
-  // printf("The number of pages for the request: %d", current_size);
+  current_avail_size = PAGE_ALIGN(new_size);
 
   // get a number p bytes that are equivalent to page_chunk_size
-  void *p = mem_map(current_size);
-
-  // printf("The number of bytes returned: %d\n", sizeof(p));
-
-  // printf("The current size returned is: %u", sizeof(p));
+  current_avail = mem_map(current_avail_size);
 
   // add a page chunk to the linked list
-  add_node(p);
+  add_node(current_avail);
 
-  p += sizeof(list_node);                                     // move the p pointer past the first 16 bytes since that's assigned for the pages
-  PUT(p, 0);                                                  // padding of 8 bytes
-  PUT(p + 8, PACK(OVERHEAD, 1));                              // PROLOGUE Header;
-  PUT(p + 16, PACK(OVERHEAD, 1));                             // PROLOGUE FOOTER;
-  PUT(p + 24, PACK(current_size - PAGE_OVERHEAD, 0));         // Payload Header
-  first_bp = p + 32;                                          // Payload memory
-  PUT(FTRP(first_bp), PACK(current_size - PAGE_OVERHEAD, 0)); // Payload Footer
+  current_avail += sizeof(list_node);                                     // move the p pointer past the first 16 bytes since that's assigned for the pages
+  PUT(current_avail, 0);                                                  // padding of 8 bytes
+  PUT(current_avail + 8, PACK(OVERHEAD, 1));                              // PROLOGUE Header;
+  PUT(current_avail + 16, PACK(OVERHEAD, 1));                             // PROLOGUE FOOTER;
+  PUT(current_avail + 24, PACK(current_avail_size - PAGE_OVERHEAD, 0));         // Payload Header
+  first_bp = current_avail + 32;                                          // Payload memory
+  PUT(FTRP(first_bp), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Payload Footer
   PUT(FTRP(first_bp) + 8, PACK(0, 1));                        // EPILOGUE Header
 }
-static void add_node(void *memory)
+static void add_node(void *pgs)
 {
   // cast memory to a page chunk
-  list_node *new_page_chunk = (list_node *)(memory);
+  list_node *new_page_chunk = (list_node *)(pgs);
 
   if (first_page_chunk == NULL)
   {
@@ -188,5 +180,19 @@ static void add_node(void *memory)
 
     // set the first page chunk as the next page chunk
     first_page_chunk = new_page_chunk;
+  }
+}
+static void set_allocated(void *bp, size_t asize) {
+  size_t csize = GET_SIZE(HDRP(bp));
+  if (csize-asize >= PAGE_OVERHEAD) {
+    put(HDRP(bp), PACK(asize, 1));
+    put(FTRP(bp), PACK(asize, 1));
+    bp = NEXT_BLKP(bp);
+    PUT(HDRP(bp), PACK(csize - asize, 0));
+    PUT(FTRP(bp), PACK(csize - asize, 0));
+  }
+  else {
+    PUT(HDRP(bp), PACK(csize, 1));
+    PUT(FTRP(bp), PACK(csize, 1));
   }
 }
