@@ -110,7 +110,7 @@ void *mm_malloc(size_t size)
   {
     extend(new_size);
   }
-  printf("hello");
+
   return NULL;
   // int newsize = ALIGN(size);
   // void *p;
@@ -187,12 +187,12 @@ static void set_allocated(void *bp, size_t asize)
   size_t csize = GET_SIZE(HDRP(bp));
   if (csize - asize >= PAGE_OVERHEAD)
   {
-    put(HDRP(bp), PACK(asize, 1));
-    put(FTRP(bp), PACK(asize, 1));
+    PUT(HDRP(bp), PACK(asize, 1));
+    PUT(FTRP(bp), PACK(asize, 1));
     bp = NEXT_BLKP(bp);
     PUT(HDRP(bp), PACK(csize - asize, 0));
     printf("next size %d\n", GET_SIZE(HDRP(bp)));
-    printf("next alloc %d\n", GET_ALLOC(HDRP(bp)));
+    printf("next size %d\n", GET_SIZE(HDRP(bp)));
     PUT(FTRP(bp), PACK(csize - asize, 0));
   }
   else
