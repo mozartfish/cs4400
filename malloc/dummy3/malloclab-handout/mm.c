@@ -130,8 +130,8 @@ void *mm_malloc(size_t size)
 
     while (GET_SIZE(HDRP(bp)) != 0)
     {
-      printf("The size available is : %d", GET_SIZE(HDRP(bp)));
-      printf("The new size: %d", new_size);
+      // printf("The size available is : %d", GET_SIZE(HDRP(bp)));
+      // printf("The new size: %d", new_size);
       if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp))) >= new_size)
       {
         set_allocated(bp, new_size);
@@ -174,12 +174,12 @@ static void extend(size_t new_size)
   // get a chunk of pages that satisfy the requested size
   size_t current_size = PAGE_ALIGN(new_size);
 
-  printf("The number of pages for the request: %d", current_size);
+  // printf("The number of pages for the request: %d", current_size);
 
   // get a number p bytes that are equivalent to page_chunk_size
   void *p = mem_map(current_size);
 
-  printf("The number of bytes returned: %d\n", sizeof(p));
+  // printf("The number of bytes returned: %d\n", sizeof(p));
 
   // printf("The current size returned is: %u", sizeof(p));
 
@@ -263,8 +263,8 @@ static void add_page_chunk(void *memory)
 static void set_allocated(void *bp, size_t size)
 {
   // print the next block pointer to make sure it is the epilogue
-  printf("The epilogue header size is: %d\n", GET_SIZE(HDRP(NEXT_BLKP(bp))));
-  printf("The epilogue should be allocated: %d\n", GET_ALLOC(HDRP(NEXT_BLKP(bp))));
+  // printf("The epilogue header size is: %d\n", GET_SIZE(HDRP(NEXT_BLKP(bp))));
+  // printf("The epilogue should be allocated: %d\n", GET_ALLOC(HDRP(NEXT_BLKP(bp))));
 
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
   // Check if we can split the page
