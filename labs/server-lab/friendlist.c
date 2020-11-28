@@ -221,7 +221,7 @@ static void serve_greet(int fd, dictionary_t *query)
 
   username = dictionary_get(query, "user");
 
-  body = append_strings("Greetings, ", user, "!", NULL);
+  body = append_strings("Greetings, ", username, "!", NULL);
 
   len = strlen(body);
 
