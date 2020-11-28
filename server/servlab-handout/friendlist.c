@@ -19,6 +19,8 @@ static void clienterror(int fd, char *cause, char *errnum,
                         char *shortmsg, char *longmsg);
 static void print_stringdictionary(dictionary_t *d);
 static void serve_request(int fd, dictionary_t *query);
+/** additional functions tu support the client requests */
+static void serve_friends(int fd, dictionary_t *query);
 
 int main(int argc, char **argv) {
   int listenfd, connfd;
@@ -73,15 +75,19 @@ void doit(int fd) {
     clienterror(fd, method, "400", "Bad Request",
                 "Friendlist did not recognize the request");
   } else {
-    if (strcasecmp(version, "HTTP/1.0")
-        && strcasecmp(version, "HTTP/1.1")) {
+    printf("URI = %s received\n", uri);
+    if (strcasecmp(version, "HTTP/1.0") && strcasecmp(version, "HTTP/1.1"))
+    {
       clienterror(fd, version, "501", "Not Implemented",
                   "Friendlist does not implement that version");
-    } else if (strcasecmp(method, "GET")
-               && strcasecmp(method, "POST")) {
+    }
+    else if (strcasecmp(method, "GET") && strcasecmp(method, "POST"))
+    {
       clienterror(fd, method, "501", "Not Implemented",
                   "Friendlist does not implement that method");
-    } else {
+    }
+    else
+    {
       headers = read_requesthdrs(&rio);
 
       /* Parse all query arguments into a dictionary */
@@ -166,6 +172,32 @@ static char *ok_header(size_t len, const char *content_type) {
  * serve_request - example request handler
  */
 static void serve_request(int fd, dictionary_t *query) {
+  size_t len;
+  char *body, *header;
+
+  body = strdup("alice\nbob");
+
+  len = strlen(body);
+
+  /* Send response headers to client */
+  header = ok_header(len, "text/html; charset=utf-8");
+  Rio_writen(fd, header, strlen(header));
+  printf("Response headers:\n");
+  printf("%s", header);
+
+  free(header);
+
+  /* Send response body to client */
+  Rio_writen(fd, body, len);
+
+  free(body);
+}
+
+/*
+ * serve_friends - request the friends of a user
+ */
+static void serve_friends(int fd, dictionary_t *query)
+{
   size_t len;
   char *body, *header;
 
