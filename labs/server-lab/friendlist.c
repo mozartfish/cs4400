@@ -73,6 +73,7 @@ void doit(int fd) {
     clienterror(fd, method, "400", "Bad Request",
                 "Friendlist did not recognize the request");
   } else {
+	  printf("uri = %s received\n", uri);
     if (strcasecmp(version, "HTTP/1.0")
         && strcasecmp(version, "HTTP/1.1")) {
       clienterror(fd, version, "501", "Not Implemented",
