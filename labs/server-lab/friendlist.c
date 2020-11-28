@@ -19,6 +19,7 @@ static void clienterror(int fd, char *cause, char *errnum,
                         char *shortmsg, char *longmsg);
 static void print_stringdictionary(dictionary_t *d);
 static void serve_request(int fd, dictionary_t *query);
+static void serve_greet(int fd, dictionary_t *query);
 
 int main(int argc, char **argv)
 {
@@ -189,6 +190,35 @@ static void serve_request(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+
+  body = strdup("alice\nbob");
+
+  len = strlen(body);
+
+  /* Send response headers to client */
+  header = ok_header(len, "text/html; charset=utf-8");
+  Rio_writen(fd, header, strlen(header));
+  printf("Response headers:\n");
+  printf("%s", header);
+
+  free(header);
+
+  /* Send response body to client */
+  Rio_writen(fd, body, len);
+
+  free(body);
+}
+
+/*
+ * serve_request - example request handler
+ */
+static void serve_greet(int fd, dictionary_t *query)
+{
+  size_t len;
+  char *body, *header;
+  char *username;
+
+  username = dictionary_get(query, "user");
 
   body = strdup("alice\nbob");
 
