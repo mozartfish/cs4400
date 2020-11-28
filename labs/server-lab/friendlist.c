@@ -110,10 +110,11 @@ void doit(int fd)
          but the intial implementation always returns
          nothing: */
 
-      if (strts_with("/greet", uri))
+      if (starts_with("/greet", uri))
         serve_greet(fd, query);
       else
         serve_request(fd, query);
+        
       /* Clean up */
       free_dictionary(query);
       free_dictionary(headers);
