@@ -114,7 +114,7 @@ void doit(int fd)
         serve_greet(fd, query);
       else
         serve_request(fd, query);
-        
+
       /* Clean up */
       free_dictionary(query);
       free_dictionary(headers);
@@ -221,7 +221,7 @@ static void serve_greet(int fd, dictionary_t *query)
 
   username = dictionary_get(query, "user");
 
-  body = strdup("alice\nbob");
+  body = append_strings("Greetings, ", user, "!", NULL);
 
   len = strlen(body);
 
