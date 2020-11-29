@@ -229,12 +229,16 @@ static void serve_friends(int fd, dictionary_t *query)
   char *body, *header;
   char *user;
 
-  body = "";
+  body = "hello";
   // GET THE USERNAME
   user = dictionary_get(query, "user");
 
   // get the dictionary associated with the user
   dictionary_t *user_friends = dictionary_get(friends_dict, user);
+
+  if (user_friends == NULL) {
+    printf("no friends");
+  }
 
   add_friend(user);
 
@@ -243,10 +247,10 @@ static void serve_friends(int fd, dictionary_t *query)
   //   add_friend(user);
   // }
 
-  if (user_friends != NULL) {
-    const char **friend_list = dictionary_keys(friends_dict);
-    body = join_strings(friend_list, '\n');
-  }
+  // if (user_friends != NULL) {
+  //   const char **friend_list = dictionary_keys(friends_dict);
+  //   body = join_strings(friend_list, '\n');
+  // }
   // exit if successful
 
   len = strlen(body);
