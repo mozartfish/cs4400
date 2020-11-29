@@ -250,14 +250,14 @@ static void serve_friends(int fd, dictionary_t *query)
   user = dictionary_get(query, "user");
   printf("The user name is: %s\n", user);
 
-  // // get the dictionary associated with the user
-  // dictionary_t *user_friends = dictionary_get(friends_dict, user);
+  // get the dictionary associated with the user
+  dictionary_t *user_friends = dictionary_get(friends_dict, user);
 
-  // if (user_friends == NULL) {
-  //   printf("no friends\n");
-  //   add_friend(user);
-  //   user_friends = dictionary_get(friends_dict, user);
-  // }
+  if (user_friends == NULL) {
+    printf("no friends\n");
+    add_friend(user);
+    user_friends = dictionary_get(friends_dict, user);
+  }
 
   // if (user_friends != NULL) {
   //   printf("THERE EXISTS SOME STUFF\n");
