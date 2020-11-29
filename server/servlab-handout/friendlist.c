@@ -245,7 +245,7 @@ static void serve_friends(int fd, dictionary_t *query)
   char *body, *header;
   char *user;
 
-  body = "hello";
+  body = strdup("hello");
   // GET THE USERNAME
   user = dictionary_get(query, "user");
   printf("The user name is: %s\n", user);
@@ -283,6 +283,7 @@ static void serve_friends(int fd, dictionary_t *query)
   printf("%s", header);
 
   free(header);
+  free(body);
 
   /* Send response body to client */
   Rio_writen(fd, body, len);
