@@ -233,7 +233,7 @@ static void serve_friends(int fd, dictionary_t *query)
   user = dictionary_get(query, "user");
   char **query_result = dictionary_keys(user);
   int i;
-  for (i = 0; query_result[i] != NULL; i++) {
+  for (i = 0; query_result[i] != NULL; ++i) {
     printf("value of query i: %s\n", query_result[i]);
   }
 
