@@ -21,6 +21,14 @@ static void print_stringdictionary(dictionary_t *d);
 static void serve_request(int fd, dictionary_t *query);
 /** additional functions tu support the client requests */
 static void serve_friends(int fd, dictionary_t *query);
+static void serve_befriend(int fd, dictionary_t *query);
+static void serve_unfriend(int fd, dictionary_t *query);
+static void serve_introduce(int fd, dictionary_t *query);
+static void add_friend(char *friend);
+static void remove_friend(char *friend);
+
+/**Global variables */
+dictionary_t *friends_dict; // a global dictionary for keeping track of clients and their friends
 
 int main(int argc, char **argv)
 {
@@ -37,6 +45,8 @@ int main(int argc, char **argv)
   }
 
   listenfd = Open_listenfd(argv[1]);
+  // initialize a new dictionary for keeping track of friends
+  friends_dict = make_dictionary(COMPARE_CASE_INSENS, free);
 
   /* Don't kill the server if there's an error, because
      we want to survive errors due to a client. But we
@@ -220,17 +230,16 @@ static void serve_friends(int fd, dictionary_t *query)
   char *user;
 
   // GET THE USERNAME
-  // ALL USERS START OFF WITH AN EMPTY LIST OF FRIENDS
   user = dictionary_get(query, "user");
 
-  // check if the username is null
-  // if it is return an error
-  if (user == NULL)
+  // check if the dictionary contains the user
+  if (dictionary_get(friends_dict, user) == NULL)
   {
-    clienterror(fd, "GET", "400", "Bad Request", "Username cannot be null");
+    printf("THE VALUE FOR THE USER IS NULL");
+    exit(0);
   }
-
-  body = strdup("alice\nbob");
+  
+  body = "hello";
 
   len = strlen(body);
 
@@ -246,6 +255,17 @@ static void serve_friends(int fd, dictionary_t *query)
   Rio_writen(fd, body, len);
 
   free(body);
+}
+
+/** Function that adds friends to the global dictionary if they do not exist*/
+static void add_friend(char *username)
+{
+  dictionary_set(friends_dict, username, make_dictionary(COMPARE_CASE_INSENS, NULL));
+}
+
+/** Function that removes friends from the global dictionary */
+static void remove_friend(char *username) {
+  dictionary_remove(friends_dict, username);
 }
 
 /*
