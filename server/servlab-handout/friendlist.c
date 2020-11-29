@@ -239,6 +239,7 @@ static void serve_friends(int fd, dictionary_t *query)
   if (user_friends == NULL) {
     printf("no friends\n");
     add_friend(user);
+    user_friends = dictionary_get(friends_dict, user);
   }
 
   if (user_friends != NULL) {
