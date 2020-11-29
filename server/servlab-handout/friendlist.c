@@ -238,11 +238,11 @@ static void serve_friends(int fd, dictionary_t *query)
     // add the new user
     add_friend(user);
     // PRINT THE SIZE OF THE DICTIONARY
-    printf("dict pairs: %d", dictionary_count(friends_dict));
+    printf("dict pairs: %d\n", dictionary_count(friends_dict));
 
     // get the key
     char **friends = dictionary_keys(friends_dict);
-    printf("user: %s", friends[0]);
+    printf("user: %s\n", friends[0]);
   }
 
   body = "hello";
