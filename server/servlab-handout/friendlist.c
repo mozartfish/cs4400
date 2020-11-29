@@ -221,42 +221,14 @@ static void serve_request(int fd, dictionary_t *query)
 }
 
 /*
- * serve_friends - request the friends of a user
+ * serve_request - example request handler
  */
 static void serve_friends(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  char *user;
 
   body = "hello";
-  // GET THE USERNAME
-  user = dictionary_get(query, "user");
-  printf("The user name is: %s\n", user);
-
-  // // get the dictionary associated with the user
-  // dictionary_t *user_friends = dictionary_get(friends_dict, user);
-
-  // if (user_friends == NULL) {
-  //   printf("no friends\n");
-  //   add_friend(user);
-  //   user_friends = dictionary_get(friends_dict, user);
-  // }
-
-  // if (user_friends != NULL) {
-  //   printf("THERE EXISTS SOME STUFF\n");
-  // }
-
-  // // check if the user name exists 
-  // if (user_friends == NULL) {
-  //   add_friend(user);
-  // }
-
-  // if (user_friends != NULL) {
-  //   const char **friend_list = dictionary_keys(friends_dict);
-  //   body = join_strings(friend_list, '\n');
-  // }
-  // exit if successful
 
   len = strlen(body);
 
