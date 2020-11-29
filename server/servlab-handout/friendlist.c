@@ -235,10 +235,17 @@ static void serve_friends(int fd, dictionary_t *query)
   // check if the dictionary contains the user
   if (dictionary_get(friends_dict, user) == NULL)
   {
-    printf("THE VALUE FOR THE USER IS NULL");
+    // add the new user
+    add_friend(user);
+    // PRINT THE SIZE OF THE DICTIONARY
+    printf("dict pairs: %d", dictionary_count(friends_dict));
+
+    // get the key
+    char **friends = dictionary_keys(friends_dict);
+    printf("user: %s", friends[0]);
     exit(0);
   }
-  
+
   body = "hello";
 
   len = strlen(body);
