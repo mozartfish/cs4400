@@ -200,6 +200,17 @@ static void serve_friends(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+  char *user;
+
+  // GET THE USERNAME
+  // ALL USERS START OFF WITH AN EMPTY LIST OF FRIENDS
+  user = dictionary_get(query, "user");
+
+  // check if the username is null
+  // if it is return an error
+  if (user == NULL) {
+    printf("INVALID USERNASME!!!!!");
+  }
 
   body = strdup("alice\nbob");
 
