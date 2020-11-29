@@ -121,9 +121,24 @@ void doit(int fd)
          but the intial implementation always returns
          nothing: */
       if (starts_with("/friends", uri))
+      {
         serve_friends(fd, query);
+      }
+      else if (starts_with("/befriend", uri))
+      {
+        serve_befriend(fd, query);
+      }
+      else if (starts_with("/unfriend", uri))
+      {
+        serve_unfriend(fd, query);
+      }
+      else if (starts_with("/introduce", uri)) {
+        serve_introduce(fd, query);
+      }
       else
+      {
         serve_request(fd, query);
+      }
 
       /* Clean up */
       free_dictionary(query);
@@ -221,14 +236,121 @@ static void serve_request(int fd, dictionary_t *query)
 }
 
 /*
- * serve_request - example request handler
+ * serve_friends - print out all the friends of a particular user
+ * if they exist
  */
 static void serve_friends(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+  char *user;
 
   body = "hello";
+  // GET THE USERNAME
+  user = dictionary_get(query, "user");
+  printf("The user name is: %s\n", user);
+
+  // // get the dictionary associated with the user
+  // dictionary_t *user_friends = dictionary_get(friends_dict, user);
+
+  // if (user_friends == NULL) {
+  //   printf("no friends\n");
+  //   add_friend(user);
+  //   user_friends = dictionary_get(friends_dict, user);
+  // }
+
+  // if (user_friends != NULL) {
+  //   printf("THERE EXISTS SOME STUFF\n");
+  // }
+
+  // // check if the user name exists
+  // if (user_friends == NULL) {
+  //   add_friend(user);
+  // }
+
+  // if (user_friends != NULL) {
+  //   const char **friend_list = dictionary_keys(friends_dict);
+  //   body = join_strings(friend_list, '\n');
+  // }
+  // exit if successful
+
+  len = strlen(body);
+
+  /* Send response headers to client */
+  header = ok_header(len, "text/html; charset=utf-8");
+  Rio_writen(fd, header, strlen(header));
+  printf("Response headers:\n");
+  printf("%s", header);
+
+  free(header);
+
+  /* Send response body to client */
+  Rio_writen(fd, body, len);
+
+  free(body);
+}
+
+/*
+ * serve-befriend handler - stub for the befriend handler
+ */
+static void serve_befriend(int fd, dictionary_t *query)
+{
+  size_t len;
+  char *body, *header;
+
+  body = strdup("alice\nbob");
+
+  len = strlen(body);
+
+  /* Send response headers to client */
+  header = ok_header(len, "text/html; charset=utf-8");
+  Rio_writen(fd, header, strlen(header));
+  printf("Response headers:\n");
+  printf("%s", header);
+
+  free(header);
+
+  /* Send response body to client */
+  Rio_writen(fd, body, len);
+
+  free(body);
+}
+
+/*
+ * serve_unfriend - stub for the unfriend handler
+ */
+static void serve_unfriend(int fd, dictionary_t *query)
+{
+  size_t len;
+  char *body, *header;
+
+  body = strdup("alice\nbob");
+
+  len = strlen(body);
+
+  /* Send response headers to client */
+  header = ok_header(len, "text/html; charset=utf-8");
+  Rio_writen(fd, header, strlen(header));
+  printf("Response headers:\n");
+  printf("%s", header);
+
+  free(header);
+
+  /* Send response body to client */
+  Rio_writen(fd, body, len);
+
+  free(body);
+}
+
+/*
+ * serve-introduce handler - stub for the introduce handler
+ */
+static void serve_introduce(int fd, dictionary_t *query)
+{
+  size_t len;
+  char *body, *header;
+
+  body = strdup("alice\nbob");
 
   len = strlen(body);
 
@@ -253,7 +375,8 @@ static void add_friend(char *username)
 }
 
 /** Function that removes friends from the global dictionary */
-static void remove_friend(char *username) {
+static void remove_friend(char *username)
+{
   dictionary_remove(friends_dict, username);
 }
 
