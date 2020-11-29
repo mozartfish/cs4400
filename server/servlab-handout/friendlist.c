@@ -243,7 +243,6 @@ static void serve_friends(int fd, dictionary_t *query)
     // get the key
     char **friends = dictionary_keys(friends_dict);
     printf("user: %s", friends[0]);
-    exit(0);
   }
 
   body = "hello";
