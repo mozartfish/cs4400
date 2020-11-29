@@ -245,7 +245,7 @@ static void serve_friends(int fd, dictionary_t *query)
   char *body, *header;
   char *user;
 
-  body = strdup("hello");
+  body = strdup("");
   // GET THE USERNAME
   user = dictionary_get(query, "user");
   printf("The user name is: %s\n", user);
