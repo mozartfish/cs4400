@@ -244,11 +244,17 @@ static void serve_friends(int fd, dictionary_t *query)
   size_t len;
   char *body, *header;
   char *user;
+  const size_t max_length = 1753;
 
   body = strdup("");
   // GET THE USERNAME
   user = dictionary_get(query, "user");
   printf("The user name is: %s\n", user);
+
+  // check that the username is not null
+  if (user == NULL || strlen(user) >= max_length) {
+    clienterror(fd, "GET", "400", "Bad Request", "Invalid Username");
+  }
 
   // get the dictionary associated with the user
   dictionary_t *user_friends = dictionary_get(friends_dict, user);
