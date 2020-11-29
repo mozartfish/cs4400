@@ -132,12 +132,9 @@ void doit(int fd)
       {
         serve_unfriend(fd, query);
       }
-      else if (starts_with("/introduce", uri)) {
-        serve_introduce(fd, query);
-      }
-      else
+      else if (starts_with("/introduce", uri))
       {
-        serve_request(fd, query);
+        serve_introduce(fd, query);
       }
 
       /* Clean up */
@@ -252,20 +249,23 @@ static void serve_friends(int fd, dictionary_t *query)
   printf("The user name is: %s\n", user);
 
   // check that the username is not null
-  if (user == NULL || strlen(user) >= max_length) {
+  if (user == NULL || strlen(user) >= max_length)
+  {
     clienterror(fd, "GET", "400", "Bad Request", "Invalid Username");
   }
 
   // get the dictionary associated with the user
   dictionary_t *user_friends = dictionary_get(friends_dict, user);
 
-  if (user_friends == NULL) {
+  if (user_friends == NULL)
+  {
     printf("no friends\n");
     add_friend(user);
     user_friends = dictionary_get(friends_dict, user);
   }
 
-  if (user_friends != NULL) {
+  if (user_friends != NULL)
+  {
     printf("THERE EXISTS SOME STUFF\n");
   }
 
@@ -274,7 +274,8 @@ static void serve_friends(int fd, dictionary_t *query)
   //   add_friend(user);
   // }
 
-  if (user_friends != NULL) {
+  if (user_friends != NULL)
+  {
     const char **friend_list = dictionary_keys(friends_dict);
     body = join_strings(friend_list, '\n');
   }
