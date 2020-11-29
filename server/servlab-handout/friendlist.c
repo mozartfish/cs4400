@@ -227,8 +227,7 @@ static void serve_friends(int fd, dictionary_t *query)
   // if it is return an error
   if (user == NULL)
   {
-    clienterror(fd, serve_friends, "400", "Bad Request",
-                "USERNAME CANNOT BE NULL");
+    clienterror(fd, "GET", "400", "Bad Request", "Username cannot be null");
   }
 
   body = strdup("alice\nbob");
