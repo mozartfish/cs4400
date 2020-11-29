@@ -286,8 +286,6 @@ static void serve_friends(int fd, dictionary_t *query)
 
   /* Send response body to client */
   Rio_writen(fd, body, len);
-
-  free(body);
 }
 
 /*
