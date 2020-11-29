@@ -231,20 +231,14 @@ static void serve_friends(int fd, dictionary_t *query)
 
   // GET THE USERNAME
   user = dictionary_get(query, "user");
-  char **query_result = dictionary_keys(user);
-  int i;
-  for (i = 0; query_result[i] != NULL; ++i) {
-    printf("value of query i: %s\n", query_result[i]);
-  }
-
-    // GET THE friends of the user
-    dictionary_t *user_friends = dictionary_get(friends_dict, user);
 
   // CASE 1: user name is null
   if (user == NULL) {
-    clienterror(fd, "GET", "400", "Bad Requst", "Invalid user");
+    clienterror(fd, "GET", "400", "Bad Requst", "Invalid User");
   }
 
+  // GET THE friends of the user
+  dictionary_t *user_friends = dictionary_get(friends_dict, user);
 
   // check if the dictionary contains the user
   if (dictionary_get(friends_dict, user) == NULL)
