@@ -228,18 +228,20 @@ static void serve_friends(int fd, dictionary_t *query)
   size_t len;
   char *body, *header;
   char *user;
-  body = "";
 
+  body = "";
   // GET THE USERNAME
   user = dictionary_get(query, "user");
 
   // get the dictionary associated with the user
   dictionary_t *user_friends = dictionary_get(friends_dict, user);
 
-  // check if the user name exists 
-  if (user_friends == NULL) {
-    add_friend(user);
-  }
+  add_friend(user);
+
+  // // check if the user name exists 
+  // if (user_friends == NULL) {
+  //   add_friend(user);
+  // }
 
   if (user_friends != NULL) {
     const char **friend_list = dictionary_keys(friends_dict);
