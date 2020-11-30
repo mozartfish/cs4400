@@ -18,7 +18,7 @@ static void read_postquery(rio_t *rp, dictionary_t *headers, dictionary_t *d);
 static void clienterror(int fd, char *cause, char *errnum,
                         char *shortmsg, char *longmsg);
 static void print_stringdictionary(dictionary_t *d);
-static void serve_request(int fd, dictionary_t *query);
+// static void serve_request(int fd, dictionary_t *query);
 /** additional functions tu support the client requests */
 static void serve_friends(int fd, dictionary_t *query);
 static void serve_befriend(int fd, dictionary_t *query);
@@ -294,15 +294,16 @@ static void serve_befriend(int fd, dictionary_t *query)
   // check if the person exists in the friends dictionary
   if (user_friends_dict == NULL) 
   {
-    printf("%s does not exist\n", user);
-    printf("add in new user\n");
+    // printf("%s does not exist\n", user);
+    // printf("add in new user\n");
     add_friend(user);
-    user_friends_dict = dictionary_get(friends_dict, user);
+    print_stringdictionary(friends_dict);
+    // user_friends_dict = dictionary_get(friends_dict, user);
   }
 
-  if (user_friends_dict != NULL) {
-    printf("new person got added");
-  }
+  // if (user_friends_dict != NULL) {
+  //   printf("new person got added");
+  // }
 
   body = strdup("alice\nbob");
 
