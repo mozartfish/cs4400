@@ -288,7 +288,7 @@ static void serve_befriend(int fd, dictionary_t *query)
     dictionary_t *friend_friends = dictionary_get(user_dict, friend);
     // CASE 1: friend does not exist in the dictionary
     if (friend_friends == NULL) {
-      printf("%s does not exist in user_dict\n");
+      printf("%s does not exist in user_dict\n", friend);
     }
   }
 
