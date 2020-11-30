@@ -121,6 +121,7 @@ void doit(int fd)
          but the intial implementation always returns
          nothing: */
       printf("about to call handler\n");
+
       if (starts_with("/friends", uri))
       {
         printf("call the friend request handler\n");
@@ -273,13 +274,12 @@ static void serve_befriend(int fd, dictionary_t *query)
   if (user_friends_dict == NULL) 
   {
     add_friend(user);
-    printf("harold says hello\n");
     // make sure that a new user is added
-    // print_stringdictionary(user_dict);
+    print_stringdictionary(user_dict);
   }
 
   // get information about the friends
-  printf("reach this print statement\n");
+  // printf("reach this print statement\n");
   printf("got the friends\n");
 
   body = strdup("alice\nbob");
