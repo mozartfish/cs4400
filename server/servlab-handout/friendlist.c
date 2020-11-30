@@ -265,6 +265,8 @@ static void serve_befriend(int fd, dictionary_t *query)
   char *body, *header;
   char *user = dictionary_get(query, "user");
   char *friends = dictionary_get(query, "friends");
+  char **friend_list = split_string((char *)(friends), '\n');
+  int i;
 
   // get the friends of the user
   dictionary_t *user_friends_dict = dictionary_get(user_dict, user);
@@ -275,14 +277,19 @@ static void serve_befriend(int fd, dictionary_t *query)
   {
     add_friend(user);
     // make sure that a new user is added
-    print_stringdictionary(user_dict);
+    // print_stringdictionary(user_dict);
   }
 
-  // get information about the friends
-  // printf("reach this print statement\n");
-  printf("got the friends\n");
+  // print information about the friends
+  for (i = 0; friend_list[i] != NULL; i++) {
+    printf("name: %s", friend_list[i]);
+  }
 
-  body = strdup("alice\nbob");
+    // get information about the friends
+    // printf("reach this print statement\n");
+    // printf("got the friends\n");
+
+    body = strdup("alice\nbob");
 
   len = strlen(body);
 
