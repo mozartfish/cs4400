@@ -243,17 +243,20 @@ static void serve_friends(int fd, dictionary_t *query)
   char *user;
   const size_t max_length = 1753;
 
-  body = strdup("hello\nworld");
+  // create an empty string for the body according to the assignment directions
+  body = "";
   // GET THE USERNAME
   user = dictionary_get(query, "user");
   printf("The user name is: %s\n", user);
 
-  // check that the username is not null
- /* if (user == NULL || strlen(user) >= max_length)
-  {
-    clienterror(fd, "GET", "400", "Bad Request", "Invalid Username");
+  dictionary_t *user_friends_info = dictionary_get(friends_dict, user);
+
+  if (user_friends_info != NULL) {
+    // iterate over all the friends
+    char **user_friends = dictionary_keys(user_friends_info);
+    body = join_strings(user_friends, "\n");
   }
-*/
+
   len = strlen(body);
 
   /* Send response headers to client */
@@ -263,7 +266,6 @@ static void serve_friends(int fd, dictionary_t *query)
   printf("%s", header);
 
   free(header);
-  free(body);
 
   /* Send response body to client */
   Rio_writen(fd, body, len);
@@ -276,6 +278,20 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+  char *user;
+  char *user_friends;
+
+  // check if the user already exists in the friends dictionary
+  user = dictionary_get(query, "user");
+
+  // if the user does not exist in the dictionary add the user
+  if (user == NULL) {
+    add_friend(user);
+  }
+
+  // get the list of friends associated with the particular user
+  user_friends = dictionary_get(query, "friends");
+  printf("user friends : %s\n", user_friends);
 
   body = strdup("alice\nbob");
 
