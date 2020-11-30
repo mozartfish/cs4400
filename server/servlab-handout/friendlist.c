@@ -283,11 +283,13 @@ static void serve_befriend(int fd, dictionary_t *query)
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
   {
-    if (strcmp(user, friend_list[i]) == 0) {
-      printf("duplicate string");
-      continue;
+    // get the friend and see if its in the dictionary
+    char *friend = friend_list[i];
+    dictionary_t *friend_friends = dictionary_get(user_dict, friend);
+    // CASE 1: friend does not exist in the dictionary
+    if (friend_friends == NULL) {
+      printf("%s does not exist in user_dict\n");
     }
-    printf("friend: %s\n", friend_list[i]);
   }
 
   // get information about the friends
