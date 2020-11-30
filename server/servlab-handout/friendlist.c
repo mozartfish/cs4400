@@ -273,7 +273,7 @@ static void serve_befriend(int fd, dictionary_t *query)
   }
 
   // get information about the friends
-  printf("friends: %s", friends);
+  printf("reach this print statement");
   printf("got the friends");
 
   body = strdup("alice\nbob");
