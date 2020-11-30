@@ -287,7 +287,7 @@ static void serve_befriend(int fd, dictionary_t *query)
       printf("duplicate string");
       continue;
     }
-    printf("friend: %s", friend_list[i]);
+    printf("friend: %s\n", friend_list[i]);
   }
 
   // get information about the friends
