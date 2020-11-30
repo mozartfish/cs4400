@@ -283,7 +283,7 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  const char *user = dictionary_get(query, "user");
+  char *user = dictionary_get(query, "user");
 
   // get the friends of the user
   // this will return a dictionary if the person is in the friends
