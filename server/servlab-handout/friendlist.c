@@ -283,18 +283,16 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  char *user;
-
-  // get the user from from the query
-  user = dictionary_get(query, "user");
+  const char *user = dictionary_get(query, "user");
 
   // get the friends of the user
-  // this will return a dictionary if the person is in the friends 
+  // this will return a dictionary if the person is in the friends
   // dictionary
-  dictionary_t *user_friends = dictionary_get(friends_dict, user);
+  // get the friends of the user
+  dictionary_t *user_friends_dict = dictionary_get(friends_dict, user);
 
   // check if the person exists in the friends dictionary
-  if (user_friends = NULL) 
+  if (user_friends_dict = NULL) 
   {
     printf("%s does not exist\n", user);
   }
