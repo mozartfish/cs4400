@@ -258,10 +258,11 @@ static void serve_friends(int fd, dictionary_t *query)
   // if the user has no friends, the dictionary value will be null
   if (user_friends_dict != NULL)
   {
-    printf("Hello\n");
     const char **friends = dictionary_keys(user_friends_dict);
     body = join_strings(friends, '\n');
   }
+
+  printf("hello there");
 
   len = strlen(body);
 
