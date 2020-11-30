@@ -254,7 +254,7 @@ static void serve_friends(int fd, dictionary_t *query)
   if (user_friends_info != NULL) {
     // iterate over all the friends
     char **user_friends = dictionary_keys(user_friends_info);
-    body = join_strings(user_friends, "\n");
+    body = join_strings(user_friends_info, "\n");
   }
 
   len = strlen(body);
