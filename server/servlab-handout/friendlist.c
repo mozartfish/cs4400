@@ -120,12 +120,14 @@ void doit(int fd)
       /* You'll want to handle different queries here,
          but the intial implementation always returns
          nothing: */
+      printf("about to call handler\n");
       if (starts_with("/friends", uri))
       {
         serve_friends(fd, query);
       }
       else if (starts_with("/befriend", uri))
       {
+        printf("call befriend\n");
         serve_befriend(fd, query);
       }
       else if (starts_with("/unfriend", uri))
