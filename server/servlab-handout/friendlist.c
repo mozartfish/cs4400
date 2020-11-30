@@ -279,6 +279,7 @@ static void serve_befriend(int fd, dictionary_t *query)
     // make sure that a new user is added
     // print_stringdictionary(user_dict);
   }
+  printf("hello\n");
 
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
