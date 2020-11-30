@@ -253,7 +253,15 @@ static void serve_friends(int fd, dictionary_t *query)
   printf("username: %s", user);
 
   // get the friends of the user
-  dictionary_t *user_friends = dictionary_get(friends_dict, user);
+  dictionary_t *user_friends_dict = dictionary_get(friends_dict, user);
+
+  // the friends are stored as a dictionary pair
+  // where the mapping is <user, null> to represent
+  // a set of friends
+  // if the user has no friends, the dictionary value will be null
+  if (user_friends_dict != NULL) {
+    char **user_friends = dictionary_keys(user_friends_dict);
+  }
 
   // dictionary_t *user_friends_info = dictionary_get(friends_dict, user);
 
