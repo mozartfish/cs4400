@@ -240,15 +240,12 @@ static void serve_friends(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  char *user;
+  const char *user = dictionary_get(query, "user");
+
   // const size_t max_length = 1753;
 
   // create an empty string for the body
   body = "";
-
-  // get the username
-  user = dictionary_get(query, "user");
-  
   // print the user information
   printf("username: %s", user);
 
@@ -261,7 +258,7 @@ static void serve_friends(int fd, dictionary_t *query)
   // if the user has no friends, the dictionary value will be null
   if (user_friends_dict != NULL) {
     char **user_friends = (char **)(dictionary_keys(user_friends_dict));
-    body = (char *)(join_strings(user_friends, '\n'));
+    body = join_strings(user_friends, '\n');
   }
 
   // dictionary_t *user_friends_info = dictionary_get(friends_dict, user);
