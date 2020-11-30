@@ -285,7 +285,9 @@ static void serve_befriend(int fd, dictionary_t *query)
   {
     // avoid print duplicate names
     if (strcmp(user, friend_list[i]) == 0)
+    {
       continue;
+    }
     printf("name: %s\n", friend_list[i]);
   }
 
