@@ -241,21 +241,27 @@ static void serve_friends(int fd, dictionary_t *query)
   size_t len;
   char *body, *header;
   char *user;
-  const size_t max_length = 1753;
+  // const size_t max_length = 1753;
 
-  // create an empty string for the body according to the assignment directions
+  // create an empty string for the body
   body = "";
-  // GET THE USERNAME
+
+  // get the username
   user = dictionary_get(query, "user");
-  printf("The user name is: %s\n", user);
+  
+  // print the user information
+  printf("username: %s", user);
 
-  dictionary_t *user_friends_info = dictionary_get(friends_dict, user);
+  // get the friends of the user
+  dictionary_t *user_friends = dictionary_get(friends_dict, user);
 
-  if (user_friends_info != NULL) {
-    // iterate over all the friends
-    char **user_friends = dictionary_keys(user_friends_info);
-    body = join_strings(user_friends_info, "\n");
-  }
+  // dictionary_t *user_friends_info = dictionary_get(friends_dict, user);
+
+  // if (user_friends_info != NULL) {
+  //   // iterate over all the friends
+  //   char **user_friends = dictionary_keys(user_friends_info);
+  //   body = join_strings(user_friends_info, "\n");
+  // }
 
   len = strlen(body);
 
