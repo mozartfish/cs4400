@@ -273,7 +273,7 @@ static void serve_befriend(int fd, dictionary_t *query)
 
   // check if the user exists in the user dictionary
   // add the friend if necessary
-  if (user_friends_dict == NULL) 
+  if (user_friends_dict == NULL)
   {
     add_friend(user);
     // make sure that a new user is added
@@ -281,15 +281,19 @@ static void serve_befriend(int fd, dictionary_t *query)
   }
 
   // print information about the friends
-  for (i = 0; friend_list[i] != NULL; i++) {
+  for (i = 0; friend_list[i] != NULL; i++)
+  {
+    // avoid print duplicate names
+    if (strcmp(user, friend_list[i]) == 0)
+      continue;
     printf("name: %s\n", friend_list[i]);
   }
 
-    // get information about the friends
-    // printf("reach this print statement\n");
-    // printf("got the friends\n");
+  // get information about the friends
+  // printf("reach this print statement\n");
+  // printf("got the friends\n");
 
-    body = strdup("alice\nbob");
+  body = strdup("alice\nbob");
 
   len = strlen(body);
 
