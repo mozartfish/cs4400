@@ -262,7 +262,9 @@ static void serve_friends(int fd, dictionary_t *query)
     body = join_strings(friends, '\n');
   }
 
-  printf("hello there");
+  if (user_friends_dict == NULL) {
+    printf("no friends");
+  }
 
   len = strlen(body);
 
