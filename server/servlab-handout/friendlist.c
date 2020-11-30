@@ -209,28 +209,28 @@ static char *ok_header(size_t len, const char *content_type)
 /*
  * serve_request - example request handler
  */
-static void serve_request(int fd, dictionary_t *query)
-{
-  size_t len;
-  char *body, *header;
+// static void serve_request(int fd, dictionary_t *query)
+// {
+//   size_t len;
+//   char *body, *header;
 
-  body = strdup("alice\nbob");
+//   body = strdup("alice\nbob");
 
-  len = strlen(body);
+//   len = strlen(body);
 
-  /* Send response headers to client */
-  header = ok_header(len, "text/html; charset=utf-8");
-  Rio_writen(fd, header, strlen(header));
-  printf("Response headers:\n");
-  printf("%s", header);
+//   /* Send response headers to client */
+//   header = ok_header(len, "text/html; charset=utf-8");
+//   Rio_writen(fd, header, strlen(header));
+//   printf("Response headers:\n");
+//   printf("%s", header);
 
-  free(header);
+//   free(header);
 
-  /* Send response body to client */
-  Rio_writen(fd, body, len);
+//   /* Send response body to client */
+//   Rio_writen(fd, body, len);
 
-  free(body);
-}
+//   free(body);
+// }
 
 /*
  * serve_friends - print out all the friends of a particular user
@@ -297,8 +297,10 @@ static void serve_befriend(int fd, dictionary_t *query)
     // printf("%s does not exist\n", user);
     // printf("add in new user\n");
     add_friend(user);
-    print_stringdictionary(friends_dict);
-    // user_friends_dict = dictionary_get(friends_dict, user);
+    // make sure that a new user is added
+    // print_stringdictionary(friends_dict);
+
+
   }
 
   // if (user_friends_dict != NULL) {
