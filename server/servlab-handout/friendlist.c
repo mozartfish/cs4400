@@ -28,7 +28,7 @@ static void add_friend(char *friend);
 static void remove_friend(char *friend);
 
 /**Global variables */
-dictionary_t *friends_dict; // a global dictionary for keeping track of clients and their friends
+dictionary_t *user_dict; // a global dictionary for keeping track of clients and their friends
 
 int main(int argc, char **argv)
 {
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
   listenfd = Open_listenfd(argv[1]);
   // initialize a new dictionary for keeping track of friends
-  friends_dict = make_dictionary(COMPARE_CASE_INSENS, free);
+  user_dict = make_dictionary(COMPARE_CASE_INSENS, free);
 
   /* Don't kill the server if there's an error, because
      we want to survive errors due to a client. But we
@@ -207,32 +207,6 @@ static char *ok_header(size_t len, const char *content_type)
 }
 
 /*
- * serve_request - example request handler
- */
-// static void serve_request(int fd, dictionary_t *query)
-// {
-//   size_t len;
-//   char *body, *header;
-
-//   body = strdup("alice\nbob");
-
-//   len = strlen(body);
-
-//   /* Send response headers to client */
-//   header = ok_header(len, "text/html; charset=utf-8");
-//   Rio_writen(fd, header, strlen(header));
-//   printf("Response headers:\n");
-//   printf("%s", header);
-
-//   free(header);
-
-//   /* Send response body to client */
-//   Rio_writen(fd, body, len);
-
-//   free(body);
-// }
-
-/*
  * serve_friends - print out all the friends of a particular user
  * if they exist
  */
@@ -246,11 +220,9 @@ static void serve_friends(int fd, dictionary_t *query)
 
   // create an empty string for the body
   body = "";
-  // print the user information
-  // printf("hello\n");
 
   // get the friends of the user
-  dictionary_t *user_friends_dict = dictionary_get(friends_dict, user);
+  dictionary_t *user_friends_dict = dictionary_get(user_dict, user);
 
   // the friends are stored as a dictionary pair
   // where the mapping is <user, null> to represent
@@ -262,7 +234,8 @@ static void serve_friends(int fd, dictionary_t *query)
     body = join_strings(friends, '\n');
   }
 
-  printf("HELLO WORLD\n");
+  // debugging statement to make sure something is happening
+  // printf("HELLO WORLD\n");
   len = strlen(body);
 
   /* Send response headers to client */
@@ -285,23 +258,22 @@ static void serve_befriend(int fd, dictionary_t *query)
   size_t len;
   char *body, *header;
   char *user = dictionary_get(query, "user");
+  char *friends_query = dictionary_get(query, "friends");
 
   // get the friends of the user
   // this will return a dictionary if the person is in the friends
   // dictionary
   // get the friends of the user
-  dictionary_t *user_friends_dict = dictionary_get(friends_dict, user);
+  dictionary_t *user_friends_dict = dictionary_get(user_dict, user);
 
-  // check if the person exists in the friends dictionary
+  // check if the user exists in the user dictionary
   if (user_friends_dict == NULL) 
   {
     // printf("%s does not exist\n", user);
     // printf("add in new user\n");
     add_friend(user);
     // make sure that a new user is added
-    // print_stringdictionary(friends_dict);
-
-
+    // print_stringdictionary(user_dict);
   }
 
   // if (user_friends_dict != NULL) {
@@ -381,13 +353,13 @@ static void serve_introduce(int fd, dictionary_t *query)
 /** Function that adds friends to the global dictionary if they do not exist*/
 static void add_friend(char *username)
 {
-  dictionary_set(friends_dict, username, make_dictionary(COMPARE_CASE_INSENS, NULL));
+  dictionary_set(user_dict, username, make_dictionary(COMPARE_CASE_INSENS, NULL));
 }
 
 /** Function that removes friends from the global dictionary */
 static void remove_friend(char *username)
 {
-  dictionary_remove(friends_dict, username);
+  dictionary_remove(user_dict, username);
 }
 
 /*
@@ -436,3 +408,28 @@ static void print_stringdictionary(dictionary_t *d)
   }
   printf("\n");
 }
+/*
+ * serve_request - example request handler
+ */
+// static void serve_request(int fd, dictionary_t *query)
+// {
+//   size_t len;
+//   char *body, *header;
+
+//   body = strdup("alice\nbob");
+
+//   len = strlen(body);
+
+//   /* Send response headers to client */
+//   header = ok_header(len, "text/html; charset=utf-8");
+//   Rio_writen(fd, header, strlen(header));
+//   printf("Response headers:\n");
+//   printf("%s", header);
+
+//   free(header);
+
+//   /* Send response body to client */
+//   Rio_writen(fd, body, len);
+
+//   free(body);
+// }
