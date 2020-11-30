@@ -292,7 +292,7 @@ static void serve_befriend(int fd, dictionary_t *query)
   dictionary_t *user_friends_dict = dictionary_get(friends_dict, user);
 
   // check if the person exists in the friends dictionary
-  if (user_friends_dict = NULL) 
+  if (user_friends_dict == NULL) 
   {
     printf("%s does not exist\n", user);
   }
