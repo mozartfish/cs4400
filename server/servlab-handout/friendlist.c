@@ -263,7 +263,7 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  char *user = (char *)(dictionary_get(query, "user"));
+  char *user = dictionary_get(query, "user");
   char *friends = dictionary_get(query, "friends");
   char **friend_list = split_string((char *)(friends), '\n');
   int i;
@@ -284,7 +284,7 @@ static void serve_befriend(int fd, dictionary_t *query)
   for (i = 0; friend_list[i] != NULL; i++)
   {
     // avoid print duplicate names
-    if (strcmp(user, friend_list[i]) == 0)
+    if (strcmp(friend_list[i], user) == 0)
     {
       continue;
     }
