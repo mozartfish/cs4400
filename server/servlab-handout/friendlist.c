@@ -296,12 +296,13 @@ static void serve_befriend(int fd, dictionary_t *query)
   {
     printf("%s does not exist\n", user);
     printf("add in new user\n");
+    add_friend(user);
     user_friends_dict = dictionary_get(friends_dict, user);
   }
 
-  if (user_friends_dict != NULL) {
-    printf("new person got added");
-  }
+  // if (user_friends_dict != NULL) {
+  //   printf("new person got added");
+  // }
 
   body = strdup("alice\nbob");
 
