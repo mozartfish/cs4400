@@ -123,19 +123,22 @@ void doit(int fd)
       printf("about to call handler\n");
       if (starts_with("/friends", uri))
       {
+        printf("call the friend request handler\n");
         serve_friends(fd, query);
       }
       else if (starts_with("/befriend", uri))
       {
-        printf("call befriend\n");
+        printf("call befriend request handler\n");
         serve_befriend(fd, query);
       }
       else if (starts_with("/unfriend", uri))
       {
+        printf("call unfriend request handler\n");
         serve_unfriend(fd, query);
       }
       else if (starts_with("/introduce", uri))
       {
+        printf("call introduce request handler\n");
         serve_introduce(fd, query);
       }
 
