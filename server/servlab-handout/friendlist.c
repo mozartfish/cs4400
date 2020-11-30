@@ -260,7 +260,7 @@ static void serve_friends(int fd, dictionary_t *query)
   // a set of friends
   // if the user has no friends, the dictionary value will be null
   if (user_friends_dict != NULL) {
-    char **user_friends = dictionary_keys(user_friends_dict);
+    char **user_friends = (char **)(dictionary_keys(user_friends_dict));
   }
 
   // dictionary_t *user_friends_info = dictionary_get(friends_dict, user);
