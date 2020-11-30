@@ -283,12 +283,7 @@ static void serve_befriend(int fd, dictionary_t *query)
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
   {
-    // avoid print duplicate names
-    if (strcmp(friend_list[i], user) == 0)
-    {
-      continue;
-    }
-    printf("name: %s\n", friend_list[i]);
+    printf("friend: %s", friend_list[i]);
   }
 
   // get information about the friends
