@@ -247,7 +247,7 @@ static void serve_friends(int fd, dictionary_t *query)
   // create an empty string for the body
   body = "";
   // print the user information
-  printf("username: %s", user);
+  printf("username requested by serve_friends: %s", user);
 
   // get the friends of the user
   dictionary_t *user_friends_dict = dictionary_get(friends_dict, user);
@@ -258,11 +258,10 @@ static void serve_friends(int fd, dictionary_t *query)
   // if the user has no friends, the dictionary value will be null
   if (user_friends_dict != NULL)
   {
-
     const char **friends_list = dictionary_keys(user_friends_dict);
     body = join_strings(friends_list, '\n');
   }
-  
+
   len = strlen(body);
 
   /* Send response headers to client */
