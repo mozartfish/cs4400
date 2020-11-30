@@ -268,13 +268,14 @@ static void serve_befriend(int fd, dictionary_t *query)
   if (user_friends_dict == NULL) 
   {
     add_friend(user);
+    printf("harold says hello\n");
     // make sure that a new user is added
     // print_stringdictionary(user_dict);
   }
 
   // get information about the friends
-  printf("reach this print statement");
-  printf("got the friends");
+  printf("reach this print statement\n");
+  printf("got the friends\n");
 
   body = strdup("alice\nbob");
 
