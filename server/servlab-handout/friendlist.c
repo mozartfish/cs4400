@@ -372,19 +372,21 @@ static void add_friends(char *user_one, char *user_two)
   if (strcmp(user_one, user_two) == 0)
   {
     char *same_user = user_one;
-    dictionary_t *new_same_user = make_dictionary(COMPARE_CASE_SENS, free);
+    dictionary_t *new_same_user = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
     dictionary_set(user_dict, same_user, new_same_user);
     return;
   }
   // check if user one already exists in the dictionary
-  if (dictionary_get(user_dict, user_one) == NULL)
+  dictionary_t *get_user_one = (dictionary_t *)(dictionary_get(user_dict, user_one));
+  if (get_user_one == NULL)
   {
     dictionary_t *new_user_one = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
     dictionary_set(user_dict, user_one, new_user_one);
   }
 
   // check if user two already exists in the dictionary
-  if (dictionary_get(user_dict, user_two) == NULL)
+  dictionary_t *get_user_two= (dictionary_t *)(dictionary_get(user_dict, user_two));
+  if (get_user_two== NULL)
   {
     dictionary_t *new_user_two = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
     dictionary_set(user_dict, user_two, new_user_two);
@@ -402,6 +404,7 @@ static void add_friends(char *user_one, char *user_two)
 
   printf("print the users\n");
   print_stringdictionary(user_dict);
+  printf("end of users!\n");
   return;
 }
 
