@@ -278,8 +278,8 @@ static void serve_befriend(int fd, dictionary_t *query)
 
   // get the user friends
   dictionary_t *user_friends = dictionary_get(user_dict, user);
-  const char **friend_names = dictionary_keys(user_friends);
-  body = join_strings(friend_names, '\n');
+  const char **friend_names_list = dictionary_keys(user_friends);
+  body = join_strings(friend_names_list, '\n');
 
   len = strlen(body);
 
@@ -317,8 +317,10 @@ static void serve_unfriend(int fd, dictionary_t *query)
     remove_friends(user, friend);
   }
 
-  char **user_friends = dictionary_keys(dictionary_get(user_dict, user));
-  body = join_strings(user_friends, '\n');
+  // get the user friends
+  dictionary_t *user_friends = dictionary_get(user_dict, user);
+  const char **friend_names_list = dictionary_keys(user_friends);
+  body = join_strings(friend_names_list, '\n');
 
   len = strlen(body);
 
