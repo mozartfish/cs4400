@@ -279,7 +279,7 @@ static void serve_befriend(int fd, dictionary_t *query)
   // get the user friends
   dictionary_t *user_friends = dictionary_get(user_dict, user);
   const char **friend_names = dictionary_keys(user_friends);
-  body = join_strings(user_friends, '\n');
+  body = join_strings(friend_names, '\n');
 
   len = strlen(body);
 
