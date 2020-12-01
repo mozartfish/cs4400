@@ -24,8 +24,8 @@ static void serve_friends(int fd, dictionary_t *query);
 static void serve_befriend(int fd, dictionary_t *query);
 static void serve_unfriend(int fd, dictionary_t *query);
 static void serve_introduce(int fd, dictionary_t *query);
-static void add_friend(char *friend);
-static void remove_friend(char *friend);
+static void add_user(char *friend);
+static void remove_user(char *friend);
 
 /**Global variables */
 dictionary_t *user_dict; // a global dictionary for keeping track of clients and their friends
@@ -275,11 +275,10 @@ static void serve_befriend(int fd, dictionary_t *query)
   // add the friend if necessary
   if (user_friends_dict == NULL)
   {
-    add_friend(user);
+    add_user(user);
     // make sure that a new user is added
     // print_stringdictionary(user_dict);
   }
-  printf("hello\n");
 
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
@@ -289,7 +288,9 @@ static void serve_befriend(int fd, dictionary_t *query)
     dictionary_t *friend_friends = dictionary_get(user_dict, friend);
     // CASE 1: friend does not exist in the dictionary
     if (friend_friends == NULL) {
-      printf("%s does not exist in user_dict\n", friend);
+      // if the friend does not exist add them to the dictionary
+      add_user(friend);
+      print_stringdictionary(user_dict);
     }
   }
 
@@ -368,13 +369,13 @@ static void serve_introduce(int fd, dictionary_t *query)
 }
 
 /** Function that adds friends to the global dictionary if they do not exist*/
-static void add_friend(char *username)
+static void add_user(char *username)
 {
   dictionary_set(user_dict, username, make_dictionary(COMPARE_CASE_INSENS, NULL));
 }
 
 /** Function that removes friends from the global dictionary */
-static void remove_friend(char *username)
+static void remove_user(char *username)
 {
   dictionary_remove(user_dict, username);
 }
