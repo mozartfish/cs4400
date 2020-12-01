@@ -399,6 +399,9 @@ static void add_friends(char *user_one, char *user_two)
   dictionary_t *user_two_dict = dictionary_get(user_dict, user_two);
   dictionary_set(user_two_dict, user_one, NULL);
   dictionary_set(user_dict, user_two, user_two_dict);
+
+  printf("print the users\n");
+  print_stringdictionary(user_dict);
   return;
 }
 
@@ -436,6 +439,8 @@ static void remove_friends(char *user_one, char *user_two)
   dictionary_set(user_dict, user_one, user_one_friends);
   dictionary_set(user_dict, user_two, user_two_friends);
 
+  printf("print the users\n");
+  print_stringdictionary(user_dict);
   return;
 }
 
