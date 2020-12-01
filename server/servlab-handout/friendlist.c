@@ -419,14 +419,23 @@ static void add_friends(char *user_one, char *user_two)
 static void remove_friends(char *user_one, char *user_two)
 {
   printf("enter the remove function\n");
+  const char *username_one = user_one;
+  const char *username_two = user_two;
+
+  // check if user one already exists in the dictionary
+  dictionary_t *get_user_one = (dictionary_t *)(dictionary_get(user_dict, username_one));
+
+  // check if user two already exists in the dictionary
+  dictionary_t *get_user_two = (dictionary_t *)(dictionary_get(user_dict, username_two));
+
   // check if the user one dictionary is null
-  if (dictionary_get(user_dict, user_one) == NULL)
+  if (get_user_one == NULL)
   {
     return;
   }
 
   // check if the user two dictionary is null
-  if (dictionary_get(user_dict, user_two) == NULL)
+  if (get_user_two)
   {
     return;
   }
@@ -438,16 +447,16 @@ static void remove_friends(char *user_one, char *user_two)
   }
 
   // get the friends of user_one and user_two
-  dictionary_t *user_one_friends = dictionary_get(user_dict, user_one);
-  dictionary_t *user_two_friends = dictionary_get(user_dict, user_two);
+  dictionary_t *user_one_dict = (dictionary_t *)(dictionary_get(user_dict, username_one));
+  dictionary_t *user_two_dict = (dictionary_t *)(dictionary_get(user_dict, username_two));
 
   // remove the friends
-  dictionary_remove(user_one_friends, user_two);
-  dictionary_remove(user_two_friends, user_one);
+  dictionary_remove(user_one_dict, username_one);
+  dictionary_remove(user_two_dict, username_two);
 
   // add the dictionaries back to global user dictionary
-  dictionary_set(user_dict, user_one, user_one_friends);
-  dictionary_set(user_dict, user_two, user_two_friends);
+  dictionary_set(user_dict, username_one, user_one_dict);
+  dictionary_set(user_dict, username_two, user_two_dict);
 
   printf("print the users\n");
   print_stringdictionary(user_dict);
