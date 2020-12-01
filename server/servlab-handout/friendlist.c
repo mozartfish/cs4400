@@ -379,24 +379,24 @@ static void add_friends(char *user_one, char *user_two)
   // check if user one already exists in the dictionary
   if (dictionary_get(user_dict, user_one) == NULL)
   {
-    dictionary_t *new_user_one = make_dictionary(COMPARE_CASE_SENS, free);
+    dictionary_t *new_user_one = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
     dictionary_set(user_dict, user_one, new_user_one);
   }
 
   // check if user two already exists in the dictionary
   if (dictionary_get(user_dict, user_two) == NULL)
   {
-    dictionary_t *new_user_two = make_dictionary(COMPARE_CASE_SENS, free);
+    dictionary_t *new_user_two = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
     dictionary_set(user_dict, user_two, new_user_two);
   }
 
   // add user two to user one dictionary
-  dictionary_t *user_one_dict = dictionary_get(user_dict, user_one);
+  dictionary_t *user_one_dict = (dictionary_t *)dictionary_get(user_dict, user_one);
   dictionary_set(user_one_dict, user_two, NULL);
   dictionary_set(user_dict, user_one, user_one_dict);
 
   // add user one to user two dictionary
-  dictionary_t *user_two_dict = dictionary_get(user_dict, user_two);
+  dictionary_t *user_two_dict = (dictionary_t *)dictionary_get(user_dict, user_two);
   dictionary_set(user_two_dict, user_one, NULL);
   dictionary_set(user_dict, user_two, user_two_dict);
 
