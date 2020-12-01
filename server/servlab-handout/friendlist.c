@@ -368,30 +368,31 @@ static void serve_introduce(int fd, dictionary_t *query)
 static void add_friends(char *user_one, char *user_two)
 {
   printf("Enter the add function\n");
-  // check if the names are duplicates
-  if (strcmp(user_one, user_two) == 0)
-  {
-    char *same_user = user_one;
-    dictionary_t *new_same_user = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-    dictionary_set(user_dict, same_user, new_same_user);
-    return;
-  }
+
+  const char *username_one = user_one;
+  const char *username_two = user_two;
 
   // add new users to the dictionary
   // check if user one already exists in the dictionary
-  dictionary_t *get_user_one = (dictionary_t *)(dictionary_get(user_dict, user_one));
+  dictionary_t *get_user_one = (dictionary_t *)(dictionary_get(user_dict, username_one));
   if (get_user_one == NULL)
   {
     dictionary_t *new_user_one = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-    dictionary_set(user_dict, user_one, new_user_one);
+    dictionary_set(user_dict, username_one, new_user_one);
   }
 
   // check if user two already exists in the dictionary
-  dictionary_t *get_user_two = (dictionary_t *)(dictionary_get(user_dict, user_two));
-  if (get_user_two== NULL)
+  dictionary_t *get_user_two = (dictionary_t *)(dictionary_get(user_dict, username_two));
+  if (get_user_two == NULL)
   {
     dictionary_t *new_user_two = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-    dictionary_set(user_dict, user_two, new_user_two);
+    dictionary_set(user_dict, username_two, new_user_two);
+  }
+
+  // check if the names are duplicates
+  if (strcmp(username_one, username_two) == 0)
+  {
+    return;
   }
 
   printf("print the new people\n");
@@ -400,14 +401,14 @@ static void add_friends(char *user_one, char *user_two)
 
   printf("add new people as friends\n");
   // add user two to user one dictionary
-  dictionary_t *user_one_dict = (dictionary_t *)dictionary_get(user_dict, user_one);
-  dictionary_set(user_one_dict, user_two, NULL);
-  dictionary_set(user_dict, user_one, user_one_dict);
+  dictionary_t *user_one_dict = (dictionary_t *)dictionary_get(user_dict, username_one);
+  dictionary_set(user_one_dict, username_two, NULL);
+  dictionary_set(user_dict, username_one, user_one_dict);
 
   // add user one to user two dictionary
-  dictionary_t *user_two_dict = (dictionary_t *)dictionary_get(user_dict, user_two);
-  dictionary_set(user_two_dict, user_one, NULL);
-  dictionary_set(user_dict, user_two, user_two_dict);
+  dictionary_t *user_two_dict = (dictionary_t *)dictionary_get(user_dict, username_two);
+  dictionary_set(user_two_dict, username_one, NULL);
+  dictionary_set(user_dict, username_two, user_two_dict);
 
   print_stringdictionary(user_dict);
   printf("end the new people as friends\n");
