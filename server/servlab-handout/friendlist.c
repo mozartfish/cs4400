@@ -376,6 +376,8 @@ static void add_friends(char *user_one, char *user_two)
     dictionary_set(user_dict, same_user, new_same_user);
     return;
   }
+
+  // add new users to the dictionary
   // check if user one already exists in the dictionary
   dictionary_t *get_user_one = (dictionary_t *)(dictionary_get(user_dict, user_one));
   if (get_user_one == NULL)
@@ -385,13 +387,18 @@ static void add_friends(char *user_one, char *user_two)
   }
 
   // check if user two already exists in the dictionary
-  dictionary_t *get_user_two= (dictionary_t *)(dictionary_get(user_dict, user_two));
+  dictionary_t *get_user_two = (dictionary_t *)(dictionary_get(user_dict, user_two));
   if (get_user_two== NULL)
   {
     dictionary_t *new_user_two = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
     dictionary_set(user_dict, user_two, new_user_two);
   }
 
+  printf("print the new people\n");
+  print_stringdictionary(user_dict);
+  printf("end the new people print\n");
+
+  printf("add new people as friends\n");
   // add user two to user one dictionary
   dictionary_t *user_one_dict = (dictionary_t *)dictionary_get(user_dict, user_one);
   dictionary_set(user_one_dict, user_two, NULL);
@@ -402,9 +409,8 @@ static void add_friends(char *user_one, char *user_two)
   dictionary_set(user_two_dict, user_one, NULL);
   dictionary_set(user_dict, user_two, user_two_dict);
 
-  printf("print the users\n");
   print_stringdictionary(user_dict);
-  printf("end of users!\n");
+  printf("end the new people as friends\n");
   return;
 }
 
