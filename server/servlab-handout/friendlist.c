@@ -120,26 +120,26 @@ void doit(int fd)
       /* You'll want to handle different queries here,
          but the intial implementation always returns
          nothing: */
-      printf("about to call handler\n");
+      printf("call a handler\n");
 
       if (starts_with("/friends", uri))
       {
-        printf("call the friend request handler\n");
+        printf("call the friend handler\n");
         serve_friends(fd, query);
       }
       else if (starts_with("/befriend", uri))
       {
-        printf("call befriend request handler\n");
+        printf("call the befriend handler\n");
         serve_befriend(fd, query);
       }
       else if (starts_with("/unfriend", uri))
       {
-        printf("call unfriend request handler\n");
+        printf("call the friend handler\n");
         serve_unfriend(fd, query);
       }
       else if (starts_with("/introduce", uri))
       {
-        printf("call introduce request handler\n");
+        printf("call introduce handler\n");
         serve_introduce(fd, query);
       }
 
@@ -276,10 +276,6 @@ static void serve_befriend(int fd, dictionary_t *query)
     add_friends(user, friend);
   }
 
-  // print the dictionary
-  print_stringdictionary(user_dict);
-
-
   char **user_friends = dictionary_keys(dictionary_get(user_dict, user));
   body = join_strings(user_friends, '\n');
 
@@ -318,9 +314,6 @@ static void serve_unfriend(int fd, dictionary_t *query)
     char *friend = friend_list[i];
     remove_friends(user, friend);
   }
-
-  // print the dictionary
-  print_stringdictionary(user_dict);
 
   char **user_friends = dictionary_keys(dictionary_get(user_dict, user));
   body = join_strings(user_friends, '\n');
@@ -370,6 +363,7 @@ static void serve_introduce(int fd, dictionary_t *query)
 /** Function that adds friends to the global dictionary if they do not exist*/
 static void add_friends(char *user_one, char *user_two)
 {
+  printf("Enter the add function\n");
   // check if the names are duplicates
   if (strcmp(user_one, user_two) == 0)
   {
@@ -407,6 +401,7 @@ static void add_friends(char *user_one, char *user_two)
 /** Function that removes friends from the global dictionary */
 static void remove_friends(char *user_one, char *user_two)
 {
+  printf("enter the remove function\n");
   // check if the user one dictionary is null
   if (dictionary_get(user_dict, user_one) == NULL)
   {
