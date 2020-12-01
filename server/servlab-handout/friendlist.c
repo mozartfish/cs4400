@@ -401,12 +401,12 @@ static void add_friends(char *user_one, char *user_two)
 
   printf("add new people as friends\n");
   // add user two to user one dictionary
-  dictionary_t *user_one_dict = (dictionary_t *)dictionary_get(user_dict, username_one);
+  dictionary_t *user_one_dict = (dictionary_t *)(dictionary_get(user_dict, username_one));
   dictionary_set(user_one_dict, username_two, NULL);
   dictionary_set(user_dict, username_one, user_one_dict);
 
   // add user one to user two dictionary
-  dictionary_t *user_two_dict = (dictionary_t *)dictionary_get(user_dict, username_two);
+  dictionary_t *user_two_dict = (dictionary_t *)(dictionary_get(user_dict, username_two));
   dictionary_set(user_two_dict, username_one, NULL);
   dictionary_set(user_dict, username_two, user_two_dict);
 
