@@ -276,7 +276,7 @@ static void serve_befriend(int fd, dictionary_t *query)
     add_friends(user, friend);
   }
 
-  char **user_friends = dictionary_keys(dictionary_get(user_dict, user));
+  char **user_friends = (dictionary_t *)(dictionary_keys(dictionary_get(user_dict, user)));
   body = join_strings(user_friends, '\n');
 
   len = strlen(body);
