@@ -384,6 +384,7 @@ static void add_friends(char *user_one, char *user_two)
   }
 
   // check if the names are duplicates
+  // the most recent user gets added 
   if (strcmp(user_one, user_two) == 0)
   {
     return;
@@ -422,6 +423,7 @@ static void remove_friends(char *user_one, char *user_two)
   }
 
   // CHECK 1 :  user names are the same
+  // the most recent gets removed 
   if (strcmp(user_one, user_two) == 0)
   {
     return;

@@ -1,0 +1,29 @@
+// TEST CASES FOR ASSIGNMENT 6
+
+/friends?user=‹user› (should return empty on first try)
+http:lab1-15.eng.utah.edu:2115/friends?user=harold
+http:lab1-15.eng.utah.edu:2115/friends?user=pranav
+
+/befriend?user=‹user›&friends=‹friends›
+http:lab1-15.eng.utah.edu:2115/befriend?user=harold&friends=pranav%0A
+harold -> pranav
+pranav -> harold
+
+http:lab1-15.eng.utah.edu:2115/befriend?user=harold&friends=pranav%0Aalex%0Aalex
+harold -> pranav
+alex 
+pranav -> harold
+alex -> harold 
+
+// simple tests
+racket simple.rkt localhost 2115
+
+// multi simple
+racket simple.rkt --multi localhost 2115
+
+// multi introduce 
+racket simple.rkt --multi --introduce localhost 2115
+
+// trouble 
+racket trouble.rkt localhost 2115
+
