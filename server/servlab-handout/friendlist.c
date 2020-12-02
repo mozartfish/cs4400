@@ -454,21 +454,21 @@ static void serve_introduce(int fd, dictionary_t *query)
     // printf("name : %s\n", user_friends_list[h]);
     add_friends(user_friends_list[h], friend);
   }
-  // printf("check the dictionary\n");
-  // for (j = 0; friend_keys[j] != NULL; ++j)
-  // {
-  //   printf("name : %s\n", friend_keys[j]);
-  // }
-  // for (j = 0; friend_keys[j] != NULL; ++j)
-  // {
-  //   printf("name : %s\n", friend_keys[j]);
-  //   dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_keys[j]));
-  //   char **friends_list = dictionary_keys(friend_friends);
-  //   for (k = 0; friends_list[k] != NULL; ++k)
-  //   {
-  //     printf("friend: %s\n", friends_list[k]);
-  //   }
-  // }
+  printf("check the dictionary\n");
+  for (j = 0; friend_keys[j] != NULL; ++j)
+  {
+    printf("name : %s\n", friend_keys[j]);
+  }
+  for (j = 0; friend_keys[j] != NULL; ++j)
+  {
+    printf("name : %s\n", friend_keys[j]);
+    dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_keys[j]));
+    char **friends_list = dictionary_keys(friend_friends);
+    for (k = 0; friends_list[k] != NULL; ++k)
+    {
+      printf("friend: %s\n", friends_list[k]);
+    }
+  }
 
   // // establish a new connection with the server
   // int client_fd = Open_clientfd(host, port);
