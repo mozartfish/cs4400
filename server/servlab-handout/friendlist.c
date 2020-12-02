@@ -429,7 +429,10 @@ static void serve_introduce(int fd, dictionary_t *query)
   char **friend_keys = dictionary_keys(user_dict);
   int j;
   for (j = 0; friend_keys[j] != NULL; ++j) {
-    printf("name : %s", friend_keys[j]);
+    printf("name : %s\n", friend_keys[j]);
+    printf("the dictionary\n");
+    print_stringdictionary(user_dict);
+
   }
   printf("hello\n");
 
