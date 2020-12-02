@@ -125,7 +125,7 @@ void doit(int fd)
       }
       else if (starts_with("/befriend", uri))
       {
-        printf("call the friend handler\n");
+        printf("call the befriend handler\n");
         serve_befriend(fd, query);
       }
       else
