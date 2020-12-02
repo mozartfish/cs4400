@@ -35,8 +35,6 @@ int main(int argc, char **argv)
   char hostname[MAXLINE], port[MAXLINE];
   socklen_t clientlen;
   struct sockaddr_storage clientaddr;
-  // create a new thread
-  pthread_t th;
 
   /* Check command line args */
   if (argc != 2)
@@ -423,9 +421,9 @@ static void serve_introduce(int fd, dictionary_t *query)
 
 
 
-  // establish a new connection with the server
-  int client_fd = Open_clientfd(host, port);
-  char buffer[MAXBUF];
+  // // establish a new connection with the server
+  // int client_fd = Open_clientfd(host, port);
+  // char buffer[MAXBUF];
 
   body = strdup("alice\nbob");
 
