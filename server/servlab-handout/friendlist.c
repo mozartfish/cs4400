@@ -452,7 +452,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   int h;
   for (h = 0; user_friends_list[h] != NULL; ++h)
   {
-    add_friends(user_friends_list[h], friend);
+    add_friends(friend, user_friends_list[h]);
   }
   printf("check the dictionary\n");
   for (j = 0; friend_keys[j] != NULL; ++j)
