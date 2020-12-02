@@ -263,11 +263,11 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  char *user = dictionary_get(query, "user");
-  char *friends = dictionary_get(query, "friends");
-  char **friend_list = split_string((char *)(friends), '\n');
+  const char *user = dictionary_get(query, "user");
+  const char *friends = (char *)dictionary_get(query, "friends");
+  char **friend_list = split_string(friends, '\n');
   int i;
-
+  
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
   {
@@ -369,28 +369,22 @@ static void add_friends(char *user_one, char *user_two)
 {
   printf("Enter the add function\n");
 
-  const char *username_one = user_one;
-  const char *username_two = user_two;
-
-  // add new users to the dictionary
-  // check if user one already exists in the dictionary
-  dictionary_t *get_user_one = (dictionary_t *)(dictionary_get(user_dict, username_one));
-  if (get_user_one == NULL)
+  // check for user one
+  if ((dictionary_t *)(dictionary_get(user_dict, user_one)) == NULL)
   {
     dictionary_t *new_user_one = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-    dictionary_set(user_dict, username_one, new_user_one);
+    dictionary_set(user_dict, user_one, new_user_one);
   }
 
-  // check if user two already exists in the dictionary
-  dictionary_t *get_user_two = (dictionary_t *)(dictionary_get(user_dict, username_two));
-  if (get_user_two == NULL)
+  // check for user two
+  if ((dictionary_t *)(dictionary_get(user_dict, user_two)) == NULL)
   {
     dictionary_t *new_user_two = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-    dictionary_set(user_dict, username_two, new_user_two);
+    dictionary_set(user_dict, user_two, new_user_two);
   }
 
   // check if the names are duplicates
-  if (strcmp(username_one, username_two) == 0)
+  if (strcmp(user_one, user_two) == 0)
   {
     return;
   }
@@ -401,14 +395,10 @@ static void add_friends(char *user_one, char *user_two)
 
   printf("add new people as friends\n");
   // add user two to user one dictionary
-  dictionary_t *user_one_dict = (dictionary_t *)(dictionary_get(user_dict, username_one));
-  dictionary_set(user_one_dict, username_two, NULL);
-  dictionary_set(user_dict, username_one, user_one_dict);
+  dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_one)), user_two, NULL);
 
   // add user one to user two dictionary
-  dictionary_t *user_two_dict = (dictionary_t *)(dictionary_get(user_dict, username_two));
-  dictionary_set(user_two_dict, username_one, NULL);
-  dictionary_set(user_dict, username_two, user_two_dict);
+  dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one, NULL);
 
   print_stringdictionary(user_dict);
   printf("end the new people as friends\n");
@@ -419,23 +409,14 @@ static void add_friends(char *user_one, char *user_two)
 static void remove_friends(char *user_one, char *user_two)
 {
   printf("enter the remove function\n");
-  const char *username_one = user_one;
-  const char *username_two = user_two;
-
-  // check if user one already exists in the dictionary
-  dictionary_t *get_user_one = (dictionary_t *)(dictionary_get(user_dict, username_one));
-
-  // check if user two already exists in the dictionary
-  dictionary_t *get_user_two = (dictionary_t *)(dictionary_get(user_dict, username_two));
-
   // check if the user one dictionary is null
-  if (get_user_one == NULL)
+  if (dictionary_get(user_dict, user_one) == NULL)
   {
     return;
   }
 
   // check if the user two dictionary is null
-  if (get_user_two)
+  if (dictionary_get(user_dict, user_two) == NULL)
   {
     return;
   }
@@ -447,18 +428,13 @@ static void remove_friends(char *user_one, char *user_two)
   }
 
   // get the friends of user_one and user_two
-  dictionary_t *user_one_dict = (dictionary_t *)(dictionary_get(user_dict, username_one));
-  dictionary_t *user_two_dict = (dictionary_t *)(dictionary_get(user_dict, username_two));
+  // add user two to user one dictionary
+  dictionary_remove((dictionary_t *)(dictionary_get(user_dict, user_one)), user_two);
 
-  // remove the friends
-  dictionary_remove(user_one_dict, username_one);
-  dictionary_remove(user_two_dict, username_two);
-
-  // add the dictionaries back to global user dictionary
-  dictionary_set(user_dict, username_one, user_one_dict);
-  dictionary_set(user_dict, username_two, user_two_dict);
-
+  // add user one to user two dictionary
+  dictionary_remove((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one);
   printf("print the users\n");
+
   print_stringdictionary(user_dict);
   return;
 }

@@ -258,13 +258,16 @@ static void serve_befriend(int fd, dictionary_t *query)
 
   printf("entered the befriend function\n");
 
-  // // check if the user already exists in the dictionary
-  // // if the user is null then add the add the user to the dictionary
-  // if ((dictionary_t *)(dictionary_get(user_dict, user)) == NULL)
-  // {
-  //   dictionary_t *new_user = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-  //   dictionary_set(user_dict, user, new_user);
-  // }
+  // user friends
+  dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user);
+
+                   // check if the user already exists in the dictionary
+                   // if the user is null then add the add the user to the dictionary
+  if (user_friends == NULL)
+  {
+    dictionary_t *new_user = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
+    dictionary_set(user_dict, user, new_user);
+  }
   // // go through all the user friends and add them to the user and vice versa
   // // if the user tries to add themselves they should be rejected
   // for (i = 0; friend_list[i] != NULL; i++)
@@ -279,7 +282,7 @@ static void serve_befriend(int fd, dictionary_t *query)
   //   // get the user friends
   //   dictionary_t *get_friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_list[i]));
   //   // check if the friend exists in the dictionary
-  //   if (get_friend_friends == NULL) 
+  //   if (get_friend_friends == NULL)
   //   {
   //     dictionary_t *new_friend = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
   //     // add the user
