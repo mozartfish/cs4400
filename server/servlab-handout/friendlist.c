@@ -419,21 +419,20 @@ static void serve_introduce(int fd, dictionary_t *query)
   if (port == NULL)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Port");
 
-
   // add a user and friends
-  char *new_user = "alice";
-  char **new_friends = [ "pranav", "sean", "max", "alex", "jeff", "\0" ];
+  add_friends("alex", "jeff");
+  add_friends("alex", "miriah");
+  add_friends("alex", "pranav");
+  add_friends("alex", "alberto");
+  // print the dictionary
+  print_stringdictionary(user_dict);
+  printf("end the print dictionary\n");
 
-  int j;
-  for (j = 0; new_friends[j] != NULL; ++j) {
-    printf("friend: %s", new_friends[j]);
-  }
+  // // establish a new connection with the server
+  // int client_fd = Open_clientfd(host, port);
+  // char buffer[MAXBUF];
 
-    // // establish a new connection with the server
-    // int client_fd = Open_clientfd(host, port);
-    // char buffer[MAXBUF];
-
-    body = strdup("alice\nbob");
+  body = strdup("alice\nbob");
 
   len = strlen(body);
 
