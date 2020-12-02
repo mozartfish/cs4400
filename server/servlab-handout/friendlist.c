@@ -443,10 +443,11 @@ static void serve_introduce(int fd, dictionary_t *query)
   }
   printf("end populating people\n");
   printf("introduce new friend\n");
+  // make the user and friend friends
+  add_friends(user, friend);
   // get the friends of the user
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
   // make the user and new friend friends
-  add_friends(user, friend);
   char **user_friends_list = dictionary_keys(user_friends);
   int h;
   for (h = 0; user_friends_list[h] != NULL; ++h)
