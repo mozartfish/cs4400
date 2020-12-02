@@ -263,11 +263,11 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  const char *user = dictionary_get(query, "user");
-  const char *friends = (char *)dictionary_get(query, "friends");
+  char *user = dictionary_get(query, "user");
+  char *friends = (char *)dictionary_get(query, "friends");
   char **friend_list = split_string(friends, '\n');
   int i;
-  
+
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
   {
