@@ -446,6 +446,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   printf("user: %s\n", user);
   printf("friend: %s\n", friend);
   add_friends(user, friend);
+  printf("segfault exit \n");
   int h;
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
   char **user_friends_list = dictionary_keys(user_friends);
