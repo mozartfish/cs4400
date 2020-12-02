@@ -455,26 +455,26 @@ static void serve_introduce(int fd, dictionary_t *query)
     add_friends(user_friends_list[h], friend);
   }
   printf("check the dictionary\n");
-  for (j = 0; friend_keys[j] != NULL; ++j)
+  char **users = dictionary_keys(user_dict);
+  int p;
+  int q;
+  int g;
+  for (p = 0; users[p] != NULL; ++p)
   {
-    printf("name : %s\n", friend_keys[j]);
-  }
-  for (j = 0; friend_keys[j] != NULL; ++j)
-  {
-    printf("name : %s\n", friend_keys[j]);
-    dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_keys[j]));
-    char **friends_list = dictionary_keys(friend_friends);
-    for (k = 0; friends_list[k] != NULL; ++k)
+    printf("name : %s", users[p]);
+    dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
+    char **friends_list = dictionary_keys(friend_friends_new);
+    for (g = 0; friends_list[g] != NULL; ++g)
     {
-      printf("friend: %s\n", friends_list[k]);
+      printf("friend: %s\n", friends_list[g]);
     }
   }
 
-  // // establish a new connection with the server
-  // int client_fd = Open_clientfd(host, port);
-  // char buffer[MAXBUF];
+    // // establish a new connection with the server
+    // int client_fd = Open_clientfd(host, port);
+    // char buffer[MAXBUF];
 
-  body = strdup("alice\nbob");
+    body = strdup("alice\nbob");
 
   len = strlen(body);
 
