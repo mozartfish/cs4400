@@ -18,7 +18,6 @@ static void read_postquery(rio_t *rp, dictionary_t *headers, dictionary_t *d);
 static void clienterror(int fd, char *cause, char *errnum,
                         char *shortmsg, char *longmsg);
 static void print_stringdictionary(dictionary_t *d);
-// static void serve_request(int fd, dictionary_t *query);
 /** additional functions tu support the client requests */
 static void serve_friends(int fd, dictionary_t *query);
 static void serve_befriend(int fd, dictionary_t *query);
@@ -45,6 +44,7 @@ int main(int argc, char **argv)
   }
 
   listenfd = Open_listenfd(argv[1]);
+
   // initialize a new dictionary for keeping track of friends
   user_dict = make_dictionary(COMPARE_CASE_INSENS, free);
 
@@ -220,7 +220,7 @@ static void serve_friends(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  const char *user = dictionary_get(query, "user");
+  const char *user = (char *)(dictionary_get(query, "user"));
 
   // const size_t max_length = 1753;
 
@@ -228,7 +228,7 @@ static void serve_friends(int fd, dictionary_t *query)
   body = "";
 
   // get the friends of the user
-  dictionary_t *user_friends_dict = dictionary_get(user_dict, user);
+  dictionary_t *user_friends_dict = (dictionary_t *)(dictionary_get(user_dict, user));
 
   // the friends are stored as a dictionary pair
   // where the mapping is <user, null> to represent
@@ -263,7 +263,7 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
-  char *user = dictionary_get(query, "user");
+  char *user = (char *)(dictionary_get(query, "user"));
   char *friends = (char *)dictionary_get(query, "friends");
   char **friend_list = split_string(friends, '\n');
   int i;
@@ -277,7 +277,7 @@ static void serve_befriend(int fd, dictionary_t *query)
   }
 
   // get the user friends
-  dictionary_t *user_friends = dictionary_get(user_dict, user);
+  dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
   const char **friend_names_list = dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
 
@@ -303,9 +303,9 @@ static void serve_befriend(int fd, dictionary_t *query)
 static void serve_unfriend(int fd, dictionary_t *query)
 {
   size_t len;
-  char *user = dictionary_get(query, "user");
+  char *user = (char *)(dictionary_get(query, "user"));
   char *body, *header;
-  char *friends = dictionary_get(query, "friends");
+  char *friends = (char *)(dictionary_get(query, "friends"));
   char **friend_list = split_string((char *)(friends), '\n');
   int i;
 
@@ -318,7 +318,7 @@ static void serve_unfriend(int fd, dictionary_t *query)
   }
 
   // get the user friends
-  dictionary_t *user_friends = dictionary_get(user_dict, user);
+  dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
   const char **friend_names_list = dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
 
@@ -345,6 +345,10 @@ static void serve_introduce(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+  char *user = (char *)(dictionary_get(query, "user"));
+  char *friend = (char *)(dictionary_get(query, "friend"));
+  char *host = (char *)dictionary_get(query, "host");
+  char *port = (char *)dictionary_get(query, "port");
 
   body = strdup("alice\nbob");
 
@@ -367,8 +371,6 @@ static void serve_introduce(int fd, dictionary_t *query)
 /** Function that adds friends to the global dictionary if they do not exist*/
 static void add_friends(char *user_one, char *user_two)
 {
-  printf("Enter the add function\n");
-
   // check for user one
   if ((dictionary_t *)(dictionary_get(user_dict, user_one)) == NULL)
   {
@@ -384,32 +386,22 @@ static void add_friends(char *user_one, char *user_two)
   }
 
   // check if the names are duplicates
-  // the most recent user gets added 
+  // the most recent user gets added
   if (strcmp(user_one, user_two) == 0)
   {
     return;
   }
-
-  printf("print the new people\n");
-  print_stringdictionary(user_dict);
-  printf("end the new people print\n");
-
-  printf("add new people as friends\n");
   // add user two to user one dictionary
   dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_one)), user_two, NULL);
 
   // add user one to user two dictionary
   dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one, NULL);
-
-  print_stringdictionary(user_dict);
-  printf("end the new people as friends\n");
   return;
 }
 
 /** Function that removes friends from the global dictionary */
 static void remove_friends(char *user_one, char *user_two)
 {
-  printf("enter the remove function\n");
   // check if the user one dictionary is null
   if (dictionary_get(user_dict, user_one) == NULL)
   {
@@ -423,7 +415,6 @@ static void remove_friends(char *user_one, char *user_two)
   }
 
   // CHECK 1 :  user names are the same
-  // the most recent gets removed 
   if (strcmp(user_one, user_two) == 0)
   {
     return;
@@ -435,9 +426,6 @@ static void remove_friends(char *user_one, char *user_two)
 
   // add user one to user two dictionary
   dictionary_remove((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one);
-  printf("print the users\n");
-
-  print_stringdictionary(user_dict);
   return;
 }
 
