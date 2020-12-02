@@ -419,7 +419,9 @@ static void serve_introduce(int fd, dictionary_t *query)
   if (port == NULL)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Port");
 
+  // for debugging
   // add a user and friends
+  printf("populate dictionary first\n");
   add_friends("alex", "jeff");
   add_friends("alex", "miriah");
   add_friends("alex", "pranav");
@@ -434,11 +436,32 @@ static void serve_introduce(int fd, dictionary_t *query)
     printf("name : %s\n", friend_keys[j]);
     dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_keys[j]));
     char **friends_list = dictionary_keys(friend_friends);
-    for (k = 0; friends_list[k] != NULL; ++k) {
+    for (k = 0; friends_list[k] != NULL; ++k)
+    {
       printf("friend: %s\n", friends_list[k]);
     }
   }
-  printf("hello\n");
+  printf("end populating people\n");
+  printf("introduce new friend\n");
+  // get the friends of the user
+  dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
+  char **user_friends_list = dictionary_keys(user_friends);
+  int h;
+  for (h = 0; user_friends_list[h] != NULL; ++h)
+  {
+    add_friends(user_friends_list[h], friend);
+  }
+  printf("check the dictionary\n");
+  for (j = 0; friend_keys[j] != NULL; ++j)
+  {
+    printf("name : %s\n", friend_keys[j]);
+    dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_keys[j]));
+    char **friends_list = dictionary_keys(friend_friends);
+    for (k = 0; friends_list[k] != NULL; ++k)
+    {
+      printf("friend: %s\n", friends_list[k]);
+    }
+  }
 
   // // establish a new connection with the server
   // int client_fd = Open_clientfd(host, port);
