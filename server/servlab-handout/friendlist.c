@@ -421,14 +421,17 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // for debugging
   // add a user and friends
-  printf("populate dictionary first\n");
-  add_friends("pranav", "jeff");
-  add_friends("pranav", "alex");
-  add_friends("pranav", "bob");
-  add_friends("pranav", "bill");
-  printf("user: %s\n", user);
-  printf("friend: %s\n", friend);
+  // printf("populate dictionary first\n");
+  // add_friends("pranav", "jeff");
+  // add_friends("pranav", "alex");
+  // add_friends("pranav", "bob");
+  // add_friends("pranav", "bill");
+  // printf("user: %s\n", user);
+  // printf("friend: %s\n", friend);
+
+  // make the user and friend friends
   add_friends(user, friend);
+  // make the friend friends with all of the users friends
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
   char **user_friends_list = dictionary_keys(user_friends);
   int h;
@@ -436,20 +439,20 @@ static void serve_introduce(int fd, dictionary_t *query)
   {
     add_friends(user_friends_list[h], friend);
   }
-  printf("check the dictionary\n");
-  char **users = dictionary_keys(user_dict);
-  int p;
-  int g;
-  for (p = 0; users[p] != NULL; ++p)
-  {
-    printf("name : %s\n", users[p]);
-    dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
-    char **friends_list = dictionary_keys(friend_friends_new);
-    for (g = 0; friends_list[g] != NULL; ++g)
-    {
-      printf("friend: %s\n", friends_list[g]);
-    }
-  }
+  // printf("check the dictionary\n");
+  // char **users = dictionary_keys(user_dict);
+  // int p;
+  // int g;
+  // for (p = 0; users[p] != NULL; ++p)
+  // {
+  //   printf("name : %s\n", users[p]);
+  //   dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
+  //   char **friends_list = dictionary_keys(friend_friends_new);
+  //   for (g = 0; friends_list[g] != NULL; ++g)
+  //   {
+  //     printf("friend: %s\n", friends_list[g]);
+  //   }
+  // }
 
   // // establish a new connection with the server
   // int client_fd = Open_clientfd(host, port);
