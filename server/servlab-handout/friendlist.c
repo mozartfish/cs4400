@@ -421,11 +421,11 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // for debugging
   // add a user and friends
-  // printf("populate dictionary first\n");
-  // add_friends("pranav", "jeff");
-  // add_friends("pranav", "alex");
-  // add_friends("pranav", "bob");
-  // add_friends("pranav", "bill");
+  printf("populate dictionary first\n");
+  add_friends("pranav", "jeff");
+  add_friends("pranav", "alex");
+  add_friends("pranav", "bob");
+  add_friends("pranav", "bill");
   printf("user: %s\n", user);
   printf("friend: %s\n", friend);
   add_friends(user, friend);
