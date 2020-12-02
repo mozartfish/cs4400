@@ -115,7 +115,17 @@ void doit(int fd)
       /* You'll want to handle different queries here,
          but the intial implementation always returns
          nothing: */
-      serve_request(fd, query);
+      printf("call a handler\n");
+
+      if (starts_with("/friends", uri))
+      {
+        printf("call the friend handler\n");
+        serve_friends(fd, query);
+      }
+      else
+      {
+        serve_request(fd, query);
+      }
 
       /* Clean up */
       free_dictionary(query);
@@ -213,7 +223,7 @@ static void serve_friends(int fd, dictionary_t *query)
     const char **friends = dictionary_keys(user_friends_dict);
     body = join_strings(friends, '\n');
   }
-  
+
   len = strlen(body);
 
   /* Send response headers to client */
