@@ -89,6 +89,7 @@ void doit(int fd)
   }
   else
   {
+    printf("URI = %s received\n", uri);
     if (strcasecmp(version, "HTTP/1.0") && strcasecmp(version, "HTTP/1.1"))
     {
       clienterror(fd, version, "501", "Not Implemented",
