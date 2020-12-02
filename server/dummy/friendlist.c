@@ -21,7 +21,7 @@ static void print_stringdictionary(dictionary_t *d);
 static void serve_request(int fd, dictionary_t *query);
 /** additional functions tu support the client requests */
 static void serve_friends(int fd, dictionary_t *query);
-// static void serve_befriend(int fd, dictionary_t *query);
+static void serve_befriend(int fd, dictionary_t *query);
 
 /**Global variables */
 dictionary_t *user_dict; // a global dictionary for keeping track of clients and their friends
@@ -122,6 +122,11 @@ void doit(int fd)
       {
         printf("call the friend handler\n");
         serve_friends(fd, query);
+      }
+      else if (starts_with("/befriend", uri))
+      {
+        printf("call the friend handler\n");
+        serve_befriend(fd, query);
       }
       else
       {
@@ -237,6 +242,51 @@ static void serve_friends(int fd, dictionary_t *query)
 
   /* Send response body to client */
   Rio_writen(fd, body, len);
+}
+
+/*
+ * serve_befriend
+ */
+static void serve_befriend(int fd, dictionary_t *query)
+{
+  size_t len;
+  char *body, *header;
+  const char *user = dictionary_get(query, "user");
+  const char *friends = (char *)dictionary_get(query, "friends");
+  char **friend_list = split_string(friends, '\n');
+  int i;
+
+  // check if the user already exists in the dictionary
+  dictionary_t *get_user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
+
+  // if the user is null then add the add the user to the dictionary
+  if (get_user_friends == NULL)
+  {
+    dictionary_t *new_user = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
+    dictionary_set(user_dict, user, new_user);
+  }
+
+  if (get_user_friends != NULL)
+  {
+    printf("friends are not null\n");
+  }
+
+  body = strdup("alice\nbob");
+
+  len = strlen(body);
+
+  /* Send response headers to client */
+  header = ok_header(len, "text/html; charset=utf-8");
+  Rio_writen(fd, header, strlen(header));
+  printf("Response headers:\n");
+  printf("%s", header);
+
+  free(header);
+
+  /* Send response body to client */
+  Rio_writen(fd, body, len);
+
+  free(body);
 }
 
 /*
