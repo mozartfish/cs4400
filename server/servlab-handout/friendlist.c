@@ -421,43 +421,24 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // for debugging
   // add a user and friends
-  printf("populate dictionary first\n");
-  add_friends("alex", "jeff");
-  add_friends("alex", "miriah");
-  add_friends("alex", "pranav");
-  add_friends("alex", "alberto");
-
-  // print all the keys of the dictionary
-  char **friend_keys = dictionary_keys(user_dict);
-  int j;
-  int k;
-  for (j = 0; friend_keys[j] != NULL; ++j)
-  {
-    printf("name : %s\n", friend_keys[j]);
-    dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_keys[j]));
-    char **friends_list = dictionary_keys(friend_friends);
-    for (k = 0; friends_list[k] != NULL; ++k)
-    {
-      printf("friend: %s\n", friends_list[k]);
-    }
-  }
-  printf("end populating people\n");
-  printf("introduce new friend\n");
+  // printf("populate dictionary first\n");
+  // add_friends("pranav", "jeff");
+  // add_friends("pranav", "alex");
+  // add_friends("pranav", "bob");
+  // add_friends("pranav", "bill");
   printf("user: %s\n", user);
   printf("friend: %s\n", friend);
   add_friends(user, friend);
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
-  int h = 0;
   char **user_friends_list = dictionary_keys(user_friends);
+  int h;
   for (h = 0; user_friends_list[h] != NULL; ++h)
   {
-    // printf("name : %s\n", user_friends_list[h]);
     add_friends(user_friends_list[h], friend);
   }
   printf("check the dictionary\n");
   char **users = dictionary_keys(user_dict);
   int p;
-  int q;
   int g;
   for (p = 0; users[p] != NULL; ++p)
   {
