@@ -35,6 +35,8 @@ int main(int argc, char **argv)
   char hostname[MAXLINE], port[MAXLINE];
   socklen_t clientlen;
   struct sockaddr_storage clientaddr;
+  // create a new thread
+  pthread_t th;
 
   /* Check command line args */
   if (argc != 2)
@@ -252,8 +254,6 @@ static void serve_friends(int fd, dictionary_t *query)
     body = join_strings(friends, '\n');
   }
 
-  // debugging statement to make sure something is happening
-  // printf("HELLO WORLD\n");
   len = strlen(body);
 
   /* Send response headers to client */
@@ -282,7 +282,7 @@ static void serve_befriend(int fd, dictionary_t *query)
 
   // check the number of arguments
   if (dictionary_count(query) != 2)
-    clienterror(fd, "POST", "400", "Bad Request", "Not Enough Arguments in Query");
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Number of Query Arguments");
 
   char *user = (char *)(dictionary_get(query, "user"));
   char *friends = (char *)dictionary_get(query, "friends");
@@ -295,9 +295,6 @@ static void serve_befriend(int fd, dictionary_t *query)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Friends");
 
   char **friend_list = split_string(friends, '\n');
-
-  if (friend_list == NULL)
-    clienterror(fd, "POST", "400", "Bad Request", "Invalid List of Friends");
 
   // check if we have valid friends
 
@@ -347,7 +344,7 @@ static void serve_unfriend(int fd, dictionary_t *query)
 
   // check the number of arguments
   if (dictionary_count(query) != 2)
-    clienterror(fd, "POST", "400", "Bad Request", "Not Enough Arguments for Query");
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Number of Query Arguments");
 
   char *user = (char *)(dictionary_get(query, "user"));
   char *friends = (char *)dictionary_get(query, "friends");
@@ -360,9 +357,6 @@ static void serve_unfriend(int fd, dictionary_t *query)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Friends");
 
   char **friend_list = split_string(friends, '\n');
-
-  if (friend_list == NULL)
-    clienterror(fd, "POST", "400", "Bad Request", "Invalid List of Friends");
 
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
@@ -407,7 +401,7 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // check the number of arguments
   if (dictionary_count(query) != 4)
-    clienterror(fd, "POST", "400", "Bad Request", "Not Enough Arguments for Query");
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Number of Query Arguments");
 
   char *user = (char *)(dictionary_get(query, "user"));
   char *friend = (char *)(dictionary_get(query, "friend"));
@@ -427,8 +421,10 @@ static void serve_introduce(int fd, dictionary_t *query)
   if (port == NULL)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Port");
 
+
+
   // establish a new connection with the server
-  int clientfd = Open_clientfd(host, port);
+  int client_fd = Open_clientfd(host, port);
   char buffer[MAXBUF];
 
   body = strdup("alice\nbob");
