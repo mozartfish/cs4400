@@ -424,9 +424,14 @@ static void serve_introduce(int fd, dictionary_t *query)
   add_friends("alex", "miriah");
   add_friends("alex", "pranav");
   add_friends("alex", "alberto");
-  // print the dictionary
-  print_stringdictionary(user_dict);
-  printf("end the print dictionary\n");
+
+  // print all the keys of the dictionary
+  char **friend_keys = dictionary_keys(user_dict);
+  int j;
+  for (j = 0; friend_keys[j] != NULL; ++j) {
+    printf("name : %s", friend_keys[j]);
+  }
+  printf("hello\n");
 
   // // establish a new connection with the server
   // int client_fd = Open_clientfd(host, port);

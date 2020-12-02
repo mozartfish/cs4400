@@ -17,7 +17,7 @@ alex -> harold
 
 
 // introduc tests
-http://lab1-15.eng.utah.edu:2115/introduce?user=bob&friend=harold&host=2115&port=42
+http://lab1-15.eng.utah.edu:2115/introduce?user=alex&friend=harold&host=2115&port=42
 
 // simple tests
 racket simple.rkt localhost 2115
