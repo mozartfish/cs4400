@@ -446,14 +446,16 @@ static void serve_introduce(int fd, dictionary_t *query)
   printf("user: %s\n", user);
   printf("friend: %s\n", friend);
   add_friends(user, friend);
-  printf("segfault exit \n");
-  int h;
+  // int h;
+  printf("enter segfault");
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
-  char **user_friends_list = dictionary_keys(user_friends);
-  for (h = 0; user_friends_list[h] != NULL; ++h)
-  {
-    printf("name : %s\n", user[h]);
-  }
+  printf("exit_segfault");
+
+  // char **user_friends_list = dictionary_keys(user_friends);
+  // for (h = 0; user_friends_list[h] != NULL; ++h)
+  // {
+  //   printf("name : %s\n", user[h]);
+  // }
   // // make the user and friend friends
   // add_friends(user, friend);
   // get the friends of the user
