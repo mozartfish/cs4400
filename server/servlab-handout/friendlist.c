@@ -220,9 +220,27 @@ static void serve_friends(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+
+  // make sure the query dictionary is not null
+  if (query == NULL)
+  {
+    clienterror(fd, "GET", "400", "Bad Request", "Undefined Query");
+  }
+
+  // make sure we have the right number of arguments for a friend request
+  if (dictionary_count(query) != 1)
+  {
+    clienterror(fd, "GET", "400", "Bad Request", "Invalid Number of Arguments in Query");
+  }
+
+  // get the username
   const char *user = (char *)(dictionary_get(query, "user"));
 
-  // const size_t max_length = 1753;
+  // check that we have a valid name
+  if (user == NULL)
+  {
+    clienterror(fd, "GET", "400", "Bad Request", "Invalid Username");
+  }
 
   // create an empty string for the body
   body = "";
@@ -263,9 +281,42 @@ static void serve_befriend(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+
+  // make sure the query is not null
+  if (query == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Query");
+  }
+
+  // check the number of arguments
+  if (dictionary_count(query) != 2)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Not Enough Arguments in Query");
+  }
+
   char *user = (char *)(dictionary_get(query, "user"));
   char *friends = (char *)dictionary_get(query, "friends");
+
+  // check the valid name
+  if (user == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Username");
+  }
+
+  if (friends == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Friends");
+  }
+
   char **friend_list = split_string(friends, '\n');
+
+  if (friend_list == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid List of Friends");
+  }
+
+  // check if we have valid friends
+
   int i;
 
   // print information about the friends
@@ -303,11 +354,41 @@ static void serve_befriend(int fd, dictionary_t *query)
 static void serve_unfriend(int fd, dictionary_t *query)
 {
   size_t len;
-  char *user = (char *)(dictionary_get(query, "user"));
   char *body, *header;
-  char *friends = (char *)(dictionary_get(query, "friends"));
-  char **friend_list = split_string((char *)(friends), '\n');
   int i;
+
+  // make sure the query is not null
+  if (query == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Query");
+  }
+
+  // check the number of arguments
+  if (dictionary_count(query) != 2)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Not Enough Arguments for Query");
+  }
+
+  char *user = (char *)(dictionary_get(query, "user"));
+  char *friends = (char *)dictionary_get(query, "friends");
+
+  // check the valid name
+  if (user == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Username");
+  }
+
+  if (friends == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Friends");
+  }
+
+  char **friend_list = split_string(friends, '\n');
+
+  if (friend_list == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid List of Friends");
+  }
 
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
@@ -345,10 +426,33 @@ static void serve_introduce(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+
+  // make sure the query is not null
+  if (query == NULL)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Query");
+  }
+
+  // check the number of arguments
+  if (dictionary_count(query) != 4)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Not Enough Arguments for Query");
+  }
+
   char *user = (char *)(dictionary_get(query, "user"));
   char *friend = (char *)(dictionary_get(query, "friend"));
   char *host = (char *)dictionary_get(query, "host");
   char *port = (char *)dictionary_get(query, "port");
+
+  // make sure the user, friend, host and port are not null
+  if (!user || !friend || !host || !port)
+  {
+    clienterror(fd, "POST", "400", "Bad Request", "Invalid Username or Invalid Friend or Invalid Host or Invalid Port");
+  }
+
+  // establish a new connection with the server
+  int clientfd = Open_clientfd(host, port);
+  char buffer[MAXBUF];
 
   body = strdup("alice\nbob");
 
