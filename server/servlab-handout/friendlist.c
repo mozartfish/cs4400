@@ -461,7 +461,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   int g;
   for (p = 0; users[p] != NULL; ++p)
   {
-    printf("name : %s", users[p]);
+    printf("name : %s\n", users[p]);
     dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
     char **friends_list = dictionary_keys(friend_friends_new);
     for (g = 0; friends_list[g] != NULL; ++g)
@@ -470,11 +470,11 @@ static void serve_introduce(int fd, dictionary_t *query)
     }
   }
 
-    // // establish a new connection with the server
-    // int client_fd = Open_clientfd(host, port);
-    // char buffer[MAXBUF];
+  // // establish a new connection with the server
+  // int client_fd = Open_clientfd(host, port);
+  // char buffer[MAXBUF];
 
-    body = strdup("alice\nbob");
+  body = strdup("alice\nbob");
 
   len = strlen(body);
 
