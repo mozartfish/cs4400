@@ -428,11 +428,15 @@ static void serve_introduce(int fd, dictionary_t *query)
   // print all the keys of the dictionary
   char **friend_keys = dictionary_keys(user_dict);
   int j;
-  for (j = 0; friend_keys[j] != NULL; ++j) {
+  int k;
+  for (j = 0; friend_keys[j] != NULL; ++j)
+  {
     printf("name : %s\n", friend_keys[j]);
-    printf("the dictionary\n");
-    print_stringdictionary(user_dict);
-
+    dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend_keys[j]));
+    char **friends_list = dictionary_keys(friend_friends);
+    for (k = 0; friends_list[k] != NULL; ++k) {
+      printf("friend: %s\n", friends_list[k]);
+    }
   }
   printf("hello\n");
 
