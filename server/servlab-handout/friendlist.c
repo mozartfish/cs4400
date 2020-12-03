@@ -529,7 +529,7 @@ static void serve_introduce(int fd, dictionary_t *query)
     }
     else
     {
-      headers = read_requesthdrs(&rio);
+      // headers = read_requesthdrs(&rio);
 
       while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
       {
