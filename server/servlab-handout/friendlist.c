@@ -49,8 +49,6 @@ int main(int argc, char **argv)
 
   // initialize a new dictionary for keeping track of friends
   user_dict = make_dictionary(COMPARE_CASE_INSENS, free);
-  // create a new thread object
-  pthread_t th;
 
   /* Don't kill the server if there's an error, because
      we want to survive errors due to a client. But we
@@ -71,6 +69,8 @@ int main(int argc, char **argv)
       printf("Accepted connection from (%s, %s)\n", hostname, port);
 
       int *connfd_p;
+      // create a new thread object
+      pthread_t th;
       connfd_p = malloc(sizeof(int));
       *connfd_p = connfd;
       pthread_create(&th, NULL, multi_connect, connfd_p);
