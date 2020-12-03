@@ -465,13 +465,14 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // make the user and friend friends
   add_friends(user, friend);
+
   // make the friend friends with all of the users friends
   dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
   char** friend_friends_list = (char**)(dictionary_keys(friend_friends));
   int h;
   for (h = 0; friend_friends_list[h] != NULL; ++h)
   {
-    add_friends(friend_friends_list[h], friend);
+    add_friends(friend_friends_list[h], user);
   }
   // printf("check the dictionary\n");
   // char **users = dictionary_keys(user_dict);
@@ -506,13 +507,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   {
     printf("%s", buf);
   }
-  printf("print server response\n");
-  printf("%s", buf);
-  while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
-  {
-    printf("%s", buf);
-  }
-
+  printf("end server response\n");
   /* Read request line and headers */
 
   body = strdup("alice\nbob");
