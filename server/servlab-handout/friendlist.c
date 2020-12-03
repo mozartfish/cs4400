@@ -25,6 +25,7 @@ static void serve_unfriend(int fd, dictionary_t *query);
 static void serve_introduce(int fd, dictionary_t *query);
 static void add_friends(char *friend_one, char *friend_two);
 static void remove_friends(char *friend_one, char *friend_two);
+static void *multi_connect(void *fd); // function for starting a thread
 
 /**Global variables */
 dictionary_t *user_dict; // a global dictionary for keeping track of clients and their friends
@@ -47,6 +48,8 @@ int main(int argc, char **argv)
 
   // initialize a new dictionary for keeping track of friends
   user_dict = make_dictionary(COMPARE_CASE_INSENS, free);
+  // create a new thread object
+  pthread_t th;
 
   /* Don't kill the server if there's an error, because
      we want to survive errors due to a client. But we
@@ -65,10 +68,23 @@ int main(int argc, char **argv)
       Getnameinfo((SA *)&clientaddr, clientlen, hostname, MAXLINE,
                   port, MAXLINE, 0);
       printf("Accepted connection from (%s, %s)\n", hostname, port);
-      doit(connfd);
-      Close(connfd);
+
+      int *connfd_p;
+      connfd_p = malloc(sizeof(int));
+      *connfd_p = connfd;
+      pthread_create(&th, NULL, multi_connect, connfd_p);
+      pthread_detach(th);
     }
   }
+}
+
+static void *multi_connect(void *connfd_p)
+{
+  int connfd = *(int *)(connfd_p);
+  free(connfd_p);
+  doit(connfd);
+  Close(connfd);
+  return NULL;
 }
 
 /*
