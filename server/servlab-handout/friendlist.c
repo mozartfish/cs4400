@@ -488,10 +488,8 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   char buf[MAXLINE], *method, *uri, *version;
   rio_t rio;
-  dictionary_t *headers, *query;
-
   /* Read request line and headers */
-  Rio_readinitb(&rio, fd);
+  Rio_readinitb(&rio, client_fd);
   if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
     return;
   printf("print server response\n");
