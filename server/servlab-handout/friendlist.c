@@ -270,7 +270,7 @@ static void serve_friends(int fd, dictionary_t *query)
   // if the user has no friends, the dictionary value will be null
   if (user_friends_dict != NULL)
   {
-    const char * const * friends = (const char * const *)(dictionary_keys(user_friends_dict));
+    const char *const *friends = (const char *const *)(dictionary_keys(user_friends_dict));
     body = join_strings(friends, '\n');
   }
 
@@ -333,7 +333,7 @@ static void serve_befriend(int fd, dictionary_t *query)
 
   // get the user friends
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
-  const char * const * friend_names_list = (const char * const *)dictionary_keys(user_friends);
+  const char *const *friend_names_list = (const char *const *)dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
 
   len = strlen(body);
@@ -391,7 +391,7 @@ static void serve_unfriend(int fd, dictionary_t *query)
 
   // get the user friends
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
-  const char * const * friend_names_list = (const char * const *)dictionary_keys(user_friends);
+  const char *const *friend_names_list = (const char *const *)dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
 
   len = strlen(body);
@@ -468,7 +468,7 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // make the friend friends with all of the users friends
   dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
-  char** friend_friends_list = (char**)(dictionary_keys(friend_friends));
+  char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
   int h;
   for (h = 0; friend_friends_list[h] != NULL; ++h)
   {
@@ -499,10 +499,45 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_writen(client_fd, buffer, strlen(buffer));
   shutdown(client_fd, SHUT_WR);
 
-  char buf[MAXLINE];
+  char buf[MAXLINE], *status, *version, *description;
   rio_t rio;
+  dictionary_t *headers;
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
+  if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
+  {
+    clienterror(client_fd, "GET", "400", "Bad Request", "Empty Buffer");
+  }
+  // parse the status information
+  if (!parse_status_line(buf, &status, &version, &description))
+  {
+    clienterror(client_fd, status, "400", "Bad Request",
+                "Friendlist did not recognize the status");
+  }
+  else
+  {
+    if (strcasecmp(version, "HTTP/1.0") && strcasecmp(version, "HTTP/1.1"))
+    {
+      clienterror(client_fd, version, "501", "Not Implemented",
+                  "Friendlist does not implement that version");
+    }
+    else if (strcasecmp(status, "200") && strcasecmp(description, "OK"))
+    {
+      clienterror(client_fd, status, "501", "Connection Problem",
+                  "Something went wrong with the connection");
+    }
+    else
+    {
+      headers = read_requesthdrs(&rio);
+
+      while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+      {
+        printf("%s", buf);
+      }
+      printf("end server response\n");
+    }
+  }
+
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);

@@ -1,17 +1,30 @@
 // TEST CASES FOR ASSIGNMENT 6
+// add friends for alice on 2115
+curl "http://localhost:2115/befriend?user=alice&friends=bob%0Acarol"
 
-/friends?user=‹user› (should return empty on first try)
-http://lab1-15.eng.utah.edu:2115/friends?user=alice
-http://lab1-15.eng.utah.edu:2116/friends?user=harold
+// add friends for harold on 2116
+curl "http://localhost:2116/befriend?user=harold&friends=bill%0Ajoe"
 
-/befriend?user=‹user›&friends=‹friends›
-http://lab1-15.eng.utah.edu:2115/befriend?user=alice&friends=bob%0Acarol
-http://lab1-15.eng.utah.edu:2116/befriend?user=harold&friends=joe%0Abill
+// try to communicate between the two with curl
+curl "http://localhost:2116/introduce?user=harold&friend=alice&host=localhost&port=2115"
 
 
 
-// introduc tests
-http://lab1-15.eng.utah.edu:2115/introduce?user=alex&friend=harold&host=2115&port=42
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // simple tests
 racket simple.rkt localhost 2115
@@ -26,5 +39,4 @@ racket simple.rkt --multi --introduce localhost 2115
 racket trouble.rkt localhost 2115
 
 
-// curl commands 
-curl http://localhost:2116/introduce?user=harold&friend=alice&host=localhost&port=2115
+
