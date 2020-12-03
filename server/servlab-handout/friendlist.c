@@ -486,7 +486,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   int client_fd = Open_clientfd(host, port);
   // create a new character buffer
   char buffer[MAXBUF];
-  sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", query_encode(friend));
+  sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
   printf("print request\n");
   printf("%s", buffer);
   Rio_writen(client_fd, buffer, strlen(buffer));
