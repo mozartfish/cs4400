@@ -538,11 +538,11 @@ static void serve_introduce(int fd, dictionary_t *query)
     }
   }
 
-  while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
-  {
-    printf("%s", buf);
-  }
-  printf("end server response\n");
+  // while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+  // {
+  //   printf("%s", buf);
+  // }
+  // printf("end server response\n");
   /* Read request line and headers */
 
   body = strdup("alice\nbob");
