@@ -18,7 +18,7 @@ static void read_postquery(rio_t *rp, dictionary_t *headers, dictionary_t *d);
 static void clienterror(int fd, char *cause, char *errnum,
                         char *shortmsg, char *longmsg);
 static void print_stringdictionary(dictionary_t *d);
-static void serve_request(int fd, dictionary_t *query);
+// static void serve_request(int fd, dictionary_t *query);
 /** additional functions tu support the client requests */
 static void serve_friends(int fd, dictionary_t *query);
 static void serve_befriend(int fd, dictionary_t *query);
@@ -159,11 +159,11 @@ void doit(int fd)
         printf("call introduce handler\n");
         serve_introduce(fd, query);
       }
-      else
-      {
-        printf("call serve request handle\n");
-        serve_request(fd, query);
-      }
+      // else
+      // {
+      //   printf("call serve request handle\n");
+      //   serve_request(fd, query);
+      // }
 
       /* Clean up */
       free_dictionary(query);
