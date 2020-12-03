@@ -274,6 +274,9 @@ static void serve_friends(int fd, dictionary_t *query)
     body = join_strings(friends, '\n');
   }
 
+  printf("print the body\n");
+  printf("%s", body);
+
   len = strlen(body);
 
   /* Send response headers to client */
@@ -450,7 +453,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   add_friends("pranav", "eunice");
   add_friends("pranav", "austin");
   printf("end friends for pranav\n");
-  printf("add friends for alice");
+  printf("add friends for alice\n");
   add_friends("alice", "bob");
   add_friends("alice", "bill");
   add_friends("alice", "harold");
