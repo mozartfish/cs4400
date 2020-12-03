@@ -18,6 +18,7 @@ static void read_postquery(rio_t *rp, dictionary_t *headers, dictionary_t *d);
 static void clienterror(int fd, char *cause, char *errnum,
                         char *shortmsg, char *longmsg);
 static void print_stringdictionary(dictionary_t *d);
+static void serve_request(int fd, dictionary_t *query);
 /** additional functions tu support the client requests */
 static void serve_friends(int fd, dictionary_t *query);
 static void serve_befriend(int fd, dictionary_t *query);
@@ -157,6 +158,11 @@ void doit(int fd)
       {
         printf("call introduce handler\n");
         serve_introduce(fd, query);
+      }
+      else
+      {
+        printf("call serve request handle\n");
+        serve_request(fd, query);
       }
 
       /* Clean up */
@@ -472,23 +478,147 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // establish a new connection with the server
   int client_fd = Open_clientfd(host, port);
-  // create a new character buffer
-  char buffer[MAXBUF];
-  sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", query_encode(friend));
-  Rio_writen(client_fd, buffer, strlen(buffer));
-  Shutdown(client_fd, SHUT_WR);
 
-  char buf[MAXLINE];
-  size_t n;
-  rio_t rio;
+  // close the connection
+  Close(client_fd);
 
   /* Read request line and headers */
-  Rio_readinitb(&rio, client_fd);
-  while ((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0)
-  {
-    printf("server received %ld bytes\n", n);
-    Rio_writen(client_fd, buf, n);
+
+
+    body = strdup("alice\nbob");
+
+    len = strlen(body);
+
+    /* Send response headers to client */
+    header = ok_header(len, "text/html; charset=utf-8");
+    Rio_writen(fd, header, strlen(header));
+    printf("Response headers:\n");
+    printf("%s", header);
+
+    free(header);
+
+    /* Send response body to client */
+    Rio_writen(fd, body, len);
+
+    free(body);
+    // close the port
+    Close(client_fd);
   }
+
+  /** Function that adds friends to the global dictionary if they do not exist*/
+  static void add_friends(char *user_one, char *user_two)
+  {
+    // check for user one
+    if ((dictionary_t *)(dictionary_get(user_dict, user_one)) == NULL)
+    {
+      dictionary_t *new_user_one = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
+      dictionary_set(user_dict, user_one, new_user_one);
+    }
+
+    // check for user two
+    if ((dictionary_t *)(dictionary_get(user_dict, user_two)) == NULL)
+    {
+      dictionary_t *new_user_two = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
+      dictionary_set(user_dict, user_two, new_user_two);
+    }
+
+    // check if the names are duplicates
+    // the most recent user gets added
+    if (strcmp(user_one, user_two) == 0)
+    {
+      return;
+    }
+    // add user two to user one dictionary
+    dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_one)), user_two, NULL);
+
+    // add user one to user two dictionary
+    dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one, NULL);
+    return;
+  }
+
+  /** Function that removes friends from the global dictionary */
+  static void remove_friends(char *user_one, char *user_two)
+  {
+    // check if the user one dictionary is null
+    if (dictionary_get(user_dict, user_one) == NULL)
+    {
+      return;
+    }
+
+    // check if the user two dictionary is null
+    if (dictionary_get(user_dict, user_two) == NULL)
+    {
+      return;
+    }
+
+    // CHECK 1 :  user names are the same
+    if (strcmp(user_one, user_two) == 0)
+    {
+      return;
+    }
+
+    // get the friends of user_one and user_two
+    // add user two to user one dictionary
+    dictionary_remove((dictionary_t *)(dictionary_get(user_dict, user_one)), user_two);
+
+    // add user one to user two dictionary
+    dictionary_remove((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one);
+    return;
+  }
+
+  /*
+ * clienterror - returns an error message to the client
+ */
+  void clienterror(int fd, char *cause, char *errnum,
+                   char *shortmsg, char *longmsg)
+  {
+    size_t len;
+    char *header, *body, *len_str;
+
+    body = append_strings("<html><title>Friendlist Error</title>",
+                          "<body bgcolor="
+                          "ffffff"
+                          ">\r\n",
+                          errnum, " ", shortmsg,
+                          "<p>", longmsg, ": ", cause,
+                          "<hr><em>Friendlist Server</em>\r\n",
+                          NULL);
+    len = strlen(body);
+
+    /* Print the HTTP response */
+    header = append_strings("HTTP/1.0 ", errnum, " ", shortmsg, "\r\n",
+                            "Content-type: text/html; charset=utf-8\r\n",
+                            "Content-length: ", len_str = to_string(len), "\r\n\r\n",
+                            NULL);
+    free(len_str);
+
+    Rio_writen(fd, header, strlen(header));
+    Rio_writen(fd, body, len);
+
+    free(header);
+    free(body);
+  }
+
+  static void print_stringdictionary(dictionary_t * d)
+  {
+    int i, count;
+
+    count = dictionary_count(d);
+    for (i = 0; i < count; i++)
+    {
+      printf("%s=%s\n",
+             dictionary_key(d, i),
+             (const char *)dictionary_value(d, i));
+    }
+    printf("\n");
+  }
+  /*
+ * serve_request - example request handler
+ */
+  static void serve_request(int fd, dictionary_t *query)
+  {
+    size_t len;
+    char *body, *header;
 
     body = strdup("alice\nbob");
 
@@ -507,136 +637,3 @@ static void serve_introduce(int fd, dictionary_t *query)
 
     free(body);
   }
-
-/** Function that adds friends to the global dictionary if they do not exist*/
-static void add_friends(char *user_one, char *user_two)
-{
-  // check for user one
-  if ((dictionary_t *)(dictionary_get(user_dict, user_one)) == NULL)
-  {
-    dictionary_t *new_user_one = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-    dictionary_set(user_dict, user_one, new_user_one);
-  }
-
-  // check for user two
-  if ((dictionary_t *)(dictionary_get(user_dict, user_two)) == NULL)
-  {
-    dictionary_t *new_user_two = (dictionary_t *)(make_dictionary(COMPARE_CASE_SENS, free));
-    dictionary_set(user_dict, user_two, new_user_two);
-  }
-
-  // check if the names are duplicates
-  // the most recent user gets added
-  if (strcmp(user_one, user_two) == 0)
-  {
-    return;
-  }
-  // add user two to user one dictionary
-  dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_one)), user_two, NULL);
-
-  // add user one to user two dictionary
-  dictionary_set((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one, NULL);
-  return;
-}
-
-/** Function that removes friends from the global dictionary */
-static void remove_friends(char *user_one, char *user_two)
-{
-  // check if the user one dictionary is null
-  if (dictionary_get(user_dict, user_one) == NULL)
-  {
-    return;
-  }
-
-  // check if the user two dictionary is null
-  if (dictionary_get(user_dict, user_two) == NULL)
-  {
-    return;
-  }
-
-  // CHECK 1 :  user names are the same
-  if (strcmp(user_one, user_two) == 0)
-  {
-    return;
-  }
-
-  // get the friends of user_one and user_two
-  // add user two to user one dictionary
-  dictionary_remove((dictionary_t *)(dictionary_get(user_dict, user_one)), user_two);
-
-  // add user one to user two dictionary
-  dictionary_remove((dictionary_t *)(dictionary_get(user_dict, user_two)), user_one);
-  return;
-}
-
-/*
- * clienterror - returns an error message to the client
- */
-void clienterror(int fd, char *cause, char *errnum,
-                 char *shortmsg, char *longmsg)
-{
-  size_t len;
-  char *header, *body, *len_str;
-
-  body = append_strings("<html><title>Friendlist Error</title>",
-                        "<body bgcolor="
-                        "ffffff"
-                        ">\r\n",
-                        errnum, " ", shortmsg,
-                        "<p>", longmsg, ": ", cause,
-                        "<hr><em>Friendlist Server</em>\r\n",
-                        NULL);
-  len = strlen(body);
-
-  /* Print the HTTP response */
-  header = append_strings("HTTP/1.0 ", errnum, " ", shortmsg, "\r\n",
-                          "Content-type: text/html; charset=utf-8\r\n",
-                          "Content-length: ", len_str = to_string(len), "\r\n\r\n",
-                          NULL);
-  free(len_str);
-
-  Rio_writen(fd, header, strlen(header));
-  Rio_writen(fd, body, len);
-
-  free(header);
-  free(body);
-}
-
-static void print_stringdictionary(dictionary_t *d)
-{
-  int i, count;
-
-  count = dictionary_count(d);
-  for (i = 0; i < count; i++)
-  {
-    printf("%s=%s\n",
-           dictionary_key(d, i),
-           (const char *)dictionary_value(d, i));
-  }
-  printf("\n");
-}
-/*
- * serve_request - example request handler
- */
-// static void serve_request(int fd, dictionary_t *query)
-// {
-//   size_t len;
-//   char *body, *header;
-
-//   body = strdup("alice\nbob");
-
-//   len = strlen(body);
-
-//   /* Send response headers to client */
-//   header = ok_header(len, "text/html; charset=utf-8");
-//   Rio_writen(fd, header, strlen(header));
-//   printf("Response headers:\n");
-//   printf("%s", header);
-
-//   free(header);
-
-//   /* Send response body to client */
-//   Rio_writen(fd, body, len);
-
-//   free(body);
-// }

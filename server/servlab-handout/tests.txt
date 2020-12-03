@@ -31,3 +31,6 @@ racket simple.rkt --multi --introduce localhost 2115
 // trouble 
 racket trouble.rkt localhost 2115
 
+
+// curl commands 
+curl "http://localhost:8090/introduce?user=me&friend=alice&host=localhost&port=8090"
