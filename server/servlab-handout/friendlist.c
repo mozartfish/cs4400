@@ -498,6 +498,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   printf("%s", buffer);
   Rio_writen(client_fd, buffer, strlen(buffer));
   shutdown(client_fd, SHUT_WR);
+  printf("hello\n");
 
   char buf[MAXLINE], *status, *version, *description;
   rio_t rio;
