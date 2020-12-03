@@ -274,8 +274,8 @@ static void serve_friends(int fd, dictionary_t *query)
     body = join_strings(friends, '\n');
   }
 
-  printf("print the body\n");
-  printf("%s", body);
+  // printf("print the body\n");
+  // printf("%s", body);
 
   len = strlen(body);
 

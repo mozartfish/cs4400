@@ -1,19 +1,13 @@
 // TEST CASES FOR ASSIGNMENT 6
 
 /friends?user=‹user› (should return empty on first try)
-http:lab1-15.eng.utah.edu:2115/friends?user=harold
-http:lab1-15.eng.utah.edu:2115/friends?user=pranav
+http://lab1-15.eng.utah.edu:2115/friends?user=alice
+http://lab1-15.eng.utah.edu:2116/friends?user=harold
 
 /befriend?user=‹user›&friends=‹friends›
-http:lab1-15.eng.utah.edu:2115/befriend?user=harold&friends=pranav%0A
-harold -> pranav
-pranav -> harold
+http://lab1-15.eng.utah.edu:2115/befriend?user=alice&friends=bob%0Acarol
+http://lab1-15.eng.utah.edu:2116/befriend?user=harold&friends=joe%0Abill
 
-http://lab1-15.eng.utah.edu:2115/befriend?user=alice&friend=bob
-harold -> pranav
-alex 
-pranav -> harold
-alex -> harold 
 
 
 // introduc tests
@@ -33,4 +27,4 @@ racket trouble.rkt localhost 2115
 
 
 // curl commands 
-curl http://localhost:2116/introduce?user=me&friend=alice&host=localhost&port=2115
+curl http://localhost:2116/introduce?user=harold&friend=alice&host=localhost&port=2115
