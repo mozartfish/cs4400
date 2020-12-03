@@ -467,7 +467,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   add_friends(user, friend);
   // make the friend friends with all of the users friends
   dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
-  const char** friend_friends_list = (char **)(dictionary_keys(friend_friends));
+  const char** friend_friends_list = (char**)(dictionary_keys(friend_friends));
   int h;
   for (h = 0; friend_friends_list[h] != NULL; ++h)
   {
