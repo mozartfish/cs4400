@@ -486,7 +486,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_writen(client_fd, buffer, strlen(buffer));
   // Shutdown(client_fd, SHUT_WR);
 
-  char buf[MAXLINE], *method, *uri, *version;
+  char buf[MAXLINE];
   rio_t rio;
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
