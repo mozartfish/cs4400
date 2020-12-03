@@ -447,21 +447,21 @@ static void serve_introduce(int fd, dictionary_t *query)
   // for debugging
   // add a user and friends
   // printf("populate dictionary first\n");
-  printf("add friends for pranav\n");
-  add_friends("pranav", "jeff");
-  add_friends("pranav", "alex");
-  add_friends("pranav", "eunice");
-  add_friends("pranav", "austin");
-  printf("end friends for pranav\n");
-  printf("add friends for alice\n");
-  add_friends("alice", "bob");
-  add_friends("alice", "bill");
-  add_friends("alice", "harold");
-  add_friends("alice", "joe");
-  printf("end friends for alice\n");
+  // printf("add friends for pranav\n");
+  // add_friends("pranav", "jeff");
+  // add_friends("pranav", "alex");
+  // add_friends("pranav", "eunice");
+  // add_friends("pranav", "austin");
+  // printf("end friends for pranav\n");
+  // printf("add friends for alice\n");
+  // add_friends("alice", "bob");
+  // add_friends("alice", "bill");
+  // add_friends("alice", "harold");
+  // add_friends("alice", "joe");
+  // printf("end friends for alice\n");
 
-  printf("user: %s\n", user);
-  printf("friend: %s\n", friend);
+  // printf("user: %s\n", user);
+  // printf("friend: %s\n", friend);
 
   // make the user and friend friends
   add_friends(user, friend);
@@ -473,20 +473,20 @@ static void serve_introduce(int fd, dictionary_t *query)
   {
     add_friends(friend_friends_list[h], friend);
   }
-  printf("check the dictionary\n");
-  char **users = dictionary_keys(user_dict);
-  int p;
-  int g;
-  for (p = 0; users[p] != NULL; ++p)
-  {
-    printf("name : %s\n", users[p]);
-    dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
-    char **friends_list = dictionary_keys(friend_friends_new);
-    for (g = 0; friends_list[g] != NULL; ++g)
-    {
-      printf("friend: %s\n", friends_list[g]);
-    }
-  }
+  // printf("check the dictionary\n");
+  // char **users = dictionary_keys(user_dict);
+  // int p;
+  // int g;
+  // for (p = 0; users[p] != NULL; ++p)
+  // {
+  //   printf("name : %s\n", users[p]);
+  //   dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
+  //   char **friends_list = dictionary_keys(friend_friends_new);
+  //   for (g = 0; friends_list[g] != NULL; ++g)
+  //   {
+  //     printf("friend: %s\n", friends_list[g]);
+  //   }
+  // }
 
   // establish a new connection with the server
   int client_fd = Open_clientfd(host, port);
