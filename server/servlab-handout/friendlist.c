@@ -448,11 +448,10 @@ static void serve_introduce(int fd, dictionary_t *query)
   add_friends("pranav", "alex");
   add_friends("pranav", "eunice");
   add_friends("pranav", "austin");
-
-  // add_friends("alice", "bob");
-  // add_friends("alice", "bill");
-  // add_friends("alice", "harold");
-  // add_friends("alice", "joe");
+  add_friends("alice", "bob");
+  add_friends("alice", "bill");
+  add_friends("alice", "harold");
+  add_friends("alice", "joe");
 
   printf("user: %s\n", user);
   printf("friend: %s\n", friend);
@@ -524,7 +523,7 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   free(body);
   // close the port
-  Close(client_fd);
+  // Close(client_fd);
 }
 
 /** Function that adds friends to the global dictionary if they do not exist*/
