@@ -629,25 +629,25 @@ static void serve_introduce(int fd, dictionary_t *query)
   /*
  * serve_request - example request handler
  */
-  static void serve_request(int fd, dictionary_t *query)
-  {
-    size_t len;
-    char *body, *header;
+  // static void serve_request(int fd, dictionary_t *query)
+  // {
+  //   size_t len;
+  //   char *body, *header;
 
-    body = strdup("alice\nbob");
+  //   body = strdup("alice\nbob");
 
-    len = strlen(body);
+  //   len = strlen(body);
 
-    /* Send response headers to client */
-    header = ok_header(len, "text/html; charset=utf-8");
-    Rio_writen(fd, header, strlen(header));
-    printf("Response headers:\n");
-    printf("%s", header);
+  //   /* Send response headers to client */
+  //   header = ok_header(len, "text/html; charset=utf-8");
+  //   Rio_writen(fd, header, strlen(header));
+  //   printf("Response headers:\n");
+  //   printf("%s", header);
 
-    free(header);
+  //   free(header);
 
-    /* Send response body to client */
-    Rio_writen(fd, body, len);
+  //   /* Send response body to client */
+  //   Rio_writen(fd, body, len);
 
-    free(body);
-  }
+  //   free(body);
+  // }
