@@ -494,7 +494,6 @@ static void serve_introduce(int fd, dictionary_t *query)
     return;
   printf("print server response\n");
   printf("%s", buf);
-  Close(client_fd);
 
   /* Read request line and headers */
 
