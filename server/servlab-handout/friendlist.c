@@ -440,21 +440,21 @@ static void serve_introduce(int fd, dictionary_t *query)
   // printf("populate dictionary first\n");
   // add_friends("pranav", "jeff");
   // add_friends("pranav", "alex");
-  // add_friends("pranav", "bob");
-  // add_friends("pranav", "bill");
+  // add_friends("pranav", "eunice");
+  // add_friends("pranav", "austin");
   // printf("user: %s\n", user);
   // printf("friend: %s\n", friend);
 
-  // make the user and friend friends
-  add_friends(user, friend);
-  // make the friend friends with all of the users friends
-  dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
-  char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
-  int h;
-  for (h = 0; friend_friends_list[h] != NULL; ++h)
-  {
-    add_friends(friend_friends_list[h], friend);
-  }
+  // // make the user and friend friends
+  // add_friends(user, friend);
+  // // make the friend friends with all of the users friends
+  // dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
+  // char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
+  // int h;
+  // for (h = 0; friend_friends_list[h] != NULL; ++h)
+  // {
+  //   add_friends(friend_friends_list[h], friend);
+  // }
   // printf("check the dictionary\n");
   // char **users = dictionary_keys(user_dict);
   // int p;
@@ -472,25 +472,42 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // establish a new connection with the server
   int client_fd = Open_clientfd(host, port);
+  // create a new character buffer
   char buffer[MAXBUF];
+  sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", query_encode(friend));
+  Rio_writen(client_fd, buffer, strlen(buffer));
+  Shutdown(client_fd, SHUT_WR);
 
-  body = strdup("alice\nbob");
+  char buf[MAXLINE];
+  size_t n;
+  rio_t rio;
+  dictionary_t *headers, *query;
 
-  len = strlen(body);
+  /* Read request line and headers */
+  Rio_readinitb(&rio, client_fd);
+  while ((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0)
+  {
+    printf("server received %ld bytes\n", n);
+    Rio_writen(client_fd, buf, n);
+  }
 
-  /* Send response headers to client */
-  header = ok_header(len, "text/html; charset=utf-8");
-  Rio_writen(fd, header, strlen(header));
-  printf("Response headers:\n");
-  printf("%s", header);
+    body = strdup("alice\nbob");
 
-  free(header);
+    len = strlen(body);
 
-  /* Send response body to client */
-  Rio_writen(fd, body, len);
+    /* Send response headers to client */
+    header = ok_header(len, "text/html; charset=utf-8");
+    Rio_writen(fd, header, strlen(header));
+    printf("Response headers:\n");
+    printf("%s", header);
 
-  free(body);
-}
+    free(header);
+
+    /* Send response body to client */
+    Rio_writen(fd, body, len);
+
+    free(body);
+  }
 
 /** Function that adds friends to the global dictionary if they do not exist*/
 static void add_friends(char *user_one, char *user_two)
