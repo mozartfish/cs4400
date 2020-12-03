@@ -499,7 +499,6 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_writen(client_fd, buffer, strlen(buffer));
   shutdown(client_fd, SHUT_WR);
   printf("hello\n");
-  return;
 
   char buf[MAXLINE], *status, *version, *description;
   rio_t rio;
@@ -547,6 +546,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   // printf("end server response\n");
   /* Read request line and headers */
 
+  return;
   body = strdup("alice\nbob");
 
   len = strlen(body);
