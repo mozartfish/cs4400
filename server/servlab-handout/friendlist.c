@@ -270,7 +270,7 @@ static void serve_friends(int fd, dictionary_t *query)
   // if the user has no friends, the dictionary value will be null
   if (user_friends_dict != NULL)
   {
-    const char **friends = (const char * const *)(dictionary_keys(user_friends_dict));
+    const char * const * friends = (const char * const *)(dictionary_keys(user_friends_dict));
     body = join_strings(friends, '\n');
   }
 
@@ -333,7 +333,7 @@ static void serve_befriend(int fd, dictionary_t *query)
 
   // get the user friends
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
-  const char **friend_names_list = dictionary_keys(user_friends);
+  const char * const * friend_names_list = (const char * const *)dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
 
   len = strlen(body);
@@ -391,7 +391,7 @@ static void serve_unfriend(int fd, dictionary_t *query)
 
   // get the user friends
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
-  const char **friend_names_list = dictionary_keys(user_friends);
+  const char * const * friend_names_list = (const char * const *)dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
 
   len = strlen(body);
@@ -467,7 +467,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   add_friends(user, friend);
   // make the friend friends with all of the users friends
   dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
-  char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
+  const char** friend_friends_list = (char **)(dictionary_keys(friend_friends));
   int h;
   for (h = 0; friend_friends_list[h] != NULL; ++h)
   {
