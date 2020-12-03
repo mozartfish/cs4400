@@ -481,7 +481,6 @@ static void serve_introduce(int fd, dictionary_t *query)
   char buf[MAXLINE];
   size_t n;
   rio_t rio;
-  dictionary_t *headers, *query;
 
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
