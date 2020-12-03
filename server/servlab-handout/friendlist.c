@@ -449,61 +449,61 @@ static void serve_introduce(int fd, dictionary_t *query)
   add_friends("pranav", "eunice");
   add_friends("pranav", "austin");
 
-  add_friends("alice", "bob");
-  add_friends("alice", "bill");
-  add_friends("alice", "harold");
-  add_friends("alice", "joe");
+  // add_friends("alice", "bob");
+  // add_friends("alice", "bill");
+  // add_friends("alice", "harold");
+  // add_friends("alice", "joe");
 
   printf("user: %s\n", user);
   printf("friend: %s\n", friend);
 
-  // // make the user and friend friends
-  // add_friends(user, friend);
-  // // make the friend friends with all of the users friends
-  // dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
-  // char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
-  // int h;
-  // for (h = 0; friend_friends_list[h] != NULL; ++h)
-  // {
-  //   add_friends(friend_friends_list[h], friend);
-  // }
-  // printf("check the dictionary\n");
-  // char **users = dictionary_keys(user_dict);
-  // int p;
-  // int g;
-  // for (p = 0; users[p] != NULL; ++p)
-  // {
-  //   printf("name : %s\n", users[p]);
-  //   dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
-  //   char **friends_list = dictionary_keys(friend_friends_new);
-  //   for (g = 0; friends_list[g] != NULL; ++g)
-  //   {
-  //     printf("friend: %s\n", friends_list[g]);
-  //   }
-  // }
-
-  // establish a new connection with the server
-  int client_fd = Open_clientfd(host, port);
-  // create a new character buffer
-  char buffer[MAXBUF];
-  sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
-  printf("print request\n");
-  printf("%s", buffer);
-  Rio_writen(client_fd, buffer, strlen(buffer));
-  shutdown(client_fd, SHUT_WR);
-
-  char buf[MAXLINE];
-  rio_t rio;
-  /* Read request line and headers */
-  Rio_readinitb(&rio, client_fd);
-  if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
-    return;
-  printf("print server response\n");
-  printf("%s", buf);
-  if (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+  // make the user and friend friends
+  add_friends(user, friend);
+  // make the friend friends with all of the users friends
+  dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
+  char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
+  int h;
+  for (h = 0; friend_friends_list[h] != NULL; ++h)
   {
-    printf("%s", buf);
+    add_friends(friend_friends_list[h], friend);
   }
+  printf("check the dictionary\n");
+  char **users = dictionary_keys(user_dict);
+  int p;
+  int g;
+  for (p = 0; users[p] != NULL; ++p)
+  {
+    printf("name : %s\n", users[p]);
+    dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
+    char **friends_list = dictionary_keys(friend_friends_new);
+    for (g = 0; friends_list[g] != NULL; ++g)
+    {
+      printf("friend: %s\n", friends_list[g]);
+    }
+  }
+
+  // // establish a new connection with the server
+  // int client_fd = Open_clientfd(host, port);
+  // // create a new character buffer
+  // char buffer[MAXBUF];
+  // sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
+  // printf("print request\n");
+  // printf("%s", buffer);
+  // Rio_writen(client_fd, buffer, strlen(buffer));
+  // shutdown(client_fd, SHUT_WR);
+
+  // char buf[MAXLINE];
+  // rio_t rio;
+  // /* Read request line and headers */
+  // Rio_readinitb(&rio, client_fd);
+  // if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
+  //   return;
+  // printf("print server response\n");
+  // printf("%s", buf);
+  // if (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+  // {
+  //   printf("%s", buf);
+  // }
 
   /* Read request line and headers */
 
