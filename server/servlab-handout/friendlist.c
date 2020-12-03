@@ -493,17 +493,19 @@ static void serve_introduce(int fd, dictionary_t *query)
   printf("print request\n");
   printf("%s", buffer);
   Rio_writen(client_fd, buffer, strlen(buffer));
-  // shutdown(client_fd, SHUT_WR);
+  shutdown(client_fd, SHUT_WR);
 
   char buf[MAXLINE];
   rio_t rio;
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
-  if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
-    return;
+  while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+  {
+    printf("%s", buf);
+  }
   printf("print server response\n");
   printf("%s", buf);
-  if (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+  while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);
   }
