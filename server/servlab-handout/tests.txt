@@ -33,4 +33,4 @@ racket trouble.rkt localhost 2115
 
 
 // curl commands 
-curl "http://localhost:8090/introduce?user=me&friend=alice&host=localhost&port=8090"
+curl http://localhost:2116/introduce?user=me&friend=alice&host=localhost&port=2115

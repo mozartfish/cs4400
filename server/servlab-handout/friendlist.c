@@ -478,11 +478,28 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // establish a new connection with the server
   int client_fd = Open_clientfd(host, port);
+  // create a new character buffer
+  char buffer[MAXBUF];
+  sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", query_encode(friend));
+  printf("print request\n");
+  printf("%s", buffer);
+  Rio_writen(client_fd, buffer, strlen(buffer));
+  // Shutdown(client_fd, SHUT_WR);
 
-  // close the connection
+  char buf[MAXLINE], *method, *uri, *version;
+  rio_t rio;
+  dictionary_t *headers, *query;
+
+  /* Read request line and headers */
+  Rio_readinitb(&rio, fd);
+  if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
+    return;
+  printf("print server response\n");
+  printf("%s", buf);
   Close(client_fd);
 
   /* Read request line and headers */
+
 
 
     body = strdup("alice\nbob");
