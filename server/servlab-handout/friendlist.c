@@ -444,14 +444,18 @@ static void serve_introduce(int fd, dictionary_t *query)
   // for debugging
   // add a user and friends
   // printf("populate dictionary first\n");
+  printf("add friends for pranav\n");
   add_friends("pranav", "jeff");
   add_friends("pranav", "alex");
   add_friends("pranav", "eunice");
   add_friends("pranav", "austin");
+  printf("end friends for pranav\n");
+  printf("add friends for alice");
   add_friends("alice", "bob");
   add_friends("alice", "bill");
   add_friends("alice", "harold");
   add_friends("alice", "joe");
+  printf("end friends for alice\n");
 
   printf("user: %s\n", user);
   printf("friend: %s\n", friend);
@@ -481,28 +485,28 @@ static void serve_introduce(int fd, dictionary_t *query)
     }
   }
 
-  // // establish a new connection with the server
-  // int client_fd = Open_clientfd(host, port);
-  // // create a new character buffer
-  // char buffer[MAXBUF];
-  // sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
-  // printf("print request\n");
-  // printf("%s", buffer);
-  // Rio_writen(client_fd, buffer, strlen(buffer));
+  // establish a new connection with the server
+  int client_fd = Open_clientfd(host, port);
+  // create a new character buffer
+  char buffer[MAXBUF];
+  sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
+  printf("print request\n");
+  printf("%s", buffer);
+  Rio_writen(client_fd, buffer, strlen(buffer));
   // shutdown(client_fd, SHUT_WR);
 
-  // char buf[MAXLINE];
-  // rio_t rio;
-  // /* Read request line and headers */
-  // Rio_readinitb(&rio, client_fd);
-  // if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
-  //   return;
-  // printf("print server response\n");
-  // printf("%s", buf);
-  // if (Rio_readlineb(&rio, buf, MAXLINE) != 0)
-  // {
-  //   printf("%s", buf);
-  // }
+  char buf[MAXLINE];
+  rio_t rio;
+  /* Read request line and headers */
+  Rio_readinitb(&rio, client_fd);
+  if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
+    return;
+  printf("print server response\n");
+  printf("%s", buf);
+  if (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+  {
+    printf("%s", buf);
+  }
 
   /* Read request line and headers */
 
@@ -523,7 +527,6 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   free(body);
   // close the port
-  // Close(client_fd);
 }
 
 /** Function that adds friends to the global dictionary if they do not exist*/
