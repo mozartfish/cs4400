@@ -504,7 +504,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);
-    buf[strlen(buf) - 1] = "\0";
+    buf[strlen(buf) - 1] = '\0';
     add_friends(friend, buf);
   }
 
@@ -527,7 +527,7 @@ static void serve_introduce(int fd, dictionary_t *query)
       char **friends_list = dictionary_keys(friend_friends_new);
       for (g = 0; friends_list[g] != NULL; ++g)
       {
-        printf("friend: %s", friends_list[g]);
+        printf("friend: %s\n", friends_list[g]);
       }
     }
   printf("end server response\n");
