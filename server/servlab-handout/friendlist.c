@@ -150,22 +150,14 @@ void doit(int fd)
       }
       else if (starts_with("/befriend", uri))
       {
-        // printf("call the befriend handler\n");
-        pthread_mutex_lock(&mutex);
         serve_befriend(fd, query);
-        pthread_mutex_unlock(&mutex);
       }
       else if (starts_with("/unfriend", uri))
       {
-        // printf("call the friend handler\n");
-        pthread_mutex_lock(&mutex);
         serve_unfriend(fd, query);
-        pthread_mutex_unlock(&mutex);
       }
       else if (starts_with("/introduce", uri))
       {
-        // printf("call introduce handler\n");
-  
         serve_introduce(fd, query);
       }
       // else
@@ -332,6 +324,8 @@ static void serve_befriend(int fd, dictionary_t *query)
 
   int i;
 
+  // lock some stuff
+  pthread_mutex_lock(&mutex);
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
   {
@@ -339,6 +333,8 @@ static void serve_befriend(int fd, dictionary_t *query)
     char *friend = friend_list[i];
     add_friends(user, friend);
   }
+  // unlock some stuff
+  pthread_mutex_unlock(&mutex);
 
   // get the user friends
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
@@ -390,6 +386,8 @@ static void serve_unfriend(int fd, dictionary_t *query)
 
   char **friend_list = split_string(friends, '\n');
 
+  // lock some stuff
+  pthread_mutex_lock(&mutex);
   // print information about the friends
   for (i = 0; friend_list[i] != NULL; ++i)
   {
@@ -397,6 +395,8 @@ static void serve_unfriend(int fd, dictionary_t *query)
     char *friend = friend_list[i];
     remove_friends(user, friend);
   }
+  // unlock some stuff
+  pthread_mutex_unlock(&mutex);
 
   // get the user friends
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
@@ -494,6 +494,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   }
 
   // now get all of friends and make them friends with the user
+  // lock some stuff
   pthread_mutex_lock(&mutex);
   char **friend_list = (char **)dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
   int i;
@@ -501,6 +502,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   {
     add_friends(user, friend_list[i]);
   }
+  // unlock some stuff
   pthread_mutex_unlock(&mutex);
 
   // printf("check the dictionary\n");
@@ -522,8 +524,6 @@ static void serve_introduce(int fd, dictionary_t *query)
   /* Read request line and headers */
   const char *const *friends = (const char *const *)(dictionary_keys(user_dict));
   body = join_strings(friends, '\n');
-
-  // body = strdup("alice\nbob");
 
   len = strlen(body);
 
