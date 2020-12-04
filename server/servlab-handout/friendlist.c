@@ -503,31 +503,31 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_readlineb(&rio, buf, MAXLINE);
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
-    // printf("%s", buf);
+    printf("%s", buf);
     add_friends(buf, friend);
   }
 
-  // now get all of friends and make them friends with the user
-  char **friend_list = dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
-  int i;
-  for (i = 0; friend_list[i] != NULL; ++i) {
-    add_friends(user, friend_list[i]);
-  }
+  // // now get all of friends and make them friends with the user
+  // char **friend_list = dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
+  // int i;
+  // for (i = 0; friend_list[i] != NULL; ++i) {
+  //   add_friends(user, friend_list[i]);
+  // }
 
-    printf("check the dictionary\n");
-    char **users = dictionary_keys(user_dict);
-    int p;
-    int g;
-    for (p = 0; users[p] != NULL; ++p)
-    {
-      printf("name : %s\n", users[p]);
-      dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
-      char **friends_list = dictionary_keys(friend_friends_new);
-      for (g = 0; friends_list[g] != NULL; ++g)
-      {
-        printf("friend: %s\n", friends_list[g]);
-      }
-    }
+  //   printf("check the dictionary\n");
+  //   char **users = dictionary_keys(user_dict);
+  //   int p;
+  //   int g;
+  //   for (p = 0; users[p] != NULL; ++p)
+  //   {
+  //     printf("name : %s\n", users[p]);
+  //     dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
+  //     char **friends_list = dictionary_keys(friend_friends_new);
+  //     for (g = 0; friends_list[g] != NULL; ++g)
+  //     {
+  //       printf("friend: %s\n", friends_list[g]);
+  //     }
+  //   }
     printf("end server response\n");
 
     /* Read request line and headers */
