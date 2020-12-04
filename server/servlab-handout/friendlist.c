@@ -475,17 +475,13 @@ static void serve_introduce(int fd, dictionary_t *query)
   // create a new character buffer
   char buffer[MAXBUF];
   sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
-  printf("print request\n");
-  printf("%s", buffer);
   Rio_writen(client_fd, buffer, strlen(buffer));
   shutdown(client_fd, SHUT_WR);
-  printf("end the buffer\n");
 
   char buf[MAXLINE];
   rio_t rio;
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
-  printf("print the buffer\n");
 
   // get the first line and make sure the connection is 200
   Rio_readlineb(&rio, buf, MAXLINE);
