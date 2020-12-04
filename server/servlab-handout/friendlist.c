@@ -165,9 +165,8 @@ void doit(int fd)
       else if (starts_with("/introduce", uri))
       {
         // printf("call introduce handler\n");
-        pthread_mutex_lock(&mutex);
+  
         serve_introduce(fd, query);
-        pthread_mutex_unlock(&mutex);
       }
       // else
       // {
@@ -494,12 +493,14 @@ static void serve_introduce(int fd, dictionary_t *query)
   }
 
   // now get all of friends and make them friends with the user
+  pthread_mutex_lock(&mutex);
   char **friend_list = (char **)dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
   int i;
   for (i = 0; friend_list[i] != NULL; ++i)
   {
     add_friends(user, friend_list[i]);
   }
+  pthread_mutex_unlock(&mutex);
 
   // printf("check the dictionary\n");
   // char **users = dictionary_keys(user_dict);
