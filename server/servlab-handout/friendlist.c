@@ -487,9 +487,13 @@ static void serve_introduce(int fd, dictionary_t *query)
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
   printf("print the buffer\n");
+
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);
+    const char** string_arr = split_string(buf, ' ');
+    printf(string_arr[1]);
+    printf("finished\n")
   }
   // printf("end server response\n");
   /* Read request line and headers */
