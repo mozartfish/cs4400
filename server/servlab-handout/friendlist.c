@@ -504,7 +504,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);
-    // printf("hello\n");
+    buf[strlen(buf) - 1] = "\0";
     add_friends(friend, buf);
   }
 
