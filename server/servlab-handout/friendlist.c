@@ -503,7 +503,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_readlineb(&rio, buf, MAXLINE);
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
-    printf("%s\n", buf);
+    printf("%s", buf);
     printf("hello\n");
   }
 
