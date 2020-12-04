@@ -487,20 +487,25 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_readinitb(&rio, client_fd);
   printf("print the buffer\n");
 
-// get the
+  // get the first line and make sure the connection is 200
   Rio_readlineb(&rio, buf, MAXLINE);
   const char **string_arr = (char **)(split_string(buf, ' '));
-  printf("The HTTP request code\n");
-  printf(string_arr[1]);
-  printf("the end\n");
+  if (string_arr[1] != 200)
+  {
+    clienterror(client_fd, "POST", "400", "Connection Error",
+                "Something went wrong when trying to connect between the two servers");
+  }
+  Rio_readlineb(&rio, buf, MAXLINE);
+  Rio_readlineb(&rio, buf, MAXLINE);
+  Rio_readlineb(&rio, buf, MAXLINE);
+  Rio_readlineb(&rio, buf, MAXLINE);
+  Rio_readlineb(&rio, buf, MAXLINE);
+  while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
+  {
+    printf("%s", buf);
+  }
 
-  // while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
-  // {
-  //   printf("%s", buf);
-  //   const char **string_arr = split_string(buf, ' ');
-  //   printf(string_arr[1]);
-  //   printf("finished\n");
-  // }
+  printf("finished reading stuff\n");
   // printf("end server response\n");
   /* Read request line and headers */
   body = strdup("alice\nbob");
