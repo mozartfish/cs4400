@@ -444,16 +444,16 @@ static void serve_introduce(int fd, dictionary_t *query)
   if (port == NULL)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Port");
 
-  add_friends(user, friend);
+  // add_friends(user, friend);
 
-  // make the friend friends with all of the users friends
-  dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
-  char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
-  int h;
-  for (h = 0; friend_friends_list[h] != NULL; ++h)
-  {
-    add_friends(friend_friends_list[h], user);
-  }
+  // // make the friend friends with all of the users friends
+  // dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
+  // char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
+  // int h;
+  // for (h = 0; friend_friends_list[h] != NULL; ++h)
+  // {
+  //   add_friends(friend_friends_list[h], user);
+  // }
   // printf("check the dictionary\n");
   // char **users = dictionary_keys(user_dict);
   // int p;
@@ -491,6 +491,11 @@ static void serve_introduce(int fd, dictionary_t *query)
     clienterror(client_fd, "POST", "400", "Connection Error",
                 "Something went wrong when trying to connect between the two servers");
   }
+
+  // jump past the first 6 lines to the content
+  // make the user and friend friends
+  add_friends(user, friend);
+
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
@@ -499,10 +504,25 @@ static void serve_introduce(int fd, dictionary_t *query)
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);
+    add_friends(buf, friend);
   }
 
-  printf("finished reading stuff\n");
+  printf("check the dictionary\n");
+  char **users = dictionary_keys(user_dict);
+  int p;
+  int g;
+  for (p = 0; users[p] != NULL; ++p)
+  {
+    printf("name : %s\n", users[p]);
+    dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
+    char **friends_list = dictionary_keys(friend_friends_new);
+    for (g = 0; friends_list[g] != NULL; ++g)
+    {
+      printf("friend: %s\n", friends_list[g]);
+    }
+  }
   // printf("end server response\n");
+
   /* Read request line and headers */
   body = strdup("alice\nbob");
 
