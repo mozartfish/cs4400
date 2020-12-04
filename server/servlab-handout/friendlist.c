@@ -511,7 +511,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   char **friend_list = dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
   int i;
   for (i = 0; friend_list[i] != NULL; ++i) {
-    printf("name : %s", friend_list[i]);
+    add_friends(user, friend_list[i]);
   }
 
     // printf("check the dictionary\n");
