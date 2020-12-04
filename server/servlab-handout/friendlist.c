@@ -30,7 +30,7 @@ static void *multi_connect(void *fd); // function for starting a thread
 
 /**Global variables */
 dictionary_t *user_dict; // a global dictionary for keeping track of clients and their friends
-
+pthread_mutex_t mutex;   // create a global thread mutex
 int main(int argc, char **argv)
 {
   int listenfd, connfd;
@@ -49,6 +49,8 @@ int main(int argc, char **argv)
 
   // initialize a new dictionary for keeping track of friends
   user_dict = make_dictionary(COMPARE_CASE_INSENS, free);
+  // initialize the mutex
+  pthread_mutex_init(&mutex, NULL);
 
   /* Don't kill the server if there's an error, because
      we want to survive errors due to a client. But we
@@ -137,27 +139,35 @@ void doit(int fd)
       /* You'll want to handle different queries here,
          but the intial implementation always returns
          nothing: */
-      printf("call a handler\n");
+      // printf("call a handler\n");
 
       if (starts_with("/friends", uri))
       {
-        printf("call the friend handler\n");
+        // printf("call the friend handler\n");
+        pthread_mutex_lock(&mutex);
         serve_friends(fd, query);
+        pthread_mutex_unlock(&mutex);
       }
       else if (starts_with("/befriend", uri))
       {
-        printf("call the befriend handler\n");
+        // printf("call the befriend handler\n");
+        pthread_mutex_lock(&mutex);
         serve_befriend(fd, query);
+        pthread_mutex_unlock(&mutex);
       }
       else if (starts_with("/unfriend", uri))
       {
-        printf("call the friend handler\n");
+        // printf("call the friend handler\n");
+        pthread_mutex_lock(&mutex);
         serve_unfriend(fd, query);
+        pthread_mutex_unlock(&mutex);
       }
       else if (starts_with("/introduce", uri))
       {
-        printf("call introduce handler\n");
+        // printf("call introduce handler\n");
+        pthread_mutex_lock(&mutex);
         serve_introduce(fd, query);
+        pthread_mutex_unlock(&mutex);
       }
       // else
       // {
@@ -444,34 +454,9 @@ static void serve_introduce(int fd, dictionary_t *query)
   if (port == NULL)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Port");
 
-  // add_friends(user, friend);
-
-  // // make the friend friends with all of the users friends
-  // dictionary_t *friend_friends = (dictionary_t *)(dictionary_get(user_dict, friend));
-  // char **friend_friends_list = (char **)(dictionary_keys(friend_friends));
-  // int h;
-  // for (h = 0; friend_friends_list[h] != NULL; ++h)
-  // {
-  //   add_friends(friend_friends_list[h], user);
-  // }
-  // printf("check the dictionary\n");
-  // char **users = dictionary_keys(user_dict);
-  // int p;
-  // int g;
-  // for (p = 0; users[p] != NULL; ++p)
-  // {
-  //   printf("name : %s\n", users[p]);
-  //   dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
-  //   char **friends_list = dictionary_keys(friend_friends_new);
-  //   for (g = 0; friends_list[g] != NULL; ++g)
-  //   {
-  //     printf("friend: %s\n", friends_list[g]);
-  //   }
-  // }
-
   // establish a new connection with the server
   int client_fd = Open_clientfd(host, port);
-  printf("open a new connection\n");
+  // printf("open a new connection\n");
   // create a new character buffer
   char buffer[MAXBUF];
   sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
@@ -516,21 +501,21 @@ static void serve_introduce(int fd, dictionary_t *query)
     add_friends(user, friend_list[i]);
   }
 
-    printf("check the dictionary\n");
-    char **users = dictionary_keys(user_dict);
-    int p;
-    int g;
-    for (p = 0; users[p] != NULL; ++p)
-    {
-      printf("name : %s\n", users[p]);
-      dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
-      char **friends_list = dictionary_keys(friend_friends_new);
-      for (g = 0; friends_list[g] != NULL; ++g)
-      {
-        printf("friend: %s\n", friends_list[g]);
-      }
-    }
-  printf("end server response\n");
+  // printf("check the dictionary\n");
+  // char **users = dictionary_keys(user_dict);
+  // int p;
+  // int g;
+  // for (p = 0; users[p] != NULL; ++p)
+  // {
+  //   printf("name : %s\n", users[p]);
+  //   dictionary_t *friend_friends_new = (dictionary_t *)(dictionary_get(user_dict, users[p]));
+  //   char **friends_list = dictionary_keys(friend_friends_new);
+  //   for (g = 0; friends_list[g] != NULL; ++g)
+  //   {
+  //     printf("friend: %s\n", friends_list[g]);
+  //   }
+  // }
+  // printf("end server response\n");
 
   /* Read request line and headers */
   body = strdup("alice\nbob");
