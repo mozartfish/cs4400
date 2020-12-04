@@ -470,7 +470,7 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // get the first line and make sure the connection is 200
   Rio_readlineb(&rio, buf, MAXLINE);
-  const char **string_arr = (char **)(split_string(buf, ' '));
+  const char **string_arr = (const char **)(split_string(buf, ' '));
   if (strcmp(string_arr[1], "200") != 0)
   {
     clienterror(client_fd, "POST", "400", "Connection Error",
@@ -494,7 +494,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   }
 
   // now get all of friends and make them friends with the user
-  char **friend_list = (char **)dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
+  const char **friend_list = (const char **)dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
   int i;
   for (i = 0; friend_list[i] != NULL; ++i)
   {
