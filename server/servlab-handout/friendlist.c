@@ -504,17 +504,18 @@ static void serve_introduce(int fd, dictionary_t *query)
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);
-    printf("hello\n");
+    // printf("hello\n");
+    add_friends(friend, buf);
   }
 
   // now get all of friends and make them friends with the user
-  // char **friend_list = dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
-  // int i;
-  // for (i = 0; friend_list[i] != NULL; ++i)
-  // {
-  //   printf("name: %s\n", friend_list[i]);
-  //   // add_friends(user, friend_list[i]);
-  // }
+  char **friend_list = dictionary_keys((dictionary_t *)(dictionary_get(user_dict, friend)));
+  int i;
+  for (i = 0; friend_list[i] != NULL; ++i)
+  {
+    printf("name: %s", friend_list[i]);
+    // add_friends(user, friend_list[i]);
+  }
 
   //   printf("check the dictionary\n");
   //   char **users = dictionary_keys(user_dict);
