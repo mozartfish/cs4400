@@ -444,26 +444,6 @@ static void serve_introduce(int fd, dictionary_t *query)
   if (port == NULL)
     clienterror(fd, "POST", "400", "Bad Request", "Invalid Port");
 
-  // for debugging
-  // add a user and friends
-  // printf("populate dictionary first\n");
-  // printf("add friends for pranav\n");
-  // add_friends("pranav", "jeff");
-  // add_friends("pranav", "alex");
-  // add_friends("pranav", "eunice");
-  // add_friends("pranav", "austin");
-  // printf("end friends for pranav\n");
-  // printf("add friends for alice\n");
-  // add_friends("alice", "bob");
-  // add_friends("alice", "bill");
-  // add_friends("alice", "harold");
-  // add_friends("alice", "joe");
-  // printf("end friends for alice\n");
-
-  // printf("user: %s\n", user);
-  // printf("friend: %s\n", friend);
-
-  // make the user and friend friends
   add_friends(user, friend);
 
   // make the friend friends with all of the users friends
@@ -491,6 +471,7 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // establish a new connection with the server
   int client_fd = Open_clientfd(host, port);
+  printf("open a new connection\n");
   // create a new character buffer
   char buffer[MAXBUF];
   sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
@@ -498,51 +479,18 @@ static void serve_introduce(int fd, dictionary_t *query)
   printf("%s", buffer);
   Rio_writen(client_fd, buffer, strlen(buffer));
   shutdown(client_fd, SHUT_WR);
-  printf("hello\n");
+  printf("end the buffer\n");
 
   char buf[MAXLINE], *status, *version, *description;
   rio_t rio;
   dictionary_t *headers;
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
-  if (Rio_readlineb(&rio, buf, MAXLINE) <= 0)
+  printf("print the buffer\n");
+  while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
-    clienterror(client_fd, "GET", "400", "Bad Request", "Empty Buffer");
+    printf("%s", buf);
   }
-  // parse the status information
-  if (!parse_status_line(buf, &status, &version, &description))
-  {
-    clienterror(client_fd, status, "400", "Bad Request",
-                "Friendlist did not recognize the status");
-  }
-  else
-  {
-    if (strcasecmp(version, "HTTP/1.0") && strcasecmp(version, "HTTP/1.1"))
-    {
-      clienterror(client_fd, version, "501", "Not Implemented",
-                  "Friendlist does not implement that version");
-    }
-    else if (strcasecmp(status, "200") && strcasecmp(description, "OK"))
-    {
-      clienterror(client_fd, status, "501", "Connection Problem",
-                  "Something went wrong with the connection");
-    }
-    else
-    {
-      // headers = read_requesthdrs(&rio);
-
-      while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
-      {
-        printf("%s", buf);
-      }
-      printf("end server response\n");
-    }
-  }
-
-  // while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
-  // {
-  //   printf("%s", buf);
-  // }
   // printf("end server response\n");
   /* Read request line and headers */
 
@@ -563,7 +511,6 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_writen(fd, body, len);
 
   free(body);
-  // close the port
 }
 
 /** Function that adds friends to the global dictionary if they do not exist*/
