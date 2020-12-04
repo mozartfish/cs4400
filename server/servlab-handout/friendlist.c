@@ -243,7 +243,7 @@ static void serve_friends(int fd, dictionary_t *query)
 
   // make sure the query dictionary is not null
   if (query == NULL)
-    clienterror(fd, "GET", "400", "Bad Request", "Undefined Query");
+    clienterror(fd, "GET", "400", "Bad Request", "Invalid Query");
 
   // make sure we have the right number of arguments for a friend request
   if (dictionary_count(query) != 1)
@@ -429,6 +429,9 @@ static void serve_introduce(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+  char buf[MAXLINE];
+  char buffer[MAXBUF];
+  rio_t rio;
   body = "";
 
   // make sure the query is not null
@@ -460,14 +463,10 @@ static void serve_introduce(int fd, dictionary_t *query)
   // establish a new connection with the server
   int client_fd = Open_clientfd(host, port);
   // printf("open a new connection\n");
-  // create a new character buffer
-  char buffer[MAXBUF];
   sprintf(buffer, "GET /friends?user=%s HTTP/1.1\r\n\r\n", friend);
   Rio_writen(client_fd, buffer, strlen(buffer));
   shutdown(client_fd, SHUT_WR);
 
-  char buf[MAXLINE];
-  rio_t rio;
   /* Read request line and headers */
   Rio_readinitb(&rio, client_fd);
 
@@ -486,6 +485,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   add_friends(user, friend);
   pthread_mutex_unlock(&mutex);
 
+  // jump past the hader (rio_readline is kind of like a scanner)
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
@@ -549,6 +549,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   Rio_writen(fd, body, len);
 
   free(body);
+  Close(client_fd);
 }
 
 /** Function that adds friends to the global dictionary if they do not exist*/
