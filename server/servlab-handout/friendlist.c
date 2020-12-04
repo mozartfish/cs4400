@@ -493,8 +493,6 @@ static void serve_introduce(int fd, dictionary_t *query)
   }
   // printf("end server response\n");
   /* Read request line and headers */
-
-  return;
   body = strdup("alice\nbob");
 
   len = strlen(body);
