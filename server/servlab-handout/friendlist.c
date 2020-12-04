@@ -490,7 +490,7 @@ static void serve_introduce(int fd, dictionary_t *query)
   // get the first line and make sure the connection is 200
   Rio_readlineb(&rio, buf, MAXLINE);
   const char **string_arr = (char **)(split_string(buf, ' '));
-  if (string_arr[1] != "200")
+  if (strcmp(string_arr[1], "200") != 0)
   {
     clienterror(client_fd, "POST", "400", "Connection Error",
                 "Something went wrong when trying to connect between the two servers");
