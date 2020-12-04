@@ -426,6 +426,7 @@ static void serve_introduce(int fd, dictionary_t *query)
 {
   size_t len;
   char *body, *header;
+  body = "";
 
   // make sure the query is not null
   if (query == NULL)
@@ -519,7 +520,10 @@ static void serve_introduce(int fd, dictionary_t *query)
   // printf("end server response\n");
 
   /* Read request line and headers */
-  body = strdup("alice\nbob");
+  const char *const *friends = (const char *const *)(dictionary_keys(user_dict));
+  body = join_strings(friends, '\n');
+
+  // body = strdup("alice\nbob");
 
   len = strlen(body);
 
