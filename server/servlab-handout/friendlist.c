@@ -143,10 +143,7 @@ void doit(int fd)
 
       if (starts_with("/friends", uri))
       {
-        // printf("call the friend handler\n");
-        pthread_mutex_lock(&mutex);
         serve_friends(fd, query);
-        pthread_mutex_unlock(&mutex);
       }
       else if (starts_with("/befriend", uri))
       {
@@ -269,11 +266,13 @@ static void serve_friends(int fd, dictionary_t *query)
   // where the mapping is <user, null> to represent
   // a set of friends
   // if the user has no friends, the dictionary value will be null
+  pthread_mutex_lock(&mutex);
   if (user_friends_dict != NULL)
   {
     const char *const *friends = (const char *const *)(dictionary_keys(user_friends_dict));
     body = join_strings(friends, '\n');
   }
+  pthread_mutex_unlock(&mutex);
 
   // printf("print the body\n");
   // printf("%s", body);
@@ -337,9 +336,11 @@ static void serve_befriend(int fd, dictionary_t *query)
   pthread_mutex_unlock(&mutex);
 
   // get the user friends
+  pthread_mutex_lock(&mutex);
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
   const char *const *friend_names_list = (const char *const *)dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
+  pthread_mutex_unlock(&mutex);
 
   len = strlen(body);
 
@@ -399,9 +400,11 @@ static void serve_unfriend(int fd, dictionary_t *query)
   pthread_mutex_unlock(&mutex);
 
   // get the user friends
+  pthread_mutex_lock(&mutex);
   dictionary_t *user_friends = (dictionary_t *)(dictionary_get(user_dict, user));
   const char *const *friend_names_list = (const char *const *)dictionary_keys(user_friends);
   body = join_strings(friend_names_list, '\n');
+  pthread_mutex_unlock(&mutex);
 
   len = strlen(body);
 
@@ -479,19 +482,24 @@ static void serve_introduce(int fd, dictionary_t *query)
 
   // jump past the first 6 lines to the content
   // make the user and friend friends
+  pthread_mutex_lock(&mutex);
   add_friends(user, friend);
+  pthread_mutex_unlock(&mutex);
 
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
   Rio_readlineb(&rio, buf, MAXLINE);
+
+  pthread_mutex_lock(&mutex);
   while (Rio_readlineb(&rio, buf, MAXLINE) != 0)
   {
     printf("%s", buf);
     buf[strlen(buf) - 1] = '\0';
     add_friends(friend, buf);
   }
+  pthread_mutex_unlock(&mutex);
 
   // now get all of friends and make them friends with the user
   // lock some stuff
@@ -522,8 +530,10 @@ static void serve_introduce(int fd, dictionary_t *query)
   // printf("end server response\n");
 
   /* Read request line and headers */
+  pthread_mutex_lock(&mutex);
   const char *const *friends = (const char *const *)(dictionary_keys(user_dict));
   body = join_strings(friends, '\n');
+  pthread_mutex_unlock(&mutex);
 
   len = strlen(body);
 
