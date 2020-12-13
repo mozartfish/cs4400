@@ -86,7 +86,7 @@ static void extend(size_t new_size)
   // print the size of the current available bytes
   printf("%d\n", sizeof(current_avail));
 
-  printf("%zu\n", mem_heapsize());
+  printf("%zu\n", mem_heapsize() % 4096);
 
   exit(0);
 
