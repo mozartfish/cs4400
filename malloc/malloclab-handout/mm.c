@@ -134,9 +134,9 @@ void *mm_malloc(size_t size)
   return p;
 }
 
-// /*
-//  * mm_free - Freeing a block does nothing.
-//  */
-// void mm_free(void *ptr)
-// {
-// }
+/*
+ * mm_free - Freeing a block does nothing.
+ */
+void mm_free(void *ptr)
+{
+}
