@@ -81,10 +81,8 @@ static void extend(size_t new_size)
   // print the aligned page size
   printf("%zu\n", current_avail_size);
 
+// mem map returns a pointer so printing the size will return 8
   current_avail = mem_map(current_avail_size);
-
-  // print the size of the current available bytes
-  printf("%d\n", sizeof(current_avail));
 
   printf("%zu\n", mem_heapsize() % 4096);
 
