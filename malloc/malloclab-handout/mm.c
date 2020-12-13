@@ -21,19 +21,19 @@
 #define ALIGNMENT 16
 
 /* rounds up to the nearest multiple of ALIGNMENT */
-#define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
+#define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
 
 /* rounds up to the nearest multiple of mem_pagesize() */
-#define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
+#define PAGE_ALIGN(size) (((size) + (mem_pagesize() - 1)) & ~(mem_pagesize() - 1))
 /**********************************************************************************/
 // VARIABLES AND MACROS FOR SETTING UP BLOCK INFORMATION
-size_t block_header;
-size_t block_footer;
+typedef size_t block_header;
+typedef size_t block_footer;
 #define OVERHEAD (sizeof(block_header) + sizeof(block_footer))
 
 //Given a payload pointer, get the header or footer pointer
-#define HDRP(bp) ((char *)(bp) - sizeof(block_header)) 
-#define FTRP(bp)((char *)(bp) + GET_SIZE(HDRP(bp)) - OVERHEAD)
+#define HDRP(bp) ((char *)(bp) - sizeof(block_header))
+#define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) - OVERHEAD)
 
 // Given a payload pointer, get the next or previous payload pointer
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)))
@@ -64,14 +64,38 @@ static void set_allocated(void *b, size_t size);
  */
 static void extend(size_t s);
 
-/* Coalesce a free block if applicable 
- * Returns pointer to new coalesced block 
- */
-static void *coalesce(void *bp);
+// /* Coalesce a free block if applicable
+//  * Returns pointer to new coalesced block
+//  */
+// static void *coalesce(void *bp);
 /*****************************************************************************/
 
 void *current_avail = NULL;
 int current_avail_size = 0;
+
+static void extend(size_t new_size)
+{
+  // get a group of contiguous pages from mem_map
+  current_avail_size = PAGE_ALIGN(new_size);
+
+  // print the aligned page size
+  printf("%zu\n", current_avail_size);
+
+  current_avail = mem_map(current_avail_size);
+
+  // print the size of the current available bytes
+  printf("%d\n", sizeof(current_avail));
+
+  printf("%zu\n", mem_heapsize());
+
+  exit(0);
+
+  // if mem map returns null then return null
+  if (current_avail == NULL)
+  {
+    return;
+  }
+}
 
 /* 
  * mm_init - initialize the malloc package.
@@ -80,7 +104,9 @@ int mm_init(void)
 {
   current_avail = NULL;
   current_avail_size = 0;
-  
+
+  // test extend function
+  extend(10);
   return 0;
 }
 
@@ -92,8 +118,9 @@ void *mm_malloc(size_t size)
 {
   int newsize = ALIGN(size);
   void *p;
-  
-  if (current_avail_size < newsize) {
+
+  if (current_avail_size < newsize)
+  {
     current_avail_size = PAGE_ALIGN(newsize);
     current_avail = mem_map(current_avail_size);
     if (current_avail == NULL)
@@ -103,13 +130,13 @@ void *mm_malloc(size_t size)
   p = current_avail;
   current_avail += newsize;
   current_avail_size -= newsize;
-  
+
   return p;
 }
 
-/*
- * mm_free - Freeing a block does nothing.
- */
-void mm_free(void *ptr)
-{
-}
+// /*
+//  * mm_free - Freeing a block does nothing.
+//  */
+// void mm_free(void *ptr)
+// {
+// }
