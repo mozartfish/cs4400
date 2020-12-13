@@ -25,6 +25,50 @@
 
 /* rounds up to the nearest multiple of mem_pagesize() */
 #define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
+/**********************************************************************************/
+// VARIABLES AND MACROS FOR SETTING UP BLOCK INFORMATION
+size_t block_header;
+size_t block_footer;
+#define OVERHEAD (sizeof(block_header) + sizeof(block_footer))
+
+//Given a payload pointer, get the header or footer pointer
+#define HDRP(bp) ((char *)(bp) - sizeof(block_header)) 
+#define FTRP(bp)((char *)(bp) + GET_SIZE(HDRP(bp)) - OVERHEAD)
+
+// Given a payload pointer, get the next or previous payload pointer
+#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)))
+#define PREV_BLKP(bp) ((char *)(bp)-GET_SIZE((char *)(bp)-OVERHEAD))
+
+// Given a pointer to a header, get or set its value
+#define GET(p) (*(size_t *)(p))
+#define PUT(p, val) (*(size_t *)(p) = (val))
+
+// Combine a size and alloc bit
+#define PACK(size, alloc) ((size) | (alloc))
+
+// Given a header pointer, get the alloc or size
+#define GET_ALLOC(p) (GET(p) & 0x1)
+#define GET_SIZE(p) (GET(p) & ~0xF)
+/*********************************************************************************/
+// HELPER FUNCTIONS
+/* Set a block to allocated 
+ * Update block headers/footers as needed 
+ * Update free list if applicable 
+ * Split block if applicable 
+ */
+static void set_allocated(void *b, size_t size);
+
+/* Request more memory by calling mem_map 
+ * Initialize the new chunk of memory as applicable 
+ * Update free list if applicable 
+ */
+static void extend(size_t s);
+
+/* Coalesce a free block if applicable 
+ * Returns pointer to new coalesced block 
+ */
+static void *coalesce(void *bp);
+/*****************************************************************************/
 
 void *current_avail = NULL;
 int current_avail_size = 0;
