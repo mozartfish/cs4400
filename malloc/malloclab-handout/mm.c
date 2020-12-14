@@ -29,6 +29,10 @@
 // VARIABLES AND MACROS FOR SETTING UP BLOCK INFORMATION
 typedef size_t block_header;
 typedef size_t block_footer;
+typedef struct page_node {
+  struct page_node *next;
+  struct page_node *prev;
+} page_node;
 #define OVERHEAD (sizeof(block_header) + sizeof(block_footer))
 
 //Given a payload pointer, get the header or footer pointer
@@ -72,6 +76,7 @@ static void extend(size_t s);
 
 void *current_avail = NULL;
 int current_avail_size = 0;
+static page_node *first_pg_chunk = NULL;
 
 static void extend(size_t new_size)
 {
@@ -79,19 +84,45 @@ static void extend(size_t new_size)
   current_avail_size = PAGE_ALIGN(new_size);
 
   // print the aligned page size
-  printf("%zu\n", current_avail_size);
+  // printf("%zu\n", current_avail_size);
 
 // mem map returns a pointer so printing the size will return 8
   current_avail = mem_map(current_avail_size);
 
-  printf("%zu\n", mem_heapsize() % 4096);
+  // printf("%zu\n", mem_heapsize() % 4096);
 
-  exit(0);
+  // add information for the bytes
+
 
   // if mem map returns null then return null
   if (current_avail == NULL)
   {
     return;
+  }
+}
+
+// build page linked list 
+static void add_pages(void *pg) {
+  // cast pg to page node
+  page_node *new_pg_chunk = (page_node *)(pg);
+
+  if (first_pg_chunk == NULL) {
+    new_pg_chunk->next = NULL;
+    new_pg_chunk->prev = NULL;
+    first_pg_chunk = new_pg_chunk;
+  }
+  else {
+    // set the first page chunk previous
+    first_pg_chunk->prev = new_pg_chunk;
+
+    // set the new page chunk to previous
+    new_pg_chunk->next = first_pg_chunk;
+    
+    // set the new page chunkj previous
+    new_pg_chunk->prev = NULL;
+
+    // set the first page chunk as the new page chunk
+    first_pg_chunk = new_pg_chunk;
   }
 }
 
