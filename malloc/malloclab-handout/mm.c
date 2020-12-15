@@ -113,7 +113,9 @@ static void extend(size_t new_size)
 
   PUT(contig_pgs, 0);                                                         // add padding of 8 bytes
   PUT(contig_pgs + (1 * WSIZE), PACK(DSIZE, 1));                              // Prologue Header
-  PUT(contig_pgs + (2 * WSIZE), PACK(DSIZE, 1));                              // Prologue Footer
+  PUT(contig_pgs + (2 * WSIZE), PACK(DSIZE, 1));
+  // print the current available size
+  printf("%d", current_avail_size - PAGE_OVERHEAD);                           // Prologue Footer
   PUT(contig_pgs + (3 * WSIZE), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Header
   contig_pgs = contig_pgs + 32;
   PUT(FTRP(contig_pgs), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Footer
@@ -178,7 +180,7 @@ void *mm_malloc(size_t size)
 {
   // print the size requested by the user
   printf("%zu\n", size);
-  
+
   // check if the user requests 0
   if (size == 0)
   {
