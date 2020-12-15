@@ -199,7 +199,7 @@ void *mm_malloc(size_t size)
   page_node *current_pg = first_pg_chunk;
   while (current_pg != NULL)
   {
-    void *block_start = (void *)(current_pg);
+    char *block_start = (char *)(current_pg);
     block_start = block_start + sizeof(page_node) + PADDING + OVERHEAD + sizeof(block_header); // page_node pointers + prolog overhead + block header to payload
     if (GET_SIZE(HDRP(block_start)) == 4048) {
       printf("hello moto");
