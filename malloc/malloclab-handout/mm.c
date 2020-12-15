@@ -78,6 +78,8 @@ static void extend(size_t s);
 //  * Returns pointer to new coalesced block
 //  */
 // static void *coalesce(void *bp);
+
+static void add_pages(void *pg);
 /*****************************************************************************/
 
 void *current_avail = NULL;
