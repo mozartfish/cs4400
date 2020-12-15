@@ -200,8 +200,12 @@ void *mm_malloc(size_t size)
   while (current_pg != NULL)
   {
     void *block_start = (void *)(current_pg);
-    block_start = block_start + sizeof(page_node) + PADDING + OVERHEAD; // page_node pointers + prolog overhead + block header to payload
-    printf("%zu\n", GET_SIZE(block_start));
+    block_start = block_start + sizeof(page_node) + PADDING + OVERHEAD + sizeof(block_header); // page_node pointers + prolog overhead + block header to payload
+    if (GET_SIZE(HDRP(block_start)) == 4048) {
+      printf("hello moto");
+    } else {
+      printf("test fails");
+    }
     exit(1);
   }
 
