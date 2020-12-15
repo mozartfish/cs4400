@@ -115,7 +115,7 @@ static void extend(size_t new_size)
   PUT(contig_pgs + (1 * WSIZE), PACK(DSIZE, 1));                              // Prologue Header
   PUT(contig_pgs + (2 * WSIZE), PACK(DSIZE, 1));
   // print the current available size
-  printf("%d", current_avail_size - PAGE_OVERHEAD);                           // Prologue Footer
+  printf("%zu\n", current_avail_size - PAGE_OVERHEAD);                           // Prologue Footer
   PUT(contig_pgs + (3 * WSIZE), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Header
   contig_pgs = contig_pgs + 32;
   PUT(FTRP(contig_pgs), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Footer
@@ -200,8 +200,8 @@ void *mm_malloc(size_t size)
   while (current_pg != NULL)
   {
     void *block_start = (void *)(current_pg);
-    block_start = block_start + sizeof(page_node) + PADDING + OVERHEAD + sizeof(block_header); // page_node pointers + prolog overhead + block header to payload
-    printf("%zu\n", GET_SIZE(HDRP(block_start)));
+    block_start = block_start + sizeof(page_node) + PADDING + OVERHEAD; // page_node pointers + prolog overhead + block header to payload
+    printf("%zu\n", GET_SIZE(block_start));
     exit(1);
   }
 
