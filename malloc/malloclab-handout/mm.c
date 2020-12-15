@@ -115,6 +115,8 @@ void *mm_malloc(size_t size)
 {
   // print the original size requested
   printf("%zu\n", size);
+  // print the size of list node (should be 16 bytes)
+  printf("%zu\n", sizeof(list_node *));
   int need_size = MAX(size, sizeof(list_node *));
 
   // print size of list node
