@@ -167,8 +167,6 @@ int mm_init(void)
   current_avail = NULL;
   current_avail_size = 0;
   first_pg_chunk = NULL;
-  // test extend function with malloc
-  malloc(10);
   return 0;
 }
 
@@ -178,7 +176,9 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-
+  // print the size requested by the user
+  printf("%zu\n", size);
+  
   // check if the user requests 0
   if (size == 0)
   {
