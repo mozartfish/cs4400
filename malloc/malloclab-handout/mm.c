@@ -113,9 +113,17 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
+  // print the original size requested
+  printf("%zu\n", size);
   int need_size = MAX(size, sizeof(list_node));
+
+  // print size of list node
+  printf("%d", sizeof(list_node));
+
+  // print the size we need
+  printf("%d", need_size);
   int new_size = ALIGN(need_size + OVERHEAD);
-  // print the new size
+  // print the aligned new size
   printf("%d", new_size);
 
   if (free_list == NULL) {
@@ -192,7 +200,7 @@ static void extend(size_t new_size)
   int page_size_bytes = PAGE_ALIGN(new_size);
 
   // print the aligned page size
-  // printf("%zu\n", current_avail_size);
+  printf("%zu\n", page_size_bytes);
 
   // return a pointer to the contiguous block of pages
   void *pgs = mem_map(page_size_bytes);
