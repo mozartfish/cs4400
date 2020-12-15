@@ -105,11 +105,11 @@ static void extend(size_t new_size)
 
   void *contig_pgs = current_avail;
 
-  printf("%zu\n", mem_heapsize() % 4096);
+  printf("%zu\n", mem_heapsize() / 4096);
 
   // add information for the bytes
   // move past the first 16 bytes allocated for the page pointers
-  contig_pgs = contig_pgs + 16;
+  contig_pgs = contig_pgs + sizeof(page_node);
 
   PUT(contig_pgs, 0);                                                         // add padding of 8 bytes
   PUT(contig_pgs + (1 * WSIZE), PACK(DSIZE, 1));                              // Prologue Header
@@ -198,7 +198,7 @@ void *mm_malloc(size_t size)
   while (current_pg != NULL)
   {
     void *block_start = (void *)(current_pg);
-    block_start = block_start + sizeof(page_node) + OVERHEAD + sizeof(block_header); // page_node pointers + prolog overhead + block header to payload
+    block_start = block_start + sizeof(page_node) + PADDING + OVERHEAD + sizeof(block_header); // page_node pointers + prolog overhead + block header to payload
     printf("%zu\n", GET_SIZE(HDRP(block_start)));
     exit(1);
   }
