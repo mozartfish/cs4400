@@ -29,11 +29,17 @@
 // VARIABLES AND MACROS FOR SETTING UP BLOCK INFORMATION
 typedef size_t block_header;
 typedef size_t block_footer;
-typedef struct page_node {
+typedef struct page_node
+{
   struct page_node *next;
   struct page_node *prev;
 } page_node;
+
 #define OVERHEAD (sizeof(block_header) + sizeof(block_footer))
+#define PADDING (sizeof(size_t))                                                                                         // 8 bytes for padding
+#define PAGE_OVERHEAD (sizeof(page_node) + PADDING + sizeof(block_header) + sizeof(block_footer) + sizeof(block_header)) // 48 bytes
+#define WSIZE 8                                                                                                          // word
+#define DSIZE 8                                                                                                          // double word
 
 //Given a payload pointer, get the header or footer pointer
 #define HDRP(bp) ((char *)(bp) - sizeof(block_header))
@@ -84,45 +90,70 @@ static void extend(size_t new_size)
   current_avail_size = PAGE_ALIGN(new_size);
 
   // print the aligned page size
-  // printf("%zu\n", current_avail_size);
+  printf("%zu\n", current_avail_size);
 
-// mem map returns a pointer so printing the size will return 8
+  // mem map returns a pointer so printing the size will return 8
   current_avail = mem_map(current_avail_size);
-
-  // printf("%zu\n", mem_heapsize() % 4096);
-
-  // add information for the bytes
-
 
   // if mem map returns null then return null
   if (current_avail == NULL)
   {
     return;
   }
+
+  void *contig_pgs = current_avail;
+
+  printf("%zu\n", mem_heapsize() % 4096);
+
+  // add information for the bytes
+  // move past the first 16 bytes allocated for the page pointers
+  contig_pgs = contig_pgs + 16;
+
+  PUT(contig_pgs, 0);                                                         // add padding of 8 bytes
+  PUT(contig_pgs + (1 * WSIZE), PACK(DSIZE, 1));                              // Prologue Header
+  PUT(contig_pgs + (2 * WSIZE), PACK(DSIZE, 1));                              // Prologue Footer
+  PUT(contig_pgs + (3 * WSIZE), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Header
+  contig_pgs = contig_pgs + 32;
+  PUT(FTRP(contig_pgs), PACK(current_avail_size - PAGE_OVERHEAD, 0)); // Footer
+  PUT(FTRP(contig_pgs) + WSIZE, PACK(0, 1));                          // Epilogue Header
+  add_pages(contig_pgs);                                              // add the page node to the linked list
 }
 
-// build page linked list 
-static void add_pages(void *pg) {
+// build page linked list
+static void add_pages(void *pg)
+{
   // cast pg to page node
   page_node *new_pg_chunk = (page_node *)(pg);
 
-  if (first_pg_chunk == NULL) {
+  if (first_pg_chunk == NULL)
+  {
     new_pg_chunk->next = NULL;
     new_pg_chunk->prev = NULL;
     first_pg_chunk = new_pg_chunk;
   }
-  else {
-    // set the first page chunk previous
-    first_pg_chunk->prev = new_pg_chunk;
+  else
+  {
+    // set the first page next
+    first_pg_chunk->next = new_pg_chunk;
 
-    // set the new page chunk to previous
-    new_pg_chunk->next = first_pg_chunk;
-    
-    // set the new page chunkj previous
-    new_pg_chunk->prev = NULL;
+    // set the new page chunk previous to first page chunk
+    new_pg_chunk->prev = first_pg_chunk;
 
-    // set the first page chunk as the new page chunk
-    first_pg_chunk = new_pg_chunk;
+    // set the new page chunk next to null
+    new_pg_chunk->next = NULL;
+
+    /* This code is for the explicit linked list version */
+    // // set the first page chunk previous
+    // first_pg_chunk->prev = new_pg_chunk;
+
+    // // set the new page chunk to previous
+    // new_pg_chunk->next = first_pg_chunk;
+
+    // // set the new page chunkj previous
+    // new_pg_chunk->prev = NULL;
+
+    // // set the first page chunk as the new page chunk
+    // first_pg_chunk = new_pg_chunk;
   }
 }
 
@@ -133,9 +164,9 @@ int mm_init(void)
 {
   current_avail = NULL;
   current_avail_size = 0;
-
-  // test extend function
-  extend(10);
+  first_pg_chunk = NULL;
+  // test extend function with malloc
+  malloc(10);
   return 0;
 }
 
@@ -145,22 +176,44 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  int newsize = ALIGN(size);
-  void *p;
 
-  if (current_avail_size < newsize)
+  // check if the user requests 0
+  if (size == 0)
   {
-    current_avail_size = PAGE_ALIGN(newsize);
-    current_avail = mem_map(current_avail_size);
-    if (current_avail == NULL)
-      return NULL;
+    return NULL;
   }
 
-  p = current_avail;
-  current_avail += newsize;
-  current_avail_size -= newsize;
+  int newsize = ALIGN(size + PAGE_OVERHEAD);
 
-  return p;
+  // check if there is a page available
+  if (first_pg_chunk == NULL)
+  {
+    extend(newsize);
+  }
+
+  // cast the page node pointer to void to get to the first block header
+  page_node *current_pg = first_pg_chunk;
+  while (current_pg != NULL)
+  {
+    void *block_start = (void *)(current_pg);
+    block_start = block_start + sizeof(page_node) + OVERHEAD + sizeof(block_header); // page_node pointers + prolog overhead + block header to payload
+    printf("%zu\n", GET_SIZE(HDRP(block_start)));
+    exit(1);
+  }
+
+  // if (current_avail_size < newsize)-[]
+  // {
+  //   current_avail_size = PAGE_ALIGN(newsize);
+  //   current_avail = mem_map(current_avail_size);
+  //   if (current_avail == NULL)
+  //     return NULL;
+  // }
+
+  // p = current_avail;
+  // current_avail += newsize;
+  // current_avail_size -= newsize;
+
+  // return p;
 }
 
 /*
