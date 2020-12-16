@@ -223,15 +223,12 @@ static void set_allocated(void *bp, size_t size) {
     void *next_block = NEXT_BLKP(bp);
     PUT(HDRP(next_block), PACK(extra_size, 0));
     PUT(FTRP(next_block), PACK(extra_size, 0));
-
-
     // add the new allocated block
     add_to_free_list(bp+size);
   }
   else {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
-    remove_from_free_list(bp);
   }
 }
 
