@@ -134,7 +134,7 @@ void *mm_malloc(size_t size)
 
   list_node *current_free_block = free_list;
 
-  while (current_free_block != NULL) {
+  while (1) {
     if (GET_SIZE(HDRP(current_free_block)) >= new_size) {
       set_allocated(current_free_block, new_size);
       return (void *)(current_free_block);
