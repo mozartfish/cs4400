@@ -226,28 +226,28 @@ static void *coalesce(void *bp) {
 }
 
 static void set_allocated(void *bp, size_t size) {
-  size_t csize = GET_SIZE(HDRP(bp));
-
-  // print the size available
-  // printf("%zu\n", csize);
-
-  if ((csize - size) >= PAGE_OVERHEAD) {
+  size_t extra_size = GET_SIZE(HDRP(bp)) - size;
+  if (extra_size >= PAGE_OVERHEAD) {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
+    // get the next payload pointer
+    void *next_block = NEXT_BLKP(bp);
+    PUT(HDRP(next_block), PACK(extra_size, 0));
+    PUT(FTRP(next_block), PACK(extra_size, 0));
+
     // remove the allocated block
     remove_from_free_list(bp);
-
-    // update the pointer of the next block
-    bp = NEXT_BLKP(bp);
-    PUT(HDRP(bp), PACK(csize - size, 0));
-    PUT(FTRP(bp), PACK(csize - size, 0));
-    add_to_free_list(bp);
+    // add the new allocated block
+    add_to_free_list(bp+size);
   }
   else {
-    PUT(HDRP(bp), PACK(csize, 1));
-    PUT(FTRP(bp), PACK(csize, 1));
+    PUT(HDRP(bp), PACK(size, 1));
+    PUT(FTRP(bp), PACK(size, 1));
+    remove_from_free_list(bp);
   }
 }
+
+
 static void extend(size_t new_size)
 {
   // get a rounded number of bytes to the nearest page size
