@@ -85,10 +85,10 @@ static void extend(size_t s);
 // /* Coalesce a free block if applicable
 //  * Returns pointer to new coalesced block
 //  */
-// static void *coalesce(void *bp);
+static void *coalesce(void *bp);
 
-static void add_to_free_list(void *fbp);
-static void remove_from_free_list(void *abp);
+static void add_to_free_list(void *bp);
+static void remove_from_free_list(void *bp);
 /*****************************************************************************/
 
 
@@ -114,18 +114,18 @@ int mm_init(void)
 void *mm_malloc(size_t size)
 {
   // print the original size requested
-  printf("%zu\n", size);
+  // printf("%zu\n", size);
   // print the size of list node (should be 16 bytes)
-  printf("%zu\n", sizeof(list_node));
+  // printf("%zu\n", sizeof(list_node));
   int need_size = MAX(size, sizeof(list_node));
 
 
 
   // print the size we need
-  printf("%d", need_size);
+  // printf("%d", need_size);
   int new_size = ALIGN(need_size + OVERHEAD);
   // print the aligned new size
-  printf("%d", new_size);
+  // printf("%d", new_size);
 
   if (free_list == NULL) {
     // call th extend function
@@ -168,15 +168,66 @@ void *mm_malloc(size_t size)
 /*
  * mm_free - Freeing a block does nothing.
  */
-void mm_free(void *ptr)
+void mm_free(void *bp)
 {
+  size_t size = GET_SIZE(HDRP(bp));
+  PUT(HDRP(bp), PACK(size, 0));
+  PUT(FTRP(bp), PACK(size, 0));
+
+  // call the coalesce function
+  printf("coalesce\n");
+  coalesce(bp);
+}
+
+static void *coalesce(void *bp) {
+  size_t prev_alloc = GET_ALLOC(HDRP(PREV_BLKP(bp)));
+  size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
+  size_t size = GET_SIZE(HDRP(bp));
+
+  // CASE 1: Next Block and previous block are already allocated
+  // take newly allocated free block and add to the free list
+  if(prev_alloc && next_alloc) {
+    printf("enter case 1\n");
+    add_to_free_list(bp);
+  }
+  // CASE 2: Next block is not allocated and previous block is allocated
+  else if (prev_alloc && !next_alloc) {
+    printf("enter case 2\n");
+    size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
+    PUT(HDRP(bp), PACK(size, 0));
+    PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+    // remove the previous free block from the free list
+    remove_from_free_list(NEXT_BLKP(bp));
+    // add the new sized free block to the free list
+    add_to_free_list(bp);
+  }
+  // CASE 3: Next block is allocated and previous block is unallocated
+  else if(!prev_alloc && next_alloc) {
+    printf("enter case 3\n");
+    size += GET_SIZE(HDRP(PREV_BLKP(bp)));
+    PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+    PUT(FTRP(bp), PACK(size, 0));
+    bp = PREV_BLKP(bp);
+  }
+  // CASE 4: Next block is not allocated and previous block is not allocated
+  else {
+    printf("enter case 4\n");
+    size += (GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(HDRP(NEXT_BLKP(bp))));
+    PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+    PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+    // remove the previous free block from the free list
+    remove_from_free_list(NEXT_BLKP(bp));
+    bp = PREV_BLKP(bp);
+  }
+
+  return bp;
 }
 
 static void set_allocated(void *bp, size_t size) {
   size_t csize = GET_SIZE(HDRP(bp));
 
   // print the size available
-  printf("%zu\n", csize);
+  // printf("%zu\n", csize);
 
   if ((csize - size) >= PAGE_OVERHEAD) {
     PUT(HDRP(bp), PACK(size, 1));
@@ -201,7 +252,7 @@ static void extend(size_t new_size)
   int page_size_bytes = PAGE_ALIGN(new_size);
 
   // print the aligned page size
-  printf("%zu\n", page_size_bytes);
+  // printf("%zu\n", page_size_bytes);
 
   // return a pointer to the contiguous block of pages
   void *pgs = mem_map(page_size_bytes);
@@ -222,13 +273,11 @@ static void extend(size_t new_size)
   add_to_free_list(pgs);
 }
 
-
-
 // build a linked list of free blocks
-static void add_to_free_list(void *fbp)
+static void add_to_free_list(void *bp)
 {
   // cast the void pointer to a list node pointer
-  list_node *new_free_block = (list_node *)(fbp);
+  list_node *new_free_block = (list_node *)(bp);
   if (free_list == NULL)
   {
     new_free_block->next = NULL;
@@ -245,10 +294,10 @@ static void add_to_free_list(void *fbp)
 }
 
 // remove allocated blocks from free list
-static void remove_from_free_list(void *abp)
+static void remove_from_free_list(void *bp)
 {
   // cast void pointer to list node pointer and get the next and previous free blocks (if they exist)
-  list_node *alloc_block = (list_node *)(abp);
+  list_node *alloc_block = (list_node *)(bp);
   list_node *alloc_block_next = alloc_block->next;
   list_node *alloc_block_prev = alloc_block->prev;
 
