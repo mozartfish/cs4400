@@ -294,36 +294,31 @@ static void remove_from_free_list(void *bp)
   list_node *alloc_block_next = alloc_block->next;
   list_node *alloc_block_prev = alloc_block->prev;
 
-  // CASE 1: ALLOCATED BLOCK IS THE FREE BLOCK
-  // ACCORDING TO LIFO POLICY IN TEXTBOOK
-  if (alloc_block == free_list)
-  {
-    // CASE 1: FIRST FREE BLOCK HAS ZERO CHILDREN
-    if (free_list->next == NULL && free_list->prev == NULL)
-    {
+  // CASE 1: ALLOCATED BLOCK IS THE FIRST FREE BLOCK (ROOT NODE CASE)
+  if (alloc_block == free_list) {
+    // CASE A: NEXT != NULL and PREV = NULL
+    if (free_list->next != NULL) {
+      free_list = free_list->next;
+      free_list->prev = NULL;
+    }
+    // CASE B: NEXT = NULL AND PREV = NULL
+    else {
       free_list->next = NULL;
       free_list->prev = NULL;
       free_list = NULL;
     }
-    // CASE 2: FIRST FREE BLOCK HAS NEXT
-    else if (free_list->next != NULL && free_list->prev == NULL)
-    {
-      free_list = free_list->next;
-      free_list->prev = NULL;
-    }
   }
-  // CASE 2: ALLOC BLOCK IS IN THE MIDDLE OF THE LINKED LIST
-  else if (alloc_block_next != NULL && alloc_block_prev != NULL)
+  // CASE 2: REMOVE THE LAST NODE IN THE LINKED LIST
+  else if (alloc_block_prev != NULL && alloc_block_next == NULL) {
+    alloc_block_prev->next = NULL;
+  }
+  // CASE 3: REMOVE THE NODE IN THE MIDDLE OF THE LINKED LIST
+  else if (alloc_block_prev != NULL && alloc_block_next != NULL)
   {
     // set the previous pointers
     alloc_block_prev->next = alloc_block_next;
 
     // set the next pointers
     alloc_block_next->prev = alloc_block_prev;
-  }
-  // CASE 3: ALLOC BLOCK IS AT THE END OF THE LINKED LIST
-  else if (alloc_block_next == NULL && alloc_block_prev != NULL)
-  {
-    alloc_block_prev->next = NULL;
   }
 }
