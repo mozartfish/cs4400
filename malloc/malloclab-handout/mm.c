@@ -117,9 +117,13 @@ void *mm_malloc(size_t size)
   // printf("%zu\n", size);
   // print the size of list node (should be 16 bytes)
   // printf("%zu\n", sizeof(list_node));
+
+  // check if the user requests a size of  0
+  if (size == 0) {
+    return NULL;
+  }
+
   int need_size = MAX(size, sizeof(list_node));
-
-
 
   // print the size we need
   // printf("%d", need_size);
@@ -140,13 +144,16 @@ void *mm_malloc(size_t size)
       return (void *)(current_free_block);
     }
     if (current_free_block->next == NULL) {
-      extend(new_size);
-      current_free_block = free_list;
+      break;
     }
     else {
       current_free_block = current_free_block->next;
     }
   }
+
+  // extend the new size
+  extend(new_size);
+  current_free_block = free_list;
 }
 
 /*
