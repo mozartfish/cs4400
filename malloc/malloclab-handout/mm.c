@@ -292,16 +292,16 @@ static void remove_from_free_list(void *bp)
   if (alloc_block == free_list)
   {
     // CASE 1: FIRST FREE BLOCK HAS ZERO CHILDREN
-    if (alloc_block_next == NULL && alloc_block_prev == NULL)
+    if (free_list->next == NULL && free_list->prev == NULL)
     {
-      alloc_block->next = NULL;
-      alloc_block->prev = NULL;
-      alloc_block = NULL;
+      free_list->next = NULL;
+      free_list->prev = NULL;
+      free_list = NULL;
     }
     // CASE 2: FIRST FREE BLOCK HAS NEXT
-    else if (alloc_block_next != NULL && alloc_block_prev == NULL)
+    else if (free_list->next != NULL && free_list->prev == NULL)
     {
-      free_list = alloc_block_next;
+      free_list = free_list->next;
       free_list->prev = NULL;
     }
   }
