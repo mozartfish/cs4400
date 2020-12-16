@@ -147,22 +147,6 @@ void *mm_malloc(size_t size)
       current_free_block = current_free_block->next;
     }
   }
-  // int newsize = ALIGN(size);
-  // void *p;
-
-  // if (current_avail_size < newsize)
-  // {
-  //   current_avail_size = PAGE_ALIGN(newsize);
-  //   current_avail = mem_map(current_avail_size);
-  //   if (current_avail == NULL)
-  //     return NULL;
-  // }
-
-  // p = current_avail;
-  // current_avail += newsize;
-  // current_avail_size -= newsize;
-
-  // return p;
 }
 
 /*
