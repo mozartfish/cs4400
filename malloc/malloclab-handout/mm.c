@@ -180,8 +180,10 @@ void mm_free(void *bp)
 }
 
 static void *coalesce(void *bp) {
-  size_t prev_alloc = GET_ALLOC(HDRP(PREV_BLKP(bp)));
-  size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
+  void *prev_block = PREV_BLKP(bp);
+  void *next_block = NEXT_BLKP(bp);
+  size_t prev_alloc = GET_ALLOC(HDRP(prev_block));
+  size_t next_alloc = GET_ALLOC(HDRP(next_block));
   size_t size = GET_SIZE(HDRP(bp));
 
   // CASE 1: Next Block and previous block are already allocated
@@ -193,30 +195,30 @@ static void *coalesce(void *bp) {
   // CASE 2: Next block is not allocated and previous block is allocated
   else if (prev_alloc && !next_alloc) {
     printf("enter case 2\n");
-    size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
+    size += GET_SIZE(HDRP(next_block));
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
     // remove the previous free block from the free list
-    remove_from_free_list(NEXT_BLKP(bp));
+    remove_from_free_list(next_block);
     // add the new sized free block to the free list
     add_to_free_list(bp);
   }
   // CASE 3: Next block is allocated and previous block is unallocated
   else if(!prev_alloc && next_alloc) {
     printf("enter case 3\n");
-    size += GET_SIZE(HDRP(PREV_BLKP(bp)));
-    PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+    size += GET_SIZE(HDRP(prev_block));
+    PUT(HDRP(prev_block), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
     bp = PREV_BLKP(bp);
   }
   // CASE 4: Next block is not allocated and previous block is not allocated
   else {
     printf("enter case 4\n");
-    size += (GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(HDRP(NEXT_BLKP(bp))));
-    PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
-    PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+    size += (GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(HDRP(next_block)));
+    PUT(HDRP(prev_block), PACK(size, 0));
+    PUT(FTRP(next_block), PACK(size, 0));
     // remove the previous free block from the free list
-    remove_from_free_list(NEXT_BLKP(bp));
+    remove_from_free_list(next_block);
     bp = PREV_BLKP(bp);
   }
 
