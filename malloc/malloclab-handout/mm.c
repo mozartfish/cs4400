@@ -99,11 +99,7 @@ static list_node *free_list = NULL;
  */
 int mm_init(void)
 {
-  // current_avail = NULL;
-  // current_avail_size = 0;
-
-  // // test extend function
-  // extend(10);
+  free_list = NULL;
   return 0;
 }
 
@@ -221,13 +217,14 @@ static void set_allocated(void *bp, size_t size) {
   if (extra_size >= PAGE_OVERHEAD) {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
+    // remove the allocated block
+    remove_from_free_list(bp);
     // get the next payload pointer
     void *next_block = NEXT_BLKP(bp);
     PUT(HDRP(next_block), PACK(extra_size, 0));
     PUT(FTRP(next_block), PACK(extra_size, 0));
 
-    // remove the allocated block
-    remove_from_free_list(bp);
+
     // add the new allocated block
     add_to_free_list(bp+size);
   }
