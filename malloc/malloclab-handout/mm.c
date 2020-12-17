@@ -109,10 +109,7 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  // print the original size requested
-  // printf("%zu\n", size);
-  // print the size of list node (should be 16 bytes)
-  // printf("%zu\n", sizeof(list_node));
+
 
   // check if the user requests a size of  0
   if (size == 0) {
@@ -121,15 +118,13 @@ void *mm_malloc(size_t size)
 
   int need_size = MAX(size, sizeof(list_node));
 
-  // print the size we need
-  // printf("%d", need_size);
   int new_size = ALIGN(need_size + OVERHEAD);
   // print the aligned new size
   // printf("%d", new_size);
 
   if (free_list == NULL) {
     // call th extend function
-    extend(new_size);
+    extend(2 * new_size);
   }
 
   list_node *current_free_block = free_list;
@@ -139,17 +134,20 @@ void *mm_malloc(size_t size)
       set_allocated(current_free_block, new_size);
       return (void *)(current_free_block);
     }
-    if (current_free_block->next == NULL) {
-      break;
+    else if (current_free_block->next == NULL) {
+      // extend the new size
+      extend(2 * new_size);
+      current_free_block = free_list;
     }
     else {
       current_free_block = current_free_block->next;
     }
   }
 
-  // extend the new size
-  extend(new_size);
-  current_free_block = free_list;
+  return NULL;
+
+
+
 }
 
 /*
