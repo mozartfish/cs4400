@@ -95,6 +95,7 @@ static void remove_from_free_list(void *bp);
 
 static list_node *free_list = NULL;
 static int free_count = 0;
+static int unmap_count = 0;
 
 /* 
  * mm_init - initialize the malloc package.
@@ -103,6 +104,7 @@ int mm_init(void)
 {
   free_list = NULL;
   free_count = 0;
+  unmap_count = 0;
   return 0;
 }
 
@@ -159,7 +161,7 @@ void mm_free(void *bp)
 {
   size_t size = GET_SIZE(HDRP(bp));
   free_count += 1;
-  printf("%d\n", free_count);
+  printf("free_count %d\n", free_count);
   PUT(HDRP(bp), PACK(size, 0));
   PUT(FTRP(bp), PACK(size, 0));
 
@@ -174,6 +176,8 @@ void mm_free(void *bp)
 
   if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(HDRP(prev_block)) == 1 && (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1))
   {
+    unmap_count += 1;
+    printf("unmap count: %d\n", unmap_count);
     remove_from_free_list(new_free);
     mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
   }
