@@ -164,18 +164,18 @@ void mm_free(void *bp)
   // returns a pointer to new coalesced block
   void *new_free = coalesce(bp);
 
-  // // unmap map pages according to flatt video
-  // void *prev_block = PREV_BLKP(new_free);
-  // void *next_block = NEXT_BLKP(new_free);
+  // unmap map pages according to flatt video
+  void *prev_block = PREV_BLKP(new_free);
+  void *next_block = NEXT_BLKP(new_free);
 
-  // if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(FTRP(prev_block)) == 1)
-  // {
-  //   if (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1)
-  //   {
-  //     remove_from_free_list(new_free);
-  //     mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
-  //   }
-  // }
+  if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(FTRP(prev_block)) == 1)
+  {
+    if (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1)
+    {
+      remove_from_free_list(new_free);
+      mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
+    }
+  }
 }
 
 static void *coalesce(void *bp)
@@ -190,13 +190,13 @@ static void *coalesce(void *bp)
   // take newly allocated free block and add to the free list
   if (prev_alloc && next_alloc)
   {
-    printf("enter case 1\n");
+    // printf("enter case 1\n");
     add_to_free_list(bp);
   }
   // CASE 2: Next block is not allocated and previous block is allocated
   else if (prev_alloc && !next_alloc)
   {
-    printf("enter case 2\n");
+    // printf("enter case 2\n");
     size += GET_SIZE(HDRP(next_block));
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
@@ -208,7 +208,7 @@ static void *coalesce(void *bp)
   // CASE 3: Next block is allocated and previous block is unallocated
   else if (!prev_alloc && next_alloc)
   {
-    printf("enter case 3\n");
+    // printf("enter case 3\n");
     size += GET_SIZE(HDRP(prev_block));
     PUT(FTRP(bp), PACK(size, 0));
     PUT(HDRP(prev_block), PACK(size, 0));
@@ -217,7 +217,7 @@ static void *coalesce(void *bp)
   // CASE 4: Next block is not allocated and previous block is not allocated
   else
   {
-    printf("enter case 4\n");
+    // printf("enter case 4\n");
     size += (GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(HDRP(next_block)));
     PUT(HDRP(prev_block), PACK(size, 0));
     PUT(FTRP(next_block), PACK(size, 0));
