@@ -30,7 +30,8 @@
 typedef size_t block_header;
 typedef size_t block_footer;
 
-typedef struct list_node {
+typedef struct list_node
+{
   struct list_node *prev;
   struct list_node *next;
 } list_node;
@@ -43,7 +44,7 @@ typedef struct list_node {
 // Padding + Prolog Header + Prolog Footer + Epilogue = 32 BYTES
 #define PAGE_OVERHEAD (PADDING + sizeof(block_header) + sizeof(block_footer) + sizeof(block_header))
 
-#define WSIZE 8 // size of a word for x86
+#define WSIZE 8  // size of a word for x86
 #define DSIZE 16 // size of a double word for x86
 
 // max function from textbook page 857
@@ -110,7 +111,8 @@ int mm_init(void)
 void *mm_malloc(size_t size)
 {
   // check if the user requests a size of  0
-  if (size == 0) {
+  if (size == 0)
+  {
     return NULL;
   }
 
@@ -118,30 +120,34 @@ void *mm_malloc(size_t size)
 
   int new_size = ALIGN(need_size + OVERHEAD);
 
-  if (free_list == NULL) {
+  if (free_list == NULL)
+  {
     // call th extend function
     extend(256 * new_size);
   }
 
   list_node *current_free_block = free_list;
 
-  while (1) {
-    if (GET_SIZE(HDRP(current_free_block)) >= new_size) {
+  while (1)
+  {
+    if (GET_SIZE(HDRP(current_free_block)) >= new_size)
+    {
       set_allocated(current_free_block, new_size);
       return (void *)(current_free_block);
     }
-    else if (current_free_block->next == NULL) {
+    else if (current_free_block->next == NULL)
+    {
       // extend the new size
       extend(256 * new_size);
       current_free_block = free_list;
     }
-    else {
+    else
+    {
       current_free_block = current_free_block->next;
     }
   }
 
   return NULL;
-
 }
 
 /*
@@ -162,15 +168,18 @@ void mm_free(void *bp)
   void *prev_block = PREV_BLKP(new_free);
   void *next_block = NEXT_BLKP(new_free);
 
-  if (GET_SIZE(FTRP(prev_block)) == 16 && GET_ALLOC(FTRP(prev_block)) == 1) {
-    if (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1) {
+  if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(FTRP(prev_block)) == 1)
+  {
+    if (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1)
+    {
       remove_from_free_list(new_free);
       mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
     }
   }
 }
 
-static void *coalesce(void *bp) {
+static void *coalesce(void *bp)
+{
   void *prev_block = PREV_BLKP(bp);
   void *next_block = NEXT_BLKP(bp);
   size_t prev_alloc = GET_ALLOC(HDRP(prev_block));
@@ -179,12 +188,14 @@ static void *coalesce(void *bp) {
 
   // CASE 1: Next Block and previous block are already allocated
   // take newly allocated free block and add to the free list
-  if(prev_alloc && next_alloc) {
+  if (prev_alloc && next_alloc)
+  {
     printf("enter case 1\n");
     add_to_free_list(bp);
   }
   // CASE 2: Next block is not allocated and previous block is allocated
-  else if (prev_alloc && !next_alloc) {
+  else if (prev_alloc && !next_alloc)
+  {
     printf("enter case 2\n");
     size += GET_SIZE(HDRP(next_block));
     PUT(HDRP(bp), PACK(size, 0));
@@ -195,7 +206,8 @@ static void *coalesce(void *bp) {
     add_to_free_list(bp);
   }
   // CASE 3: Next block is allocated and previous block is unallocated
-  else if(!prev_alloc && next_alloc) {
+  else if (!prev_alloc && next_alloc)
+  {
     printf("enter case 3\n");
     size += GET_SIZE(HDRP(prev_block));
     PUT(FTRP(bp), PACK(size, 0));
@@ -203,7 +215,8 @@ static void *coalesce(void *bp) {
     bp = prev_block;
   }
   // CASE 4: Next block is not allocated and previous block is not allocated
-  else {
+  else
+  {
     printf("enter case 4\n");
     size += (GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(HDRP(next_block)));
     PUT(HDRP(prev_block), PACK(size, 0));
@@ -216,9 +229,11 @@ static void *coalesce(void *bp) {
   return bp;
 }
 
-static void set_allocated(void *bp, size_t size) {
+static void set_allocated(void *bp, size_t size)
+{
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
-  if (extra_size >= PAGE_OVERHEAD) {
+  if (extra_size >= PAGE_OVERHEAD)
+  {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
     // remove the allocated block
@@ -228,15 +243,15 @@ static void set_allocated(void *bp, size_t size) {
     PUT(HDRP(next_block), PACK(extra_size, 0));
     PUT(FTRP(next_block), PACK(extra_size, 0));
     // add the new allocated block
-    add_to_free_list(bp+size);
+    add_to_free_list(bp + size);
   }
-  else {
+  else
+  {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
     remove_from_free_list(bp);
   }
 }
-
 
 static void extend(size_t new_size)
 {
@@ -294,23 +309,27 @@ static void remove_from_free_list(void *bp)
   list_node *prev = alloc_block->prev;
 
   // CASE 1: 1 NODE IN THE LINKED LIST
-  if (!prev && !next) {
+  if (!prev && !next)
+  {
     free_list->next = NULL;
     free_list->prev = NULL;
     free_list = NULL;
   }
   // CASE 2: 2 NODE CASE
-  else if (!prev && next) {
+  else if (!prev && next)
+  {
     free_list = free_list->next;
     free_list->prev = NULL;
   }
   // CASE 3: NODE IN THE MIDDLE
-  else if (prev && next) {
+  else if (prev && next)
+  {
     prev->next = next;
     next->prev = prev;
   }
   // CASE 4: REMOVE THE NODE AT THE END
-  else {
+  else
+  {
     prev->next = NULL;
   }
 }
