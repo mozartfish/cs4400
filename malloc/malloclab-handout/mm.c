@@ -94,6 +94,7 @@ static void remove_from_free_list(void *bp);
 /*****************************************************************************/
 
 static list_node *free_list = NULL;
+static int free_count = 0;
 
 /* 
  * mm_init - initialize the malloc package.
@@ -101,6 +102,7 @@ static list_node *free_list = NULL;
 int mm_init(void)
 {
   free_list = NULL;
+  free_count = 0;
   return 0;
 }
 
@@ -156,6 +158,8 @@ void *mm_malloc(size_t size)
 void mm_free(void *bp)
 {
   size_t size = GET_SIZE(HDRP(bp));
+  free_count += 1;
+  printf("%d\n", free_count);
   PUT(HDRP(bp), PACK(size, 0));
   PUT(FTRP(bp), PACK(size, 0));
 
