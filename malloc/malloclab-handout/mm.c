@@ -40,7 +40,7 @@ typedef struct list_node {
 // macro for padding as described in the book. Used size_t since that has a size of 8 bytes
 #define PADDING (sizeof(size_t))
 
-// Padding + Prolog Header + Prolog Footer + Epilogue
+// Padding + Prolog Header + Prolog Footer + Epilogue = 32 BYTES
 #define PAGE_OVERHEAD (PADDING + sizeof(block_header) + sizeof(block_footer) + sizeof(block_header))
 
 #define WSIZE 8 // size of a word for x86
@@ -91,7 +91,6 @@ static void add_to_free_list(void *bp);
 static void remove_from_free_list(void *bp);
 /*****************************************************************************/
 
-
 static list_node *free_list = NULL;
 
 /* 
@@ -109,8 +108,6 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-
-
   // check if the user requests a size of  0
   if (size == 0) {
     return NULL;
@@ -119,8 +116,6 @@ void *mm_malloc(size_t size)
   int need_size = MAX(size, sizeof(list_node));
 
   int new_size = ALIGN(need_size + OVERHEAD);
-  // print the aligned new size
-  // printf("%d", new_size);
 
   if (free_list == NULL) {
     // call th extend function
@@ -146,8 +141,6 @@ void *mm_malloc(size_t size)
 
   return NULL;
 
-
-
 }
 
 /*
@@ -160,7 +153,7 @@ void mm_free(void *bp)
   PUT(FTRP(bp), PACK(size, 0));
 
   // call the coalesce function
-  printf("coalesce\n");
+  // printf("coalesce\n");
   coalesce(bp);
 }
 
@@ -176,17 +169,19 @@ static void *coalesce(void *bp) {
   if(prev_alloc && next_alloc) {
     printf("enter case 1\n");
     add_to_free_list(bp);
+    return bp;
   }
   // CASE 2: Next block is not allocated and previous block is allocated
   else if (prev_alloc && !next_alloc) {
     printf("enter case 2\n");
     size += GET_SIZE(HDRP(next_block));
     PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+    PUT(FTRP(next_block), PACK(size, 0));
     // remove the previous free block from the free list
     remove_from_free_list(next_block);
     // add the new sized free block to the free list
     add_to_free_list(bp);
+    return bp;
   }
   // CASE 3: Next block is allocated and previous block is unallocated
   else if(!prev_alloc && next_alloc) {
@@ -195,6 +190,7 @@ static void *coalesce(void *bp) {
     PUT(HDRP(prev_block), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
     bp = PREV_BLKP(bp);
+    return bp;
   }
   // CASE 4: Next block is not allocated and previous block is not allocated
   else {
@@ -205,6 +201,7 @@ static void *coalesce(void *bp) {
     // remove the previous free block from the free list
     remove_from_free_list(next_block);
     bp = PREV_BLKP(bp);
+    return bp;
   }
 
   return bp;
