@@ -88,6 +88,7 @@ static void extend(size_t s);
 static void *coalesce(void *bp);
 
 static void add_to_free_list(void *bp);
+
 static void remove_from_free_list(void *bp);
 /*****************************************************************************/
 
@@ -154,7 +155,19 @@ void mm_free(void *bp)
 
   // call the coalesce function
   // printf("coalesce\n");
-  coalesce(bp);
+  // returns a pointer to new coalesced block
+  void *new_free = coalesce(bp);
+
+  // unmap map pages according to flatt video
+  void *prev_block = PREV_BLKP(new_free);
+  void *next_block = NEXT_BLKP(new_free);
+
+  if (GET_SIZE(FTRP(prev_block)) == 16 && GET_ALLOC(FTRP(prev_block)) == 1) {
+    if (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1) {
+      remove_from_free_list(new_free);
+      mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
+    }
+  }
 }
 
 static void *coalesce(void *bp) {
