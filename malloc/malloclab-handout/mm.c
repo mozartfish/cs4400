@@ -290,34 +290,27 @@ static void remove_from_free_list(void *bp)
 {
   // cast void pointer to list node pointer and get the next and previous free blocks (if they exist)
   list_node *alloc_block = (list_node *)(bp);
-  list_node *alloc_block_next = alloc_block->next;
-  list_node *alloc_block_prev = alloc_block->prev;
+  list_node *next = alloc_block->next;
+  list_node *prev = alloc_block->prev;
 
-  // CASE 1: ALLOCATED BLOCK IS THE FIRST FREE BLOCK (ROOT NODE CASE)
-  if (alloc_block == free_list) {
-    // CASE A: NEXT != NULL and PREV = NULL
-    if (free_list->next != NULL) {
-      free_list = free_list->next;
-      free_list->prev = NULL;
-    }
-    // CASE B: NEXT = NULL AND PREV = NULL
-    else {
-      free_list->next = NULL;
-      free_list->prev = NULL;
-      free_list = NULL;
-    }
+  // CASE 1: 1 NODE IN THE LINKED LIST
+  if (!prev && !next) {
+    free_list->next = NULL;
+    free_list->prev = NULL;
+    free_list = NULL;
   }
-  // CASE 2: REMOVE THE LAST NODE IN THE LINKED LIST
-  else if (alloc_block_prev != NULL && alloc_block_next == NULL) {
-    alloc_block_prev->next = NULL;
+  // CASE 2: 2 NODE CASE
+  else if (!prev && next) {
+    free_list = free_list->next;
+    free_list->prev = NULL;
   }
-  // CASE 3: REMOVE THE NODE IN THE MIDDLE OF THE LINKED LIST
-  else if (alloc_block_prev != NULL && alloc_block_next != NULL)
-  {
-    // set the previous pointers
-    alloc_block_prev->next = alloc_block_next;
-
-    // set the next pointers
-    alloc_block_next->prev = alloc_block_prev;
+  // CASE 3: NODE IN THE MIDDLE
+  else if (prev && next) {
+    prev->next = next;
+    next->prev = prev;
+  }
+  // CASE 4: REMOVE THE NODE AT THE END
+  else {
+    prev->next = NULL;
   }
 }
