@@ -229,6 +229,7 @@ static void set_allocated(void *bp, size_t size) {
   else {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
+    remove_from_free_list(bp);
   }
 }
 
