@@ -188,7 +188,7 @@ static void *coalesce(void *bp) {
     printf("enter case 2\n");
     size += GET_SIZE(HDRP(next_block));
     PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(next_block), PACK(size, 0));
+    PUT(FTRP(bp), PACK(size, 0));
     // remove the previous free block from the free list
     remove_from_free_list(next_block);
     // add the new sized free block to the free list
@@ -198,8 +198,8 @@ static void *coalesce(void *bp) {
   else if(!prev_alloc && next_alloc) {
     printf("enter case 3\n");
     size += GET_SIZE(HDRP(prev_block));
-    PUT(HDRP(prev_block), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
+    PUT(HDRP(prev_block), PACK(size, 0));
     bp = prev_block;
   }
   // CASE 4: Next block is not allocated and previous block is not allocated
