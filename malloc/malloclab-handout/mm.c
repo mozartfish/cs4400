@@ -164,18 +164,18 @@ void mm_free(void *bp)
   // returns a pointer to new coalesced block
   void *new_free = coalesce(bp);
 
-  // unmap map pages according to flatt video
-  void *prev_block = PREV_BLKP(new_free);
-  void *next_block = NEXT_BLKP(new_free);
+  // // unmap map pages according to flatt video
+  // void *prev_block = PREV_BLKP(new_free);
+  // void *next_block = NEXT_BLKP(new_free);
 
-  if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(FTRP(prev_block)) == 1)
-  {
-    if (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1)
-    {
-      remove_from_free_list(new_free);
-      mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
-    }
-  }
+  // if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(FTRP(prev_block)) == 1)
+  // {
+  //   if (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1)
+  //   {
+  //     remove_from_free_list(new_free);
+  //     mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
+  //   }
+  // }
 }
 
 static void *coalesce(void *bp)
