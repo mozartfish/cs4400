@@ -229,7 +229,7 @@ static void set_allocated(void *bp, size_t size)
 
   if (extra_size >= PAGE_OVERHEAD)
   {
-    void *new_bp = bp;
+    char *new_bp = (char *)(bp);
     // get the next payload pointer
     void *next_block = NEXT_BLKP(bp);
     PUT(HDRP(next_block), PACK(extra_size, 0));
