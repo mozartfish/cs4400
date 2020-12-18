@@ -179,11 +179,12 @@ static void extend(size_t new_size)
   void *pbytes = pgs;
 
   PUT(pbytes, 0);                                                   // padding
-  PUT(pbytes + 8, PACK(OVERHEAD, 1));                               // prolog head
-  PUT(pbytes + 16, PACK(OVERHEAD, 1));                              // prolog foot
-  PUT(pbytes + 24, PACK(page_size_bytes - PAGE_OVERHEAD, 0));       // block header
-  PUT(FTRP(pbytes + 32), PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block footer
-  PUT(FTRP(page_size_bytes + 32) + 8, PACK(0, 1));                  // epilog header
+
+  PUT(pbytes + 8, PACK(16, 1)); // prolog header
+  PUT(pbytes + 16, PACK(16, 1)); // prolog footer
+  PUT(pbytes + 24, PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block header
+  PUT(FTRP(pbytes + PAGE_OVERHEAD), PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block footer
+  PUT(FTRP(pbytes + PAGE_OVERHEAD) + 8, PACK(0, 1)); // epilog header
 
   add_to_free_list(pbytes + 32); // add node to free list
 
