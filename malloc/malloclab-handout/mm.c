@@ -119,7 +119,7 @@ void *mm_malloc(size_t size)
   int need_size = MAX(size, sizeof(list_node));
   int new_size = ALIGN(need_size + OVERHEAD);
 
-  printf("aligned size: %d\n", new_size);
+  // printf("aligned size: %d\n", new_size);
 
   if (free_list == NULL)
   {
@@ -132,8 +132,8 @@ void *mm_malloc(size_t size)
   while (1)
   {
     // print stuff
-    printf("current_free: %p\n", current_free_block);
-    printf("size_avail: %d\n", GET_SIZE(HDRP(current_free_block)));
+    // printf("current_free: %p\n", current_free_block);
+    // printf("size_avail: %d\n", GET_SIZE(HDRP(current_free_block)));
 
     if (GET_SIZE(HDRP(current_free_block)) >= new_size)
     {
@@ -158,7 +158,7 @@ void *mm_malloc(size_t size)
 static void extend(size_t new_size)
 {
   page_size_bytes = PAGE_ALIGN(new_size);
-  printf("page bytes: %d\n", page_size_bytes);
+  // printf("page bytes: %d\n", page_size_bytes);
 
   pgs = mem_map(page_size_bytes);
 
@@ -225,7 +225,7 @@ static void set_allocated(void *bp, size_t size)
   }
   else
   {
-    printf("set_alloc_else\n");
+    // printf("set_alloc_else\n");
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
     remove_from_free_list(bp);
