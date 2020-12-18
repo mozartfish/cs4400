@@ -119,7 +119,7 @@ void *mm_malloc(size_t size)
     return NULL;
   }
 
-  int new_size = ALIGN(MAX(size, sizeof(list_node)) + OVERHEAD);
+  int new_size = ALIGN(MAX(size, sizeof(list_node)) + PAGE_OVERHEAD);
 
   if (free_list == NULL)
   {
