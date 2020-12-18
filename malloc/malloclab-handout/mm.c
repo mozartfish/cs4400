@@ -125,7 +125,7 @@ void *mm_malloc(size_t size)
   if (free_list == NULL)
   {
     // call th extend function
-    extend(32 * new_size);
+    extend(2 * new_size);
   }
 
   list_node *current_free_block = free_list;
@@ -144,7 +144,7 @@ void *mm_malloc(size_t size)
     if (current_free_block->next == NULL)
     {
       // extend the new size
-      extend(32 * new_size);
+      extend(2 * new_size);
       current_free_block = free_list;
     }
     else
