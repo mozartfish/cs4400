@@ -178,13 +178,13 @@ static void extend(size_t new_size)
 
   void *pbytes = pgs;
 
-  PUT(pbytes, 0);                                                   // padding
+  PUT(pbytes, 0); // padding
 
-  PUT(pbytes + 8, PACK(16, 1)); // prolog header
-  PUT(pbytes + 16, PACK(16, 1)); // prolog footer
-  PUT(pbytes + 24, PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block header
+  PUT(pbytes + 8, PACK(16, 1));                                                // prolog header
+  PUT(pbytes + 16, PACK(16, 1));                                               // prolog footer
+  PUT(pbytes + 24, PACK(page_size_bytes - PAGE_OVERHEAD, 0));                  // block header
   PUT(FTRP(pbytes + PAGE_OVERHEAD), PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block footer
-  PUT(FTRP(pbytes + PAGE_OVERHEAD) + 8, PACK(0, 1)); // epilog header
+  PUT(FTRP(pbytes + PAGE_OVERHEAD) + 8, PACK(0, 1));                           // epilog header
 
   add_to_free_list(pbytes + 32); // add node to free list
 
@@ -296,7 +296,7 @@ void mm_free(void *bp)
   void *prev_block = PREV_BLKP(new_free);
   void *next_block = NEXT_BLKP(new_free);
 
-  if (GET_SIZE(HDRP(prev_block)) == 16 && (GET_SIZE(HDRP(next_block)) == 0))
+  if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(HDRP(prev_block)) == 1 && GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1)
   {
     printf("unmap pages\n");
     printf("free %p\n", new_free);
