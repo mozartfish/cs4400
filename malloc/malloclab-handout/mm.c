@@ -165,7 +165,7 @@ static void extend(size_t new_size)
   // check if mem map returns null
   if (!pgs)
   {
-    return NULL;
+    return;
   }
 
   void *pbytes = pgs;
@@ -339,6 +339,6 @@ static void *coalesce(void *bp)
     remove_from_free_list(next_payload);
     bp = prev_payload;
   }
-  
+
   return bp;
 }
