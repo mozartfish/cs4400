@@ -177,7 +177,7 @@ void mm_free(void *bp)
   {
     printf("free %p\n", new_free);
     remove_from_free_list(new_free);
-    mem_unmap(new_free - OVERHEAD, GET_SIZE(HDRP(new_free)) + OVERHEAD);
+    mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
   }
   printf("get rekt by malloc\n");
 }
@@ -280,13 +280,11 @@ static void extend(size_t new_size)
   PUT(pgs + (1 * WSIZE), PACK(OVERHEAD, 1));                        // PROLOG HEADER
   PUT(pgs + (2 * WSIZE), PACK(OVERHEAD, 1));                        // PROLOG FOOTER
   PUT(pgs + (3 * WSIZE), PACK(page_size_bytes - PAGE_OVERHEAD, 1)); // NEW FREE BLOCK HEADER
-  // increment 32 to get to the free block pointer
-  pgs += 32;
-  PUT(FTRP(pgs), PACK(page_size_bytes - PAGE_OVERHEAD, 1)); // NEW FREE BLOCK FOOTER
-  PUT(FTRP(pgs) + (1 * WSIZE), PACK(0, 1));                 // EPILOG HEADER
+  PUT(FTRP(pgs + 32), PACK(page_size_bytes - PAGE_OVERHEAD, 1)); // NEW FREE BLOCK FOOTER
+  PUT(FTRP(pgs + 32) + (1 * WSIZE), PACK(0, 1));                 // EPILOG HEADER
 
   // add node to the explicit free list
-  add_to_free_list(pgs);
+  add_to_free_list(pgs + 32);
   printf("extend: %p\n", pgs);
   printf("size: %d, current_avail_size: %d, hdr: %d\n", new_size, page_size_bytes, GET_SIZE(HDRP(pgs)));
   printf("term: %d, beggin: %d\n", FTRP(pgs) + WSIZE, pgs);
