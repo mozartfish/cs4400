@@ -110,7 +110,7 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  printf("call malloc\n");
+  // printf("call malloc\n");
   // check if the user requests a size of  0
   if (size == 0)
   {
@@ -120,12 +120,12 @@ void *mm_malloc(size_t size)
   int need_size = MAX(size, sizeof(list_node));
   int new_size = ALIGN(need_size + OVERHEAD);
 
-  printf("aligned size: %d\n", new_size);
+  // printf("aligned size: %d\n", new_size);
 
   if (free_list == NULL)
   {
     // call th extend function
-    extend(2 * new_size);
+    extend(new_size);
   }
 
   list_node *current_free_block = free_list;
@@ -133,8 +133,8 @@ void *mm_malloc(size_t size)
   while (1)
   {
     // print stuff
-    printf("current_free: %p\n", current_free_block);
-    printf("size_avail: %d\n", GET_SIZE(HDRP(current_free_block)));
+    // printf("current_free: %p\n", current_free_block);
+    // printf("size_avail: %d\n", GET_SIZE(HDRP(current_free_block)));
 
     if (GET_SIZE(HDRP(current_free_block)) >= new_size)
     {
@@ -144,7 +144,7 @@ void *mm_malloc(size_t size)
     if (current_free_block->next == NULL)
     {
       // extend the new size
-      extend(2 * new_size);
+      extend(new_size);
       current_free_block = free_list;
     }
     else
@@ -181,10 +181,10 @@ static void extend(size_t new_size)
 
   add_to_free_list(pbytes); // add node to free list
 
-  printf("extend: %p\n", pgs);
-  printf("size: %d, page_size_bytes: %d, header: %d\n", new_size,
-         page_size_bytes, GET_SIZE(HDRP(pgs)));
-  printf("terminator: %d, page-start: %d\n", FTRP(pgs) + 8, pgs - 32);
+  // printf("extend: %p\n", pgs);
+  // printf("size: %d, page_size_bytes: %d, header: %d\n", new_size,
+  //        page_size_bytes, GET_SIZE(HDRP(pgs)));
+  // printf("terminator: %d, page-start: %d\n", FTRP(pgs) + 8, pgs - 32);
 }
 
 // build a linked list of free blocks
@@ -220,7 +220,7 @@ static void set_allocated(void *bp, size_t size)
     remove_from_free_list(bp);
 
     // print pointer of allocated block
-    printf("alloc: %p\n", bp);
+    // printf("alloc: %p\n", bp);
 
     PUT(HDRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
     PUT(FTRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
@@ -230,7 +230,7 @@ static void set_allocated(void *bp, size_t size)
   }
   else
   {
-    printf("set_alloc_else\n");
+    // printf("set_alloc_else\n");
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
     remove_from_free_list(bp);
@@ -280,7 +280,7 @@ void mm_free(void *bp)
   PUT(FTRP(bp), PACK(size, 0));
 
   // call the coalesce function
-  printf("coalesce\n");
+  // printf("coalesce\n");
   // returns a pointer to new coalesced block
   void *new_free = coalesce(bp);
 
@@ -290,11 +290,11 @@ void mm_free(void *bp)
 
   if (GET_SIZE(HDRP(prev_block)) == OVERHEAD && GET_SIZE(HDRP(next_block)) == 0)
   {
-    printf("unmap pages\n");
+    // printf("unmap pages\n");
     remove_from_free_list(new_free);
     mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
   }
-  printf("get rekt by malloc\n");
+  // printf("get rekt by malloc\n");
 }
 
 static void *coalesce(void *bp)
@@ -309,13 +309,13 @@ static void *coalesce(void *bp)
   // take newly allocated free block and add to the free list
   if (prev_alloc && next_alloc)
   {
-    printf("enter case 1\n");
+    // printf("enter case 1\n");
     add_to_free_list(bp);
   }
   // CASE 2: Next block is not allocated and previous block is allocated
   else if (prev_alloc && !next_alloc)
   {
-    printf("enter case 2\n");
+    // printf("enter case 2\n");
     size += GET_SIZE(HDRP(next_payload));
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(next_payload), PACK(size, 0));
@@ -327,7 +327,7 @@ static void *coalesce(void *bp)
   // CASE 3: Next block is allocated and previous block is unallocated
   else if (!prev_alloc && next_alloc)
   {
-    printf("enter case 3\n");
+    // printf("enter case 3\n");
     size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload));
     PUT(FTRP(bp), PACK(size, 0));
     PUT(HDRP(prev_payload), PACK(size, 0));
@@ -336,7 +336,7 @@ static void *coalesce(void *bp)
   // CASE 4: Next block is not allocated and previous block is not allocated
   else
   {
-    printf("enter case 4\n");
+    // printf("enter case 4\n");
     size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload)) + GET_SIZE(HDRP(next_payload));
     PUT(HDRP(prev_payload), PACK(size, 0));
     PUT(FTRP(next_payload), PACK(size, 0));
