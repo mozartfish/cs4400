@@ -119,13 +119,7 @@ void *mm_malloc(size_t size)
     return NULL;
   }
 
-  int need_size = MAX(size, sizeof(list_node));
-
-  printf("need size: %d\n", need_size);
-
-  int new_size = ALIGN(need_size + OVERHEAD);
-
-  printf("aligned size: %d\n", new_size);
+  int new_size = ALIGN(MAX(size, sizeof(list_node)) + OVERHEAD);
 
   if (free_list == NULL)
   {
@@ -301,7 +295,7 @@ void mm_free(void *bp)
     printf("unmap pages\n");
     printf("free %p\n", new_free);
     remove_from_free_list(new_free);
-    mem_unmap(new_free - 16, GET_SIZE(HDRP(new_free)) + 16);
+    mem_unmap(new_free - 32, GET_SIZE(HDRP(new_free)) + 32);
   }
   printf("get rekt by malloc\n");
 }
