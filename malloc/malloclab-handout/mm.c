@@ -119,12 +119,18 @@ void *mm_malloc(size_t size)
     return NULL;
   }
 
-  int new_size = ALIGN(MAX(size, sizeof(list_node)) + PAGE_OVERHEAD);
+  int need_size = MAX(size, sizeof(list_node));
+
+  printf("need size: %d\n", need_size);
+
+  int new_size = ALIGN(need_size + OVERHEAD);
+
+  printf("aligned size: %d\n", new_size);
 
   if (free_list == NULL)
   {
     // call th extend function
-    extend(64 * new_size);
+    extend(2 * new_size);
   }
 
   list_node *current_free_block = free_list;
@@ -143,7 +149,7 @@ void *mm_malloc(size_t size)
     if (current_free_block->next == NULL)
     {
       // extend the new size
-      extend(64 * new_size);
+      extend(2 * new_size);
       current_free_block = free_list;
     }
     else
