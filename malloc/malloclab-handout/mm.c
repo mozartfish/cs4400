@@ -177,7 +177,7 @@ void mm_free(void *bp)
   {
     printf("free %p\n", new_free);
     remove_from_free_list(new_free);
-    mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
+    mem_unmap(new_free - OVERHEAD, GET_SIZE(HDRP(new_free)) + OVERHEAD);
   }
   printf("get rekt by malloc\n");
 }
