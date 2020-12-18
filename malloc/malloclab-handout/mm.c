@@ -301,7 +301,7 @@ void mm_free(void *bp)
     printf("unmap pages\n");
     printf("free %p\n", new_free);
     remove_from_free_list(new_free);
-    mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
+    mem_unmap(new_free - 16, GET_SIZE(HDRP(new_free)) + 16);
   }
   printf("get rekt by malloc\n");
 }
