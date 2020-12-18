@@ -170,8 +170,7 @@ static void extend(size_t new_size)
 
   void *pbytes = pgs;
 
-  PUT(pbytes, 0); // padding
-
+  PUT(pbytes, 0);                                             // padding
   PUT(pbytes + 8, PACK(16, 1));                               // prolog header
   PUT(pbytes + 16, PACK(16, 1));                              // prolog footer
   PUT(pbytes + 24, PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block header
