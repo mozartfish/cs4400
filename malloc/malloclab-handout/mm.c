@@ -208,16 +208,12 @@ static void set_allocated(void *bp, size_t size)
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
   printf("extra size: %d\n", extra_size);
 
+  PUT(HDRP(bp), PACK(size, 1));
+  PUT(HDRP(bp), PACK(size, 1));
+  remove_from_free_list(bp);
+
   if (extra_size >= PAGE_OVERHEAD)
   {
-    PUT(HDRP(bp), PACK(size, 1));
-    PUT(FTRP(bp), PACK(size, 1));
-
-    // print pointer we allocated
-    printf("alloc: %p\n", bp);
-
-    // remove the allocated block
-    remove_from_free_list(bp);
     // get the next payload pointer
     void *next_block = NEXT_BLKP(bp);
     PUT(HDRP(next_block), PACK(extra_size, 0));
