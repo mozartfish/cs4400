@@ -179,6 +179,7 @@ void mm_free(void *bp)
     remove_from_free_list(new_free);
     mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
   }
+  printf("get rekt by malloc\n");
 }
 
 static void *coalesce(void *bp)
