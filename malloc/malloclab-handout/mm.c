@@ -286,6 +286,7 @@ void mm_free(void *bp)
   {
     printf("unmap pages\n");
     remove_from_free_list(new_free);
+    new_free = PREV_BLKP(new_free);
     mem_unmap(new_free - PAGE_OVERHEAD, GET(new_free) - PAGE_OVERHEAD);
   }
   printf("get rekt by malloc\n");
