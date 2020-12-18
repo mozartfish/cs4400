@@ -38,14 +38,11 @@ typedef struct list_node
 
 #define OVERHEAD (sizeof(block_header) + sizeof(block_footer))
 
-// macro for padding as described in the book. Used size_t since that has a size of 8 bytes
-#define PADDING (sizeof(size_t))
-
-// Padding + Prolog Header + Prolog Footer + Epilogue = 32 BYTES
-#define PAGE_OVERHEAD (PADDING + sizeof(block_header) + sizeof(block_footer) + sizeof(block_header))
-
 #define WSIZE 8  // size of a word for x86
 #define DSIZE 16 // size of a double word for x86
+
+// Padding + Prolog Header + Prolog Footer + Epilogue = 32 BYTES
+#define PAGE_OVERHEAD (WSIZE + sizeof(block_header) + sizeof(block_footer) + sizeof(block_header))
 
 // max function from textbook page 857
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -91,11 +88,10 @@ static void *coalesce(void *bp);
 static void add_to_free_list(void *bp);
 
 static void remove_from_free_list(void *bp);
+
 /*****************************************************************************/
 
 static list_node *free_list = NULL;
-static int free_count = 0;
-static int unmap_count = 0;
 
 /* 
  * mm_init - initialize the malloc package.
@@ -103,8 +99,6 @@ static int unmap_count = 0;
 int mm_init(void)
 {
   free_list = NULL;
-  free_count = 0;
-  unmap_count = 0;
   return 0;
 }
 
@@ -124,6 +118,9 @@ void *mm_malloc(size_t size)
 
   int new_size = ALIGN(need_size + OVERHEAD);
 
+  // print new size
+  printf("nsize: %d", new_size);
+
   if (free_list == NULL)
   {
     // call th extend function
@@ -134,6 +131,10 @@ void *mm_malloc(size_t size)
 
   while (1)
   {
+    // print stuff
+    printf("current_free: %p\n", current_free_block);
+    printf("size_avail: %d\n", GET_SIZE(HDRP(current_free_block)));
+
     if (GET_SIZE(HDRP(current_free_block)) >= new_size)
     {
       set_allocated(current_free_block, new_size);
@@ -160,13 +161,11 @@ void *mm_malloc(size_t size)
 void mm_free(void *bp)
 {
   size_t size = GET_SIZE(HDRP(bp));
-  free_count += 1;
-  printf("free_count %d\n", free_count);
   PUT(HDRP(bp), PACK(size, 0));
   PUT(FTRP(bp), PACK(size, 0));
 
   // call the coalesce function
-  // printf("coalesce\n");
+  printf("coalesce\n");
   // returns a pointer to new coalesced block
   void *new_free = coalesce(bp);
 
@@ -176,8 +175,7 @@ void mm_free(void *bp)
 
   if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(HDRP(prev_block)) == 1 && (GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1))
   {
-    unmap_count += 1;
-    printf("unmap count: %d\n", unmap_count);
+    printf("free %p\n", new_free);
     remove_from_free_list(new_free);
     mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
   }
@@ -241,6 +239,10 @@ static void set_allocated(void *bp, size_t size)
   {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
+
+    // print pointer we allocated
+    printf("alloc: %p\n", bp);
+
     // remove the allocated block
     remove_from_free_list(bp);
     // get the next payload pointer
@@ -252,6 +254,7 @@ static void set_allocated(void *bp, size_t size)
   }
   else
   {
+    printf("set_allo_else\n");
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
     remove_from_free_list(bp);
@@ -283,6 +286,9 @@ static void extend(size_t new_size)
 
   // add node to the explicit free list
   add_to_free_list(pgs);
+  printf("extend: %p\n", pgs);
+  printf("size: %d, current_avail_size: %d, hdr: %d\n", new_size, page_size_bytes, GET_SIZE(HDRP(pgs)));
+  printf("term: %d, beggin: %d\n", FTRP(pgs) + WSIZE, pgs);
 }
 
 // build a linked list of free blocks
