@@ -282,7 +282,7 @@ void mm_free(void *bp)
   void *prev_block = PREV_BLKP(new_free);
   void *next_block = NEXT_BLKP(new_free);
 
-  if (GET_SIZE(HDRP(prev_block)) == 16 && GET_ALLOC(HDRP(prev_block)) == 1 && GET_SIZE(HDRP(next_block)) == 0 && GET_ALLOC(HDRP(next_block)) == 1)
+  if (GET_SIZE(HDRP(prev_block)) == OVERHEAD &&  GET_SIZE(HDRP(next_block)) == 0)
   {
     printf("unmap pages\n");
     remove_from_free_list(new_free);
