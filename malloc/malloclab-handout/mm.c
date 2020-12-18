@@ -119,7 +119,7 @@ void *mm_malloc(size_t size)
     return NULL;
   }
 
-  int need_size = MAX(size, sizeof(list_node));
+  int need_size = MAX(size, sizeof(list_node *));
 
   printf("need size: %d\n", need_size);
 
