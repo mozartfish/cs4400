@@ -119,7 +119,7 @@ void *mm_malloc(size_t size)
     return NULL;
   }
 
-  int need_size = MAX(size, sizeof(list_node *));
+  int need_size = MAX(size, sizeof(list_node));
 
   printf("need size: %d\n", need_size);
 
@@ -130,7 +130,7 @@ void *mm_malloc(size_t size)
   if (free_list == NULL)
   {
     // call th extend function
-    extend(64 * new_size);
+    extend(16 * new_size);
   }
 
   list_node *current_free_block = free_list;
@@ -149,7 +149,7 @@ void *mm_malloc(size_t size)
     if (current_free_block->next == NULL)
     {
       // extend the new size
-      extend(64 * new_size);
+      extend(16 * new_size);
       current_free_block = free_list;
     }
     else
