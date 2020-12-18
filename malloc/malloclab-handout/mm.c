@@ -335,7 +335,7 @@ static void *coalesce(void *bp)
     PUT(HDRP(prev_payload), PACK(size, 0));
     PUT(FTRP(next_payload), PACK(size, 0));
     // remove the previous free block from the free list
-    remove_from_free_list(next_payload);
+    // remove_from_free_list(next_payload);
     bp = prev_payload;
   }
 
