@@ -130,7 +130,7 @@ void *mm_malloc(size_t size)
   if (free_list == NULL)
   {
     // call th extend function
-    extend(16 * new_size);
+    extend(64 * new_size);
   }
 
   list_node *current_free_block = free_list;
@@ -149,7 +149,7 @@ void *mm_malloc(size_t size)
     if (current_free_block->next == NULL)
     {
       // extend the new size
-      extend(16 * new_size);
+      extend(64 * new_size);
       current_free_block = free_list;
     }
     else
@@ -308,51 +308,52 @@ void mm_free(void *bp)
 
 static void *coalesce(void *bp)
 {
-  void *prev_block = PREV_BLKP(bp);
-  void *next_block = NEXT_BLKP(bp);
-  size_t prev_alloc = GET_ALLOC(HDRP(prev_block));
-  size_t next_alloc = GET_ALLOC(HDRP(next_block));
-  size_t size = GET_SIZE(HDRP(bp));
+  void *prev_payload = PREV_BLKP(bp);
+  void *next_payload = NEXT_BLKP(bp);
+  size_t prev_alloc = GET_ALLOC(HDRP(prev_payload));
+  size_t next_alloc = GET_ALLOC(HDRP(next_payload));
 
   // CASE 1: Next Block and previous block are already allocated
   // take newly allocated free block and add to the free list
   if (prev_alloc && next_alloc)
   {
-    // printf("enter case 1\n");
+    printf("enter case 1\n");
     add_to_free_list(bp);
+
+    return bp;
   }
   // CASE 2: Next block is not allocated and previous block is allocated
   else if (prev_alloc && !next_alloc)
   {
-    // printf("enter case 2\n");
-    size += GET_SIZE(HDRP(next_block));
+    printf("enter case 2\n");
+    size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(next_payload));
     PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(bp), PACK(size, 0));
+    PUT(FTRP(next_payload), PACK(size, 0));
     // remove the previous free block from the free list
-    remove_from_free_list(next_block);
+    remove_from_free_list(next_payload);
     // add the new sized free block to the free list
     add_to_free_list(bp);
+
+    return bp;
   }
   // CASE 3: Next block is allocated and previous block is unallocated
   else if (!prev_alloc && next_alloc)
   {
-    // printf("enter case 3\n");
-    size += GET_SIZE(HDRP(prev_block));
+    printf("enter case 3\n");
+    size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload));
     PUT(FTRP(bp), PACK(size, 0));
-    PUT(HDRP(prev_block), PACK(size, 0));
-    bp = prev_block;
+    PUT(HDRP(prev_payload), PACK(size, 0));
+    return prev_payload;
   }
   // CASE 4: Next block is not allocated and previous block is not allocated
   else
   {
-    // printf("enter case 4\n");
-    size += (GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(HDRP(next_block)));
-    PUT(HDRP(prev_block), PACK(size, 0));
-    PUT(FTRP(next_block), PACK(size, 0));
+    printf("enter case 4\n");
+    size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload)) + GET_SIZE(HDRP(next_payload));
+    PUT(HDRP(prev_payload), PACK(size, 0));
+    PUT(FTRP(next_payload), PACK(size, 0));
     // remove the previous free block from the free list
-    remove_from_free_list(next_block);
-    bp = prev_block;
+    remove_from_free_list(next_payload);
+    return prev_payload;
   }
-
-  return bp;
 }
