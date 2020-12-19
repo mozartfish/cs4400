@@ -371,10 +371,16 @@ static void *coalesce(void *bp)
   // CASE 4: Next block is not allocated and previous block is not allocated
   else
   {
+	  printf("%d\n", GET_SIZE(HDRP(prev_payload)));
+	  printf("%d\n", GET_SIZE(HDRP(next_payload)));
     printf("enter case 4\n");
     size += (GET_SIZE(HDRP(prev_payload)) + GET_SIZE(FTRP(next_payload)));
-    remove_from_free_list(prev_payload); // remove previous
+    printf("new_size: %d\n", size);
+    remove_from_free_list(prev_payload); // remove previou
+    printf("remove previous\n");
+    printf("next_pay_size: %p\n", next_payload);
     remove_from_free_list(next_payload); // remove next
+    printf("remove next\n");
     PUT(HDRP(prev_payload), PACK(size, 0));
     PUT(FTRP(next_payload), PACK(size, 0));
     add_to_free_list(prev_payload);
