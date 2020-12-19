@@ -215,6 +215,8 @@ static void *extend(size_t new_size)
   printf("epilog: %d, new_free: %d\n", GET_SIZE(FTRP(pg_bytes) + 8), pg_bytes);
 
   add_to_free_list(pgs); // add the new free block to the linked list
+
+  return pg_bytes;
 }
 
 // build a linked list of free blocks
