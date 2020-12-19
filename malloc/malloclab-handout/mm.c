@@ -372,7 +372,7 @@ static void *coalesce(void *bp)
   else
   {
     printf("enter case 4\n");
-    size += (GET_SIZE(HDRP(prev_payload)) + GET_SIZE(HDRP(next_payload)));
+    size += (GET_SIZE(HDRP(prev_payload)) + GET_SIZE(FTRP(next_payload)));
     remove_from_free_list(prev_payload); // remove previous
     remove_from_free_list(next_payload); // remove next
     PUT(HDRP(prev_payload), PACK(size, 0));
