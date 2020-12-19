@@ -62,6 +62,8 @@ typedef struct list_node
 // Given a header pointer, get the alloc or size
 #define GET_ALLOC(p) (GET(p) & 0x1)
 #define GET_SIZE(p) (GET(p) & ~0xF)
+
+#define DOUBLE_THRESHOLD 0x4000 // 4 PAGES = 16,384 bytes
 /*********************************************************************************/
 // HELPER FUNCTIONS
 /* Set a block to allocated 
@@ -75,7 +77,7 @@ static void set_allocated(void *b, size_t size);
  * Initialize the new chunk of memory as applicable 
  * Update free list if applicable 
  */
-static void extend(size_t s);
+static void *extend(size_t s);
 
 // /* Coalesce a free block if applicable
 //  * Returns pointer to new coalesced block
@@ -89,8 +91,8 @@ static void remove_from_free_list(void *bp);
 /*****************************************************************************/
 
 // Global Variables
-static list_node *free_list = NULL;
-static int page_size_bytes = 0;
+static list_node *start_free = NULL;
+static size_t curr_page_bytes = 0;
 static void *pgs = NULL;
 
 /* 
@@ -98,8 +100,8 @@ static void *pgs = NULL;
  */
 int mm_init(void)
 {
-  free_list = NULL;
-  page_size_bytes = 0;
+  start_free = NULL;
+  curr_page_bytes = 4096;
   pgs = NULL;
   return 0;
 }
@@ -110,7 +112,7 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-  // printf("call malloc\n");
+  printf("call malloc\n");
   // check if the user requests a size of  0
   if (size == 0)
   {
@@ -120,93 +122,121 @@ void *mm_malloc(size_t size)
   int need_size = MAX(size, sizeof(list_node));
   int new_size = ALIGN(need_size + OVERHEAD);
 
-  // printf("aligned size: %d\n", new_size);
+  printf("aligned size: %d\n", new_size);
 
-  if (free_list == NULL)
+  // check if we have an available free block to allocate memory
+  if (start_free == NULL)
   {
-    // call th extend function
-    extend(new_size);
+    // call the extend function to get a new set of pages
+    void *new_free = extend(new_size);
+
+    // add the new block to the free list
+    add_to_free_list(new_free);
   }
 
-  list_node *current_free_block = free_list;
+  list_node *curr_free = start_free;
 
   while (1)
   {
     // print stuff
-    // printf("current_free: %p\n", current_free_block);
-    // printf("size_avail: %d\n", GET_SIZE(HDRP(current_free_block)));
+    printf("current_free: %p\n", curr_free);
+    printf("size_avail: %d\n", GET_SIZE(HDRP(curr_free)));
 
-    if (GET_SIZE(HDRP(current_free_block)) >= new_size)
+    // if there is available space then allocate the block
+    if (GET_SIZE(HDRP(curr_free)) >= new_size)
     {
-      set_allocated(current_free_block, new_size);
-      return (void *)(current_free_block);
+      set_allocated(curr_free, new_size);
+      return (void *)(curr_free);
     }
-    if (current_free_block->next == NULL)
+    // if there is no next free block, break and request more space
+    // and add the new node and pointer
+    if (curr_free->next == NULL)
     {
-      // extend the new size
-      extend(new_size);
-      current_free_block = free_list;
+      break;
     }
     else
     {
-      current_free_block = current_free_block->next;
+      curr_free = curr_free->next;
     }
   }
 
-  return NULL;
+  // call the extend function
+  void *new_free = extend(new_size);
+
+  // allocate the new block
+  set_allocated(new_free, new_size);
+
+  // return pointer to the new memory
+  return (void *)(new_free);
 }
 
-static void extend(size_t new_size)
+static void *extend(size_t new_size)
 {
-  page_size_bytes = PAGE_ALIGN(new_size);
-  // printf("page bytes: %d\n", page_size_bytes);
+  size_t page_bytes = PAGE_ALIGN(new_size);
+  printf("page bytes: %d\n", page_bytes);
 
-  pgs = mem_map(page_size_bytes);
+  void *pgs;
 
-  // check if mem map returns null
-  if (!pgs)
+  if (curr_page_bytes <= page_bytes)
   {
-    return;
+    curr_page_bytes = page_bytes;
   }
 
-  void *pbytes = pgs;
+  // double the pages if we are below the threshold
+  if (curr_page_bytes < DOUBLE_THRESHOLD)
+  {
+    curr_page_bytes *= 2;
+  }
 
-  PUT(pbytes, 0);                                             // padding
-  PUT(pbytes + 8, PACK(16, 1));                               // prolog header
-  PUT(pbytes + 16, PACK(16, 1));                              // prolog footer
-  PUT(pbytes + 24, PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block header
-  pbytes += 32;
-  PUT(FTRP(pbytes), PACK(page_size_bytes - PAGE_OVERHEAD, 0)); // block footer
-  PUT(FTRP(pbytes) + 8, PACK(0, 1));                           // epilog header
+  // get the memory associated with the current page bytes
+  pgs = mem_map(curr_page_bytes);
 
-  add_to_free_list(pbytes); // add node to free list
+  // check to see if mem map returned null
+  // since it can return null if it has no space available to satisfy the request
+  if (!pgs)
+  {
+    return NULL;
+  }
 
-  // printf("extend: %p\n", pgs);
-  // printf("size: %d, page_size_bytes: %d, header: %d\n", new_size,
-  //        page_size_bytes, GET_SIZE(HDRP(pgs)));
-  // printf("terminator: %d, page-start: %d\n", FTRP(pgs) + 8, pgs - 32);
+  void *pg_bytes = pgs;
+
+  // allocate all the information about the blocks
+  PUT(pg_bytes, curr_page_bytes);                               // padding block, contains the size of the page
+  PUT(pg_bytes + 8, PACK(OVERHEAD, 1));                         // prolog header
+  PUT(pg_bytes + 16, PACK(OVERHEAD, 1));                        // prolog footer
+  PUT(pg_bytes + 24, PACK(curr_page_bytes - PAGE_OVERHEAD, 0)); // free block header
+  // move the pg_bytes pointer by 32 to get to the free block payload pointer
+  pg_bytes += 32;
+  PUT(FTRP(pg_bytes), PACK(curr_page_bytes - PAGE_OVERHEAD, 0)); // block footer
+  PUT(FTRP(pg_bytes) + 8, PACK(0, 1));                           // epilog header
+
+  printf("extend: %p\n", pg_bytes);
+  printf("page_size: %d, size_avail: %d\n", GET(pg_bytes - 32), GET_SIZE(HDRP(pg_bytes)));
+  printf("epilog: %d, new_free: %d\n", GET_SIZE(FTRP(pg_bytes) + 8), pg_bytes);
+
+  add_to_free_list(pgs); // add the new free block to the linked list
 }
 
 // build a linked list of free blocks
 static void add_to_free_list(void *bp)
 {
   // cast the void pointer to a list node pointer
-  list_node *new_free_block = (list_node *)(bp);
+  list_node *new_free = (list_node *)(bp);
 
-  // printf("add node %p\n", bp);
+  printf("add node %p\n", bp);
 
-  if (free_list == NULL)
+  if (start_free == NULL)
   {
-    new_free_block->next = NULL;
-    new_free_block->prev = NULL;
-    free_list = new_free_block;
+    new_free->next = NULL;
+    new_free->prev = NULL;
+    start_free = new_free;
   }
   else
   {
-    free_list->prev = new_free_block;
-    new_free_block->next = free_list;
-    new_free_block->prev = NULL;
-    free_list = new_free_block;
+    start_free->prev = new_free;
+    new_free->next = start_free;
+    new_free->prev = NULL;
+    start_free = new_free;
   }
 }
 
@@ -220,7 +250,7 @@ static void set_allocated(void *bp, size_t size)
     remove_from_free_list(bp);
 
     // print pointer of allocated block
-    // printf("alloc: %p\n", bp);
+    printf("alloc: %p\n", bp);
 
     PUT(HDRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
     PUT(FTRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
@@ -230,7 +260,7 @@ static void set_allocated(void *bp, size_t size)
   }
   else
   {
-    // printf("set_alloc_else\n");
+    printf("set_alloc_else\n");
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
     remove_from_free_list(bp);
@@ -247,15 +277,15 @@ static void remove_from_free_list(void *bp)
   // CASE 1: 1 NODE IN THE LINKED LIST
   if (!prev && !next)
   {
-    free_list->next = NULL;
-    free_list->prev = NULL;
-    free_list = NULL;
+    start_free->next = NULL;
+    start_free->prev = NULL;
+    start_free = NULL;
   }
   // CASE 2: 2 NODE CASE
   else if (!prev && next)
   {
-    free_list = free_list->next;
-    free_list->prev = NULL;
+    start_free = start_free->next;
+    start_free->prev = NULL;
   }
   // CASE 3: NODE IN THE MIDDLE
   else if (prev && next)
@@ -280,21 +310,29 @@ void mm_free(void *bp)
   PUT(FTRP(bp), PACK(size, 0));
 
   // call the coalesce function
-  // printf("coalesce\n");
+  printf("coalesce\n");
   // returns a pointer to new coalesced block
   void *new_free = coalesce(bp);
 
-  // unmap map pages according to flatt video
-  void *prev_block = PREV_BLKP(new_free);
-  void *next_block = NEXT_BLKP(new_free);
+  // unmap pages according to flatt video
+  void *prev_payload = PREV_BLKP(new_free);
+  void *next_payload = NEXT_BLKP(new_free);
 
-  if (GET_SIZE(HDRP(prev_block)) == OVERHEAD && GET_SIZE(HDRP(next_block)) == 0)
-  {
-    // printf("unmap pages\n");
+  if (GET_SIZE(HDRP(prev_payload)) == OVERHEAD && GET_SIZE(HDRP(next_payload)) == 0) {
+    printf("unmap pages\n");
     remove_from_free_list(new_free);
-    mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
+    // get the page size information
+    size_t page_size = GET(new_free - 32); // block payload - block head - prolog head - prolog foot - padding
+    mem_unmap(new_free - 32, page_size);
   }
-  // printf("get rekt by malloc\n");
+
+  // if (GET_SIZE(HDRP(prev_block)) == OVERHEAD && GET_SIZE(HDRP(next_block)) == 0)
+  // {
+  //   printf("unmap pages\n");
+  //   remove_from_free_list(new_free);
+  //   mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
+  // }
+  printf("get rekt by malloc\n");
 }
 
 static void *coalesce(void *bp)
@@ -309,16 +347,16 @@ static void *coalesce(void *bp)
   // take newly allocated free block and add to the free list
   if (prev_alloc && next_alloc)
   {
-    // printf("enter case 1\n");
+    printf("enter case 1\n");
     add_to_free_list(bp);
   }
   // CASE 2: Next block is not allocated and previous block is allocated
   else if (prev_alloc && !next_alloc)
   {
-    // printf("enter case 2\n");
+    printf("enter case 2\n");
     size += GET_SIZE(HDRP(next_payload));
     PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(next_payload), PACK(size, 0));
+    PUT(FTRP(bp), PACK(size, 0));
     // remove the previous free block from the free list
     remove_from_free_list(next_payload);
     // add the new sized free block to the free list
@@ -327,7 +365,7 @@ static void *coalesce(void *bp)
   // CASE 3: Next block is allocated and previous block is unallocated
   else if (!prev_alloc && next_alloc)
   {
-    // printf("enter case 3\n");
+    printf("enter case 3\n");
     size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload));
     PUT(FTRP(bp), PACK(size, 0));
     PUT(HDRP(prev_payload), PACK(size, 0));
@@ -336,7 +374,7 @@ static void *coalesce(void *bp)
   // CASE 4: Next block is not allocated and previous block is not allocated
   else
   {
-    // printf("enter case 4\n");
+    printf("enter case 4\n");
     size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload)) + GET_SIZE(HDRP(next_payload));
     PUT(HDRP(prev_payload), PACK(size, 0));
     PUT(FTRP(next_payload), PACK(size, 0));
