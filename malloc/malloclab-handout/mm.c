@@ -138,9 +138,9 @@ void *mm_malloc(size_t size)
 
   while (1)
   {
-    // print stuff
-    printf("current_free: %p\n", curr_free);
-    printf("size_avail: %d\n", GET_SIZE(HDRP(curr_free)));
+    // // print stuff
+    // printf("current_free: %p\n", curr_free);
+    // printf("size_avail: %d\n", GET_SIZE(HDRP(curr_free)));
 
     // if there is available space then allocate the block
     if (GET_SIZE(HDRP(curr_free)) >= new_size)
