@@ -258,7 +258,7 @@ static void set_allocated(void *bp, size_t size)
     PUT(FTRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
 
     // add the new allocated block
-    add_to_free_list(bp + size);
+    add_to_free_list(NEXT_BLKP(bp));
   }
   else
   {
@@ -328,12 +328,7 @@ void mm_free(void *bp)
     mem_unmap(new_free - 32, page_size);
   }
 
-  // if (GET_SIZE(HDRP(prev_block)) == OVERHEAD && GET_SIZE(HDRP(next_block)) == 0)
-  // {
-  //   printf("unmap pages\n");
-  //   remove_from_free_list(new_free);
-  //   mem_unmap(new_free - PAGE_OVERHEAD, GET_SIZE(HDRP(new_free)) + PAGE_OVERHEAD);
-  // }
+
   printf("get rekt by malloc\n");
 }
 
