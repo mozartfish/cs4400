@@ -245,7 +245,7 @@ static void add_to_free_list(void *bp)
 static void set_allocated(void *bp, size_t size)
 {
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
-  if (extra_size >= PAGE_OVERHEAD)
+  if (extra_size >= ALIGN(1 + OVERHEAD))
   {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
