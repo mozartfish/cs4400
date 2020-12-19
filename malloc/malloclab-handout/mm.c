@@ -245,7 +245,7 @@ static void add_to_free_list(void *bp)
 static void set_allocated(void *bp, size_t size)
 {
   size_t extra_size = GET_SIZE(HDRP(bp)) - size;
-  if (extra_size >= ALIGN(1 + OVERHEAD))
+  if (extra_size >= PAGE_OVERHEAD)
   {
     PUT(HDRP(bp), PACK(size, 1));
     PUT(FTRP(bp), PACK(size, 1));
@@ -320,14 +320,14 @@ void mm_free(void *bp)
   void *prev_payload = PREV_BLKP(new_free);
   void *next_payload = NEXT_BLKP(new_free);
 
-  if (GET_SIZE(HDRP(prev_payload)) == OVERHEAD && GET_SIZE(HDRP(next_payload)) == 0) {
+  if (GET_SIZE(HDRP(prev_payload)) == OVERHEAD && GET_SIZE(HDRP(next_payload)) == 0)
+  {
     printf("unmap pages\n");
     remove_from_free_list(new_free);
     // get the page size information
     size_t page_size = GET(new_free - 32); // block payload - block head - prolog head - prolog foot - padding
     mem_unmap(new_free - 32, page_size);
   }
-
 
   printf("get rekt by malloc\n");
 }
