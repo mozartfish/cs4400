@@ -258,7 +258,7 @@ static void set_allocated(void *bp, size_t size)
     PUT(FTRP(NEXT_BLKP(bp)), PACK(extra_size, 0));
 
     // add the new allocated block
-    add_to_free_list(size + OVERHEAD);
+    add_to_free_list(NEXT_BLKP(bp));
   }
   else
   {
