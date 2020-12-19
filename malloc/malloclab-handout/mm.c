@@ -358,7 +358,7 @@ static void *coalesce(void *bp)
     printf("enter case 2\n");
     size += GET_SIZE(HDRP(next_payload));
     PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(bp), PACK(size, 0));
+    PUT(FTRP(next_payload), PACK(size, 0));
     // remove the previous free block from the free list
     remove_from_free_list(next_payload);
     // add the new sized free block to the free list
@@ -368,7 +368,7 @@ static void *coalesce(void *bp)
   else if (!prev_alloc && next_alloc)
   {
     printf("enter case 3\n");
-    size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload));
+    size += GET_SIZE(HDRP(prev_payload));
     PUT(FTRP(bp), PACK(size, 0));
     PUT(HDRP(prev_payload), PACK(size, 0));
     bp = prev_payload;
@@ -377,7 +377,7 @@ static void *coalesce(void *bp)
   else
   {
     printf("enter case 4\n");
-    size_t size = GET_SIZE(HDRP(bp)) + GET_SIZE(HDRP(prev_payload)) + GET_SIZE(HDRP(next_payload));
+    size += (GET_SIZE(HDRP(prev_payload)) + GET_SIZE(HDRP(next_payload)));
     PUT(HDRP(prev_payload), PACK(size, 0));
     PUT(FTRP(next_payload), PACK(size, 0));
     // remove the previous free block from the free list
