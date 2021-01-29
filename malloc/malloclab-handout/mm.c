@@ -172,7 +172,7 @@ void *mm_malloc(size_t size)
 
 static void *extend(size_t new_size)
 {
-  size_t page_bytes = PAGE_ALIGN(new_size);
+  size_t page_bytes = PAGE_ALIGN(new_size + PAGE_OVERHEAD);
   printf("page bytes: %d\n", page_bytes);
 
   void *pgs;
